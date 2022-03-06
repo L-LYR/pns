@@ -1,0 +1,36 @@
+# reference: https://stackoverflow.com/questions/42912755/how-to-create-a-db-for-mongodb-container-on-start-up
+version: "3.10"
+
+services:
+  mongodb:
+    image: "mongo:5.0"
+    container_name: "pns_mongo"
+    environment:
+      - TZ=${TZ}
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=${db_root_pass}
+    ports:
+      - 27017:27017
+    volumes:
+      - ${pns_mongo_volume}:/data/db
+      - ./pns_mongo_init.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+  mysql:
+    image: "mysql:5.7"
+    container_name: "pns_mysql"
+    environment:
+      - TZ=${TZ}
+      - MYSQL_ROOT_PASSWORD=${db_root_pass}
+    ports:
+      - 3306:3306
+    volumes:
+      - ${pns_mysql_volume}:/var/lib/mysql
+      - ./pns_mysql.cnf:/etc/my.cnf
+      - ./pns_mysql_init.sql:/docker-entrypoint-initdb.d/init.sql
+  redis:
+    image: "redis:7.0-rc"
+    container_name: "pns_redis"
+    ports:
+      - 6379:6379
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${db_root_pass}
+    volumes:
+      - ${pns_redis_volume}:/data
