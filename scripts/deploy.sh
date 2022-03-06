@@ -10,6 +10,9 @@ docker_file_dir="$root_path/manifest/docker"
 export pns_mongo_volume="$deploy_path/pns_mongo"
 export pns_mysql_volume="$deploy_path/pns_mysql"
 export pns_redis_volume="$deploy_path/pns_redis"
+export pns_prometheus_volume="$deploy_path/pns_prometheus"
+export pns_grafana_volume="$deploy_path/pns_grafana"
+export pns_grafana_provisioning="$deploy_path/pns_grafana_provisioning"
 TZ="$(cat /etc/timezone)" || exit
 printf "Timezone: %s\n" "$TZ"
 export TZ
@@ -26,6 +29,11 @@ up() {
     mkdir -p "$pns_mongo_volume" || exit
     mkdir -p "$pns_mysql_volume" || exit
     mkdir -p "$pns_redis_volume" || exit
+    mkdir -p "$pns_prometheus_volume" || exit
+    sudo chown -R 65534:65534 "$pns_prometheus_volume" || exit
+    mkdir -p "$pns_grafana_volume" || exit
+    sudo chown -R 472:472 "$pns_grafana_volume" || exit
+    mkdir -p "$pns_grafana_provisioning" || exit
     printf "Bootstrap...\n"
     docker-compose up -d || exit
     printf "Serving...\n"
