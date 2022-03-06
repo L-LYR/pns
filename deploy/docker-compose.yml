@@ -1,0 +1,74 @@
+# reference: https://stackoverflow.com/questions/42912755/how-to-create-a-db-for-mongodb-container-on-start-up
+version: "3.10"
+
+services:
+
+  mongodb:
+    image: "mongo:5.0"
+    container_name: "pns_mongo"
+    environment:
+      - TZ=${TZ}
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=${db_root_pass}
+    ports:
+      - 27017:27017
+    volumes:
+      - ${pns_mongo_volume}:/data/db
+      - ./pns_mongo_init.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    restart: always
+
+  mysql:
+    image: "mysql:5.7"
+    container_name: "pns_mysql"
+    environment:
+      - TZ=${TZ}
+      - MYSQL_ROOT_PASSWORD=${db_root_pass}
+    ports:
+      - 3306:3306
+    volumes:
+      - ${pns_mysql_volume}:/var/lib/mysql
+      - ./pns_mysql.cnf:/etc/my.cnf
+      - ./pns_mysql_init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
+
+  redis:
+    image: "redis:7.0-rc"
+    container_name: "pns_redis"
+    ports:
+      - 6379:6379
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${db_root_pass}
+    volumes:
+      - ${pns_redis_volume}:/data
+    restart: always
+
+  prometheus:
+    image: "prom/prometheus:v2.32.0"
+    container_name: "pns_metrics"
+    ports:
+      - 9090:9090
+    volumes:
+      - ${pns_prometheus_volume}:/prometheus
+      - ./pns_prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=48h'
+      - '--web.enable-lifecycle'
+    restart: always
+
+  grafana:
+    image: "grafana/grafana:8.4.3"
+    container_name: "pns_monitor"
+    environment:
+      - GF_SECURITY_ADMIN_USER=root
+      - GF_SECURITY_ADMIN_PASSWORD=${db_root_pass}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    user: "472"
+    ports:
+      - 3000:3000
+    volumes:
+      - ${pns_grafana_volume}:/var/lib/grafana
+      - ${pns_grafana_provisioning}:/etc/grafana/provisioning
+    restart: always

@@ -1,0 +1,13 @@
+# Reference: https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# TODO: Alertmanager configuration
+
+# TODO: Rule configuration
+
+scrape_configs:
+  - job_name: "prometheus" # itself
+    static_configs:
+      - targets: ["prometheus:9090"]
