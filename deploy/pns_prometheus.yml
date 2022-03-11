@@ -11,3 +11,7 @@ scrape_configs:
   - job_name: "prometheus" # itself
     static_configs:
       - targets: ["prometheus:9090"]
+  - job_name: "pns" # pns
+    static_configs:
+      - targets: ["pns:10086"]
+# TODO: Add other containers

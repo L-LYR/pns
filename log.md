@@ -2,9 +2,20 @@
 
 ## 2022-03-05
 
-- 搭建代码仓库
-- 编写基本数据库容器的部署脚本（MongoDB MySQL Redis）
+- [x] 搭建代码仓库
+- [x] 编写基本数据库容器的部署脚本（MongoDB MySQL Redis）
 
 ## 2022-03-06
 
-- 部署脚本增加 Prometheus 和 Grafana
+- [x] 部署脚本增加 Prometheus 和 Grafana
+
+## 2022-03-10
+
+- [x] 推送目标数据模型定义
+- [x] 推送目标 upsert 接口
+
+## 2022-03-11
+
+- [x] 单机服务部署脚本
+- [x] 监控模块
+- [ ] MongoDB DAO 层代码

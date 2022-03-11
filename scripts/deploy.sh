@@ -14,6 +14,8 @@ docker_file_dir="$root_path/deploy"
 TZ="$(cat /etc/timezone)" || exit
 
 # define and export env variables
+export root_path
+export deploy_path
 export db_root_pass="pns_root"
 export pns_mongo_volume="$deploy_path/pns_mongo"
 export pns_mysql_volume="$deploy_path/pns_mysql"
@@ -56,6 +58,7 @@ up() {
 
     mkdir -p "$pns_grafana_provisioning" || exit
     printf "Bootstrap...\n"
+    docker-compose build || exit
     docker-compose up -d || exit
     printf "Serving...\n"
     # TODO: add serving url
@@ -67,7 +70,7 @@ down() {
     printf "Shutdown...\n"
     docker-compose down || exit
     printf "Change to working directory\n"
-    if [ -z "${DEBUG}" ]; then
+    if [ "${DEBUG}" ]; then
         printf "Cleanup...\n"
         sudo rm -rf "$deploy_path"
     fi

@@ -1,0 +1,7 @@
+FROM golang:alpine3.15
+WORKDIR /pns
+ENV GOPROXY=https://proxy.golang.com.cn,direct
+COPY .. .
+RUN go mod tidy
+RUN go build -v -o pns ./app/mono_pns/main.go
+EXPOSE 10086

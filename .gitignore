@@ -5,3 +5,5 @@
 build
 .test_deploy
 .deploy
+*.dump
+log
