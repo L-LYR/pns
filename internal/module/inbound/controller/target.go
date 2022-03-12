@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/L-LYR/pns/internal/model"
-	"github.com/L-LYR/pns/internal/module/event_manager"
+	"github.com/L-LYR/pns/internal/module/event_queue"
 	"github.com/L-LYR/pns/internal/module/inbound/api/v1"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -36,27 +36,25 @@ func UpsertTarget(r *ghttp.Request) {
 		return
 	}
 
-	if err := event_manager.EmitTargetEvent(&event_manager.Event{
-		Ctx: ctx,
-		Payload: event_manager.TargetEventPayload{
-			TargetEventType: emitTargetEventType(r.Method),
-			Target:          &model.Target{Device: deviceInfo, App: appInfo},
-		},
+	if err := event_queue.EmitTargetEvent(&event_queue.TargetEvent{
+		Ctx:     ctx,
+		Type:    emitTargetEventType(r.Method),
+		Payload: &model.Target{Device: deviceInfo, App: appInfo},
 	}); err != nil {
 		g.Log().Line().Errorf(ctx, "%v", err.Error())
 		res.CommonRes = v1.RespondWith(v1.InternalServerError)
 		return
 	}
-	
+
 	res.CommonRes = v1.RespondWith(v1.Success)
 }
 
-func emitTargetEventType(m string) event_manager.TargetEventType {
+func emitTargetEventType(m string) event_queue.TargetEventType {
 	switch m {
 	case http.MethodPatch, http.MethodPut:
-		return event_manager.UpdateTarget
+		return event_queue.UpdateTarget
 	case http.MethodPost:
-		return event_manager.CreateTarget
+		return event_queue.CreateTarget
 	default:
 		panic("unreachable")
 	}

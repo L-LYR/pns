@@ -2,24 +2,8 @@
 name = "HammerLi"
 
 [server]
+[server.inbound]
 address = ":10086"
-
-[logger]
-path = "./log"
-file = "{Y-m-d}.log"
-prefix = ""
-level = "all"
-ctxKeys = []
-header = true
-stdout = true
-rotateSize = 0
-rotateExpire = 0
-rotateBackupLimit = 0
-rotateBackupExpire = 0
-rotateBackupCompress = 0
-rotateCheckInterval = "1h"
-stdoutColorDisabled = false
-writerColorEnable = false
 
 [database]
 [database.pns]

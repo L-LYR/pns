@@ -12,6 +12,6 @@ var (
 	)
 )
 
-func RegisterMetrics() {
+func MustRegisterMetrics() {
 	prometheus.MustRegister(UpsertTargetMetric)
 }

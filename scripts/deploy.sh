@@ -20,6 +20,8 @@ export root_path
 export deploy_path
 export build_path
 export db_root_pass="pns_root"
+export pns_image_name="hammerli/pns:v1"
+export pns_log_volume="$deploy_path/pns_log"
 export pns_mongo_volume="$deploy_path/pns_mongo"
 export pns_mysql_volume="$deploy_path/pns_mysql"
 export pns_redis_volume="$deploy_path/pns_redis"
@@ -51,6 +53,7 @@ up() {
 
     printf "Deploying...\n"
     printf "Making directories for database volumes...\n"
+    mkdir -p "$pns_log_volume" || exit
     mkdir -p "$pns_mongo_volume" || exit
     mkdir -p "$pns_mysql_volume" || exit
     mkdir -p "$pns_redis_volume" || exit
@@ -72,7 +75,8 @@ down() {
     goto_deploy_directory
 
     printf "Shutdown...\n"
-    docker-compose down || exit
+    docker-compose down
+    docker rmi "$pns_image_name"
     printf "Change to working directory\n"
     if [ "${DEBUG}" ]; then
         printf "Cleanup...\n"
@@ -96,10 +100,16 @@ start() {
 }
 
 update() {
+    goto_deploy_directory
     printf "Updating...\n"
     if [ -z "$(docker container ls --format "{{.Status}} {{.Names}}" |
-        awk '{if ($NF == "pns" && $1 == "Up") {print "pns is working"}}')" ]; then
-        printf "pns is not working"
+        awk '{if ($NF == "pns" && $1 == "Up") {print "pns is working\n"}}')" ]; then
+        printf "pns is not working\n"
+        printf "Try to remove container and image, and then rebuild and restart...\n"
+        docker rm pns
+        docker rmi ${pns_image_name}
+        docker-compose build || exit
+        docker-compose up -d || exit
         exit
     fi
     for dir in "${source_dir[@]}"; do

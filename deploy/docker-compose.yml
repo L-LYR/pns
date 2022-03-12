@@ -4,7 +4,7 @@ version: "3.10"
 services:
 
   pns:
-    image: hammerli/pns:v1
+    image: ${pns_image_name}
     container_name: pns
     build:
       context: ..
@@ -14,6 +14,8 @@ services:
     command: /pns/build/pns
     ports:
       - 10086:10086
+    volumes:
+      - ${pns_log_volume}:/pns/log
     restart: always
     networks:
       - pns_net
