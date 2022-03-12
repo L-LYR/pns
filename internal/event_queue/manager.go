@@ -3,8 +3,8 @@ package event_queue
 import (
 	"errors"
 
+	"github.com/L-LYR/pns/internal/event_queue/internal"
 	"github.com/L-LYR/pns/internal/model"
-	"github.com/L-LYR/pns/internal/module/event_queue/internal"
 	"github.com/L-LYR/pns/internal/service/target"
 )
 

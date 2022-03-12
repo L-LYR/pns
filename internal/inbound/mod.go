@@ -3,7 +3,7 @@ package inbound
 import (
 	"context"
 
-	"github.com/L-LYR/pns/internal/module/inbound/controller"
+	"github.com/L-LYR/pns/internal/inbound/controller"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

@@ -3,9 +3,9 @@ package controller
 import (
 	"net/http"
 
+	"github.com/L-LYR/pns/internal/event_queue"
+	"github.com/L-LYR/pns/internal/inbound/api/v1"
 	"github.com/L-LYR/pns/internal/model"
-	"github.com/L-LYR/pns/internal/module/event_queue"
-	"github.com/L-LYR/pns/internal/module/inbound/api/v1"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/jinzhu/copier"

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/L-LYR/pns/internal/module/event_queue"
-	"github.com/L-LYR/pns/internal/module/inbound"
-	"github.com/L-LYR/pns/internal/module/monitor"
+	"github.com/L-LYR/pns/internal/event_queue"
+	"github.com/L-LYR/pns/internal/inbound"
+	"github.com/L-LYR/pns/internal/monitor"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcfg"
 )

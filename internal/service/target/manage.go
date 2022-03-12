@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/L-LYR/pns/internal/model"
-	"github.com/L-LYR/pns/internal/module/monitor"
+	"github.com/L-LYR/pns/internal/monitor"
 	"github.com/L-LYR/pns/internal/service/internal/dao"
 	"github.com/L-LYR/pns/internal/service/internal/do"
 	"github.com/gogf/gf/v2/database/gdb"
