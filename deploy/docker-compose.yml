@@ -11,7 +11,7 @@ services:
       dockerfile: ${deploy_path}/dockerfile
       args:
         root_path: ${root_path}
-    command: /pns/pns
+    command: /pns/build/pns
     ports:
       - 10086:10086
     restart: always
