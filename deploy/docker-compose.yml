@@ -8,10 +8,9 @@ services:
     container_name: pns
     build:
       context: ..
-      dockerfile: ${deploy_path}/dockerfile
+      dockerfile: ${deploy_path}/debug.dockerfile
       args:
         root_path: ${root_path}
-    command: /pns/build/pns
     ports:
       - 10086:10086
     volumes:
