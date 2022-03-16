@@ -1,0 +1,26 @@
+[owner]
+name = "HammerLi"
+
+[server]
+[server.inbound]
+address = ":10086"
+
+[logger]
+path = "./log"
+file = "{Y-m-d}.log"
+
+[database]
+[database.pns]
+host = "mysql"
+port = "3306"
+user = "root"
+pass = "pns_root"
+name = "pns"
+type = "mysql"
+[database.pns_mongo]
+host = "mongodb"
+port = "27017"
+user = "root"
+pass = "pns_root"
+name = "pns_target"
+type = "mongo"

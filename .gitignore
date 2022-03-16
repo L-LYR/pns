@@ -2,6 +2,8 @@
 .vscode
 
 # cache
+log
+dump
 build
 .test_deploy
 .deploy
