@@ -5,7 +5,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/gogf/gf/v2/frame/g"
+	"github.com/L-LYR/pns/internal/util"
 )
 
 type Event interface {
@@ -84,7 +84,7 @@ func (q *InMemoryEventQueue) Subscribe(topic string, fn func(Event) error) error
 			case event := <-q.cs[topic]:
 				if err := fn(event); err != nil {
 					// TODO: maybe we can log the error cases
-					g.Log().Line().Errorf(event.GetCtx(), "%+v", err)
+					util.GLog.Errorf(event.GetCtx(), "%+v", err)
 				}
 			}
 		}

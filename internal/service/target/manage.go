@@ -7,8 +7,8 @@ import (
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao"
 	"github.com/L-LYR/pns/internal/service/internal/do"
+	"github.com/L-LYR/pns/internal/util"
 	"github.com/gogf/gf/v2/database/gdb"
-	"github.com/gogf/gf/v2/frame/g"
 	"github.com/jinzhu/copier"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -25,7 +25,7 @@ func Create(ctx context.Context, target *model.Target) error {
 				return err
 			} else if result != nil {
 				EmitUpsertTargetEvent("create", "duplicate")
-				g.Log().Line().Warningf(ctx, "%+v", target)
+				util.GLog.Warningf(ctx, "%+v %+v", target.Device, target.App)
 				return nil
 			}
 
@@ -57,7 +57,7 @@ func Create(ctx context.Context, target *model.Target) error {
 			return nil
 		},
 	); err != nil {
-		g.Log().Line().Errorf(ctx, "%+v", err)
+		util.GLog.Errorf(ctx, "%+v", err)
 		EmitUpsertTargetEvent("create", "failure")
 		return err
 	}
@@ -93,7 +93,7 @@ func Update(ctx context.Context, target *model.Target) error {
 			return nil
 		},
 	); err != nil {
-		g.Log().Line().Errorf(ctx, "%+v", err)
+		util.GLog.Errorf(ctx, "%+v", err)
 		EmitUpsertTargetEvent("update", "failure")
 		return err
 	}

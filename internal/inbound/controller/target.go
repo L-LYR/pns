@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/L-LYR/pns/internal/event_queue"
-	"github.com/L-LYR/pns/internal/inbound/api/v1"
+	v1 "github.com/L-LYR/pns/internal/inbound/api/v1"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/target"
-	"github.com/gogf/gf/v2/frame/g"
+	"github.com/L-LYR/pns/internal/util"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/jinzhu/copier"
 )
@@ -16,13 +16,13 @@ func CreateTarget(r *ghttp.Request) {
 	ctx := r.GetCtx()
 	req := &v1.TargetCreateRequest{}
 	if err := r.Parse(req); err != nil {
-		g.Log().Line().Errorf(ctx, "%v", err.Error())
+		util.GLog.Errorf(ctx, "%v", err.Error())
 		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
 		return
 	}
 	deviceInfo, appInfo, err := extractInfos(ctx, req)
 	if err != nil {
-		g.Log().Line().Errorf(ctx, "%v", err.Error())
+		util.GLog.Errorf(ctx, "%v", err.Error())
 		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
 		return
 	}
@@ -32,7 +32,7 @@ func CreateTarget(r *ghttp.Request) {
 		appInfo,
 		event_queue.CreateTarget,
 	); err != nil {
-		g.Log().Line().Errorf(ctx, "%v", err.Error())
+		util.GLog.Errorf(ctx, "%v", err.Error())
 		r.Response.WriteJson(v1.RespondWith(v1.InternalServerError))
 		return
 	}
@@ -43,13 +43,13 @@ func UpdateTarget(r *ghttp.Request) {
 	ctx := r.GetCtx()
 	req := &v1.TargetUpdateRequest{}
 	if err := r.Parse(req); err != nil {
-		g.Log().Line().Errorf(ctx, "%v", err.Error())
+		util.GLog.Errorf(ctx, "%v", err.Error())
 		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
 		return
 	}
 	deviceInfo, appInfo, err := extractInfos(ctx, req)
 	if err != nil {
-		g.Log().Line().Errorf(ctx, "%v", err.Error())
+		util.GLog.Errorf(ctx, "%v", err.Error())
 		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
 		return
 	}
@@ -59,7 +59,7 @@ func UpdateTarget(r *ghttp.Request) {
 		appInfo,
 		event_queue.UpdateTarget,
 	); err != nil {
-		g.Log().Line().Errorf(ctx, "%v", err.Error())
+		util.GLog.Errorf(ctx, "%v", err.Error())
 		r.Response.WriteJson(v1.RespondWith(v1.InternalServerError))
 		return
 	}
@@ -96,14 +96,14 @@ func QueryTarget(r *ghttp.Request) {
 	ctx := r.GetCtx()
 	req := &v1.TargetQueryRequest{}
 	if err := r.ParseQuery(req); err != nil {
-		g.Log().Line().Errorf(ctx, "%v", err.Error())
+		util.GLog.Errorf(ctx, "%v", err.Error())
 		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
 		return
 	}
 
 	target, err := target.Query(ctx, req.DeviceId, req.AppId)
 	if err != nil {
-		g.Log().Line().Errorf(ctx, "%v", err.Error())
+		util.GLog.Errorf(ctx, "%v", err.Error())
 		r.Response.WriteJson(v1.RespondWith(v1.InternalServerError))
 		return
 	}
