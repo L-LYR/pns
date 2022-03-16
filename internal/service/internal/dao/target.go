@@ -5,6 +5,9 @@
 package dao
 
 import (
+	"context"
+
+	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao/internal"
 )
 
@@ -21,4 +24,21 @@ var (
 	}
 )
 
-// Fill with you ideas below.
+func FindTargetByID(ctx context.Context, deviceId string, appId int) (*model.Target, error) {
+	var results []*model.Target
+	if res, err := Target.
+		Ctx(ctx).
+		Where("device_id", deviceId).
+		Where("app_id", appId).
+		All(); err != nil {
+		return nil, err
+	} else if res.IsEmpty() {
+		return nil, nil
+	} else if err = res.Structs(&results); err != nil {
+		return nil, err
+	} else if len(results) > 1 {
+		panic("unreachable")
+	} else {
+		return results[0], nil
+	}
+}

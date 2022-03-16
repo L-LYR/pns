@@ -1,61 +1,112 @@
 package controller
 
 import (
-	"net/http"
+	"context"
 
 	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/inbound/api/v1"
 	"github.com/L-LYR/pns/internal/model"
+	"github.com/L-LYR/pns/internal/service/target"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/jinzhu/copier"
 )
 
-func UpsertTarget(r *ghttp.Request) {
+func CreateTarget(r *ghttp.Request) {
 	ctx := r.GetCtx()
-	req := &v1.TargetUpsertReq{}
-	res := &v1.TargetUpsertRes{}
-	defer r.Response.WriteJson(res)
-
+	req := &v1.TargetCreateRequest{}
 	if err := r.Parse(req); err != nil {
 		g.Log().Line().Errorf(ctx, "%v", err.Error())
-		res.CommonRes = v1.RespondWith(v1.InvalidParameters)
+		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
 		return
 	}
-
-	deviceInfo := &model.Device{}
-	if err := copier.Copy(deviceInfo, req); err != nil {
+	deviceInfo, appInfo, err := extractInfos(ctx, req)
+	if err != nil {
 		g.Log().Line().Errorf(ctx, "%v", err.Error())
-		res.CommonRes = v1.RespondWith(v1.InternalServerError)
+		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
 		return
 	}
-	appInfo := &model.App{}
-	if err := copier.Copy(appInfo, req); err != nil {
+	if err := emitTargetEvent(
+		ctx,
+		deviceInfo,
+		appInfo,
+		event_queue.CreateTarget,
+	); err != nil {
 		g.Log().Line().Errorf(ctx, "%v", err.Error())
-		res.CommonRes = v1.RespondWith(v1.InternalServerError)
+		r.Response.WriteJson(v1.RespondWith(v1.InternalServerError))
 		return
 	}
-
-	if err := event_queue.EmitTargetEvent(&event_queue.TargetEvent{
-		Ctx:     ctx,
-		Type:    emitTargetEventType(r.Method),
-		Payload: &model.Target{Device: deviceInfo, App: appInfo},
-	}); err != nil {
-		g.Log().Line().Errorf(ctx, "%v", err.Error())
-		res.CommonRes = v1.RespondWith(v1.InternalServerError)
-		return
-	}
-
-	res.CommonRes = v1.RespondWith(v1.Success)
+	r.Response.WriteJson(v1.RespondWith(v1.Success))
 }
 
-func emitTargetEventType(m string) event_queue.TargetEventType {
-	switch m {
-	case http.MethodPatch, http.MethodPut:
-		return event_queue.UpdateTarget
-	case http.MethodPost:
-		return event_queue.CreateTarget
-	default:
-		panic("unreachable")
+func UpdateTarget(r *ghttp.Request) {
+	ctx := r.GetCtx()
+	req := &v1.TargetUpdateRequest{}
+	if err := r.Parse(req); err != nil {
+		g.Log().Line().Errorf(ctx, "%v", err.Error())
+		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
+		return
 	}
+	deviceInfo, appInfo, err := extractInfos(ctx, req)
+	if err != nil {
+		g.Log().Line().Errorf(ctx, "%v", err.Error())
+		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
+		return
+	}
+	if err := emitTargetEvent(
+		ctx,
+		deviceInfo,
+		appInfo,
+		event_queue.UpdateTarget,
+	); err != nil {
+		g.Log().Line().Errorf(ctx, "%v", err.Error())
+		r.Response.WriteJson(v1.RespondWith(v1.InternalServerError))
+		return
+	}
+	r.Response.WriteJson(v1.RespondWith(v1.Success))
+}
+
+// NOTICE: request is *v1.TargetCreateRequest or *v1.TargetUpdateRequest
+func extractInfos(ctx context.Context, request interface{}) (*model.Device, *model.App, error) {
+	deviceInfo := &model.Device{}
+	if err := copier.Copy(deviceInfo, request); err != nil {
+		return nil, nil, err
+	}
+	appInfo := &model.App{}
+	if err := copier.Copy(appInfo, request); err != nil {
+		return nil, nil, err
+	}
+	return deviceInfo, appInfo, nil
+}
+
+func emitTargetEvent(
+	c context.Context,
+	d *model.Device,
+	a *model.App,
+	t event_queue.TargetEventType,
+) error {
+	return event_queue.EmitTargetEvent(&event_queue.TargetEvent{
+		Ctx:     c,
+		Type:    t,
+		Payload: &model.Target{Device: d, App: a},
+	})
+}
+
+func QueryTarget(r *ghttp.Request) {
+	ctx := r.GetCtx()
+	req := &v1.TargetQueryRequest{}
+	if err := r.ParseQuery(req); err != nil {
+		g.Log().Line().Errorf(ctx, "%v", err.Error())
+		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
+		return
+	}
+
+	target, err := target.Query(ctx, req.DeviceId, req.AppId)
+	if err != nil {
+		g.Log().Line().Errorf(ctx, "%v", err.Error())
+		r.Response.WriteJson(v1.RespondWith(v1.InternalServerError))
+		return
+	}
+
+	r.Response.WriteJson(v1.RespondWith(v1.Success, target))
 }

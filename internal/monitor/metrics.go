@@ -4,7 +4,7 @@ import "github.com/prometheus/client_golang/prometheus"
 
 // TODO: add a metric manager
 var (
-	UpsertTargetMetric = prometheus.NewCounterVec(
+	UpsertTargetEventMetric = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "upsert_target",
 		},
@@ -13,5 +13,5 @@ var (
 )
 
 func MustRegisterMetrics() {
-	prometheus.MustRegister(UpsertTargetMetric)
+	prometheus.MustRegister(UpsertTargetEventMetric)
 }

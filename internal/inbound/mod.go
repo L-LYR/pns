@@ -14,13 +14,13 @@ const (
 	ServerConfigName = "server.inbound"
 )
 
-func MustRegisterRouters() *ghttp.Server {
+func MustRegisterRouters(ctx context.Context) *ghttp.Server {
 	s := g.Server(ServerName)
-	s.SetConfigWithMap(g.Cfg().MustGet(context.Background(), ServerConfigName).Map())
+	s.SetConfigWithMap(g.Cfg().MustGet(ctx, ServerConfigName).Map())
 	s.Group("/", func(group *ghttp.RouterGroup) {
-		group.POST("/target", controller.UpsertTarget)
-		group.PATCH("/target", controller.UpsertTarget)
-		group.PUT("/target", controller.UpsertTarget)
+		group.GET("/target", controller.QueryTarget)
+		group.POST("/target", controller.CreateTarget)
+		group.PATCH("/target", controller.UpdateTarget)
 	})
 	s.BindHandler("/metrics", func(r *ghttp.Request) {
 		promhttp.Handler().ServeHTTP(r.Response.Writer, r.Request)

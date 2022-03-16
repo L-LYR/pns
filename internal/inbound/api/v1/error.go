@@ -19,9 +19,15 @@ func ErrorMessage(code int64) string {
 	}
 }
 
-func RespondWith(code int64) *CommonRes {
-	return &CommonRes{
+func RespondWith(code int64, payload ...interface{}) *CommonResponse {
+	resp := &CommonResponse{
 		ErrorCode:    code,
 		ErrorMessage: ErrorMessage(code),
 	}
+	if len(payload) == 1 {
+		resp.Payload = payload[0]
+	} else {
+		resp.Payload = payload
+	}
+	return resp
 }

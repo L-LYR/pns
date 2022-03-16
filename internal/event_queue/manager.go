@@ -9,24 +9,24 @@ import (
 )
 
 const (
-	TargetEventTopic = "target_event"
+	_TargetEventTopic = "target_event"
 )
 
 var (
-	_EventQueueManager = internal.NewEventQueue([]string{TargetEventTopic})
+	_EventQueueManager = internal.NewEventQueue([]string{_TargetEventTopic})
 )
 
 func MustInit() {
 	_EventQueueManager.Start()
-	_EventQueueManager.Subscribe(TargetEventTopic, targetEventHandler)
-}
-
-func EmitTargetEvent(e *TargetEvent) error {
-	return _EventQueueManager.Put(TargetEventTopic, e)
+	_EventQueueManager.Subscribe(_TargetEventTopic, targetEventHandler)
 }
 
 func MustShutdown() {
 	_EventQueueManager.Shutdown()
+}
+
+func EmitTargetEvent(e *TargetEvent) error {
+	return _EventQueueManager.Put(_TargetEventTopic, e)
 }
 
 func targetEventHandler(e internal.Event) error {
