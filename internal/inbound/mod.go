@@ -20,7 +20,10 @@ func MustRegisterRouters(ctx context.Context) *ghttp.Server {
 	s := g.Server(ServerName)
 	s.SetConfigWithMap(g.Cfg().MustGet(ctx, ServerConfigName).Map())
 	s.Group("/", func(group *ghttp.RouterGroup) {
-		group.Middleware(middleware.CommonResponseHandler)
+		group.Middleware(
+			middleware.DebugHandler,
+			middleware.CommonResponseHandler,
+		)
 		group.Bind(controller.Target)
 	})
 	s.BindHandler("/metrics", func(r *ghttp.Request) {

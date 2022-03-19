@@ -20,7 +20,10 @@ func MustRegisterRouters(ctx context.Context) *ghttp.Server {
 	s.SetConfigWithMap(g.Cfg().MustGet(ctx, ServerConfigName).Map())
 	// Bind all controller objects
 	s.Group("/", func(group *ghttp.RouterGroup) {
-		group.Middleware(middleware.CommonResponseHandler)
+		group.Middleware(
+			middleware.DebugHandler,
+			middleware.CommonResponseHandler,
+		)
 		group.Bind(controller.Push)
 	})
 	// Register Open API docs

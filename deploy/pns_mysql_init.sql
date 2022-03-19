@@ -17,5 +17,4 @@ create table if not exists `app_config`(
     `name` varchar(256) unique not null comment 'app name',
     `key` varchar(512) unique not null comment 'app key',
     `secret` varchar(512) unique not null comment 'app secret',
-    unique key `uniq_name` (`name`)
 ) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
