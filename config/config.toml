@@ -4,6 +4,8 @@ name = "HammerLi"
 [server]
 [server.inbound]
 address = ":10086"
+[server.bizapi]
+address = ":10087"
 
 [logger]
 path = "./log"

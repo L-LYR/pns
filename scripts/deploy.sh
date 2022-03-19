@@ -113,6 +113,7 @@ update() {
         awk '{if ($NF == "pns" && $1 == "Up") {print "pns is working\n"}}')" ]; then
         printf "pns is not working\n"
         printf "Try to remove container and image, and then rebuild and restart...\n"
+        docker stop pns
         docker rm pns
         docker rmi ${pns_image_name}
         docker-compose build || exit

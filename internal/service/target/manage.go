@@ -57,7 +57,7 @@ func Create(ctx context.Context, target *model.Target) error {
 			return nil
 		},
 	); err != nil {
-		util.GLog.Errorf(ctx, "%+v", err)
+		util.GLog.Errorf(ctx, "%+v", err.Error())
 		EmitUpsertTargetEvent("create", "failure")
 		return err
 	}
@@ -93,7 +93,7 @@ func Update(ctx context.Context, target *model.Target) error {
 			return nil
 		},
 	); err != nil {
-		util.GLog.Errorf(ctx, "%+v", err)
+		util.GLog.Errorf(ctx, "%+v", err.Error())
 		EmitUpsertTargetEvent("update", "failure")
 		return err
 	}

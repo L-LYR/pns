@@ -18,6 +18,7 @@ services:
         root_path: ${root_path}
     ports:
       - 10086:10086
+      - 10087:10087
     volumes:
       - ${pns_log_volume}:/pns/log
     restart: always

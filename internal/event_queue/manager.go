@@ -10,10 +10,16 @@ import (
 
 const (
 	_TargetEventTopic = "target_event"
+	_PushEventTopic   = "push_event"
 )
 
 var (
-	_EventQueueManager = internal.NewEventQueue([]string{_TargetEventTopic})
+	_EventQueueManager = internal.NewEventQueue(
+		[]string{
+			_TargetEventTopic,
+			_PushEventTopic,
+		},
+	)
 )
 
 func MustInit() {

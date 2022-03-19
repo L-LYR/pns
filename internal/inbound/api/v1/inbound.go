@@ -1,6 +1,12 @@
 package v1
 
-type TargetCreateRequest struct {
+import (
+	"github.com/L-LYR/pns/internal/model"
+	"github.com/gogf/gf/v2/frame/g"
+)
+
+type TargetCreateReq struct {
+	g.Meta         `path:"/target" method:"post"`
 	DeviceId       string `json:"deviceId" v:"required#device id is required"`
 	Os             string `json:"os" v:"required#device os is required"`
 	Brand          string `json:"brand" v:"required#device brand is required"`
@@ -12,7 +18,10 @@ type TargetCreateRequest struct {
 	Language       string `json:"language" v:"required#language is required"`
 }
 
-type TargetUpdateRequest struct {
+type TargetCreateRes struct{}
+
+type TargetUpdateReq struct {
+	g.Meta   `path:"/target" method:"patch"`
 	DeviceId string            `json:"deviceId" v:"required#device id is required"`
 	Os       string            `json:"os"`
 	Brand    string            `json:"brand"`
@@ -31,7 +40,14 @@ type TargetUpdateRequest struct {
 	Language       string `json:"language"`
 }
 
-type TargetQueryRequest struct {
+type TargetUpdateRes struct{}
+
+type TargetQueryReq struct {
+	g.Meta   `path:"/target" method:"get"`
 	DeviceId string `json:"deviceId" v:"required#device id is required"`
-	AppId    int    `json:"appId" v:"required#app is required"`
+	AppId    int    `json:"appId" v:"required#app id is required"`
+}
+
+type TargetQueryRes struct {
+	Target *model.Target `json:"target"`
 }

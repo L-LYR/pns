@@ -8,62 +8,49 @@ import (
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/target"
 	"github.com/L-LYR/pns/internal/util"
-	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/jinzhu/copier"
 )
 
-func CreateTarget(r *ghttp.Request) {
-	ctx := r.GetCtx()
-	req := &v1.TargetCreateRequest{}
-	if err := r.Parse(req); err != nil {
-		util.GLog.Errorf(ctx, "%v", err.Error())
-		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
-		return
-	}
-	deviceInfo, appInfo, err := extractInfos(ctx, req)
-	if err != nil {
-		util.GLog.Errorf(ctx, "%v", err.Error())
-		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
-		return
-	}
-	if err := emitTargetEvent(
-		ctx,
-		deviceInfo,
-		appInfo,
-		event_queue.CreateTarget,
-	); err != nil {
-		util.GLog.Errorf(ctx, "%v", err.Error())
-		r.Response.WriteJson(v1.RespondWith(v1.InternalServerError))
-		return
-	}
-	r.Response.WriteJson(v1.RespondWith(v1.Success))
+var Target = &_TargetAPI{}
+
+type _TargetAPI struct{}
+
+func (api *_TargetAPI) CreateTarget(
+	ctx context.Context,
+	req *v1.TargetCreateReq,
+) (*v1.TargetCreateRes, error) {
+	return nil, upsertTarget(ctx, req, event_queue.CreateTarget)
 }
 
-func UpdateTarget(r *ghttp.Request) {
-	ctx := r.GetCtx()
-	req := &v1.TargetUpdateRequest{}
-	if err := r.Parse(req); err != nil {
-		util.GLog.Errorf(ctx, "%v", err.Error())
-		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
-		return
-	}
-	deviceInfo, appInfo, err := extractInfos(ctx, req)
+func (api *_TargetAPI) UpdateTarget(
+	ctx context.Context,
+	req *v1.TargetUpdateReq,
+) (*v1.TargetUpdateRes, error) {
+	return nil, upsertTarget(ctx, req, event_queue.UpdateTarget)
+}
+
+// NOTICE: request is *v1.TargetCreateReq or *v1.TargetUpdateReq
+func upsertTarget(
+	ctx context.Context,
+	request interface{},
+	t event_queue.PushEventType,
+) error {
+	deviceInfo, appInfo, err := extractInfos(ctx, request)
 	if err != nil {
 		util.GLog.Errorf(ctx, "%v", err.Error())
-		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
-		return
+		return util.FinalError(gcode.CodeInvalidParameter, err, "Fail to extract infos")
 	}
 	if err := emitTargetEvent(
 		ctx,
 		deviceInfo,
 		appInfo,
-		event_queue.UpdateTarget,
+		t,
 	); err != nil {
 		util.GLog.Errorf(ctx, "%v", err.Error())
-		r.Response.WriteJson(v1.RespondWith(v1.InternalServerError))
-		return
+		return util.FinalError(gcode.CodeInternalError, err, "Fail to emit target event")
 	}
-	r.Response.WriteJson(v1.RespondWith(v1.Success))
+	return nil
 }
 
 // NOTICE: request is *v1.TargetCreateRequest or *v1.TargetUpdateRequest
@@ -92,21 +79,11 @@ func emitTargetEvent(
 	})
 }
 
-func QueryTarget(r *ghttp.Request) {
-	ctx := r.GetCtx()
-	req := &v1.TargetQueryRequest{}
-	if err := r.ParseQuery(req); err != nil {
-		util.GLog.Errorf(ctx, "%v", err.Error())
-		r.Response.WriteJson(v1.RespondWith(v1.InvalidParameters))
-		return
-	}
-
+func (api *_TargetAPI) QueryTarget(ctx context.Context, req *v1.TargetQueryReq) (*v1.TargetQueryRes, error) {
 	target, err := target.Query(ctx, req.DeviceId, req.AppId)
 	if err != nil {
 		util.GLog.Errorf(ctx, "%v", err.Error())
-		r.Response.WriteJson(v1.RespondWith(v1.InternalServerError))
-		return
+		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to query target info")
 	}
-
-	r.Response.WriteJson(v1.RespondWith(v1.Success, target))
+	return &v1.TargetQueryRes{Target: target}, nil
 }
