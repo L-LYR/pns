@@ -7,10 +7,12 @@
 root_path=$(realpath "$0" | xargs dirname | xargs dirname)
 if [ -z "${DEBUG}" ]; then
     deploy_path="$root_path/.deploy"
+    pns_dockerfile="${deploy_path}/dockerfile"
 else
     deploy_path="$root_path/.test_deploy"
+    pns_dockerfile="${deploy_path}/debug.dockerfile"
 fi
-docker_file_dir="$root_path/deploy"
+deploy_config_path="$root_path/deploy"
 build_path="$root_path/build"
 TZ="$(cat /etc/timezone)" || exit
 source_dir=("app" "assets" "config" "docs" "internal" "web")
@@ -19,6 +21,7 @@ source_dir=("app" "assets" "config" "docs" "internal" "web")
 export root_path
 export deploy_path
 export build_path
+export pns_dockerfile
 export db_root_pass="pns_root"
 export pns_image_name="hammerli/pns:v1"
 export pns_log_volume="$deploy_path/pns_log"
@@ -26,6 +29,7 @@ export pns_mongo_volume="$deploy_path/pns_mongo"
 export pns_mysql_volume="$deploy_path/pns_mysql"
 export pns_redis_volume="$deploy_path/pns_redis"
 export pns_prometheus_volume="$deploy_path/pns_prometheus"
+export pns_mosquitto_volume="$deploy_path/pns_mosquitto"
 export pns_grafana_volume="$deploy_path/pns_grafana"
 export pns_grafana_provisioning="$deploy_path/pns_grafana_provisioning"
 export TZ
@@ -42,7 +46,7 @@ goto_deploy_directory() {
 
 update_configs() {
     printf "Copying all deployment configs...\n"
-    cp -a "$docker_file_dir/." "$deploy_path" || exit
+    cp -a "$deploy_config_path/." "$deploy_path" || exit
 }
 
 up() {
@@ -58,13 +62,16 @@ up() {
     mkdir -p "$pns_mysql_volume" || exit
     mkdir -p "$pns_redis_volume" || exit
     mkdir -p "$pns_prometheus_volume" || exit
+    mkdir -p "$pns_mosquitto_volume" || exit
     sudo chown -R 65534:65534 "$pns_prometheus_volume" || exit
     mkdir -p "$pns_grafana_volume" || exit
     sudo chown -R 472:472 "$pns_grafana_volume" || exit
 
     mkdir -p "$pns_grafana_provisioning" || exit
     printf "Bootstrap...\n"
-    docker-compose build || exit
+    if [ -z "$(docker images -q $pns_image_name)" ]; then
+        docker-compose build || exit
+    fi
     docker-compose up -d || exit
     printf "Serving...\n"
     printf "Monitor: localhost:3000\n"
