@@ -41,10 +41,9 @@ func upsertTarget(
 		util.GLog.Errorf(ctx, "%v", err.Error())
 		return util.FinalError(gcode.CodeInvalidParameter, err, "Fail to extract infos")
 	}
-	if err := emitTargetEvent(
+	if err := event_queue.SendTargetEvent(
 		ctx,
-		deviceInfo,
-		appInfo,
+		&model.Target{Device: deviceInfo, App: appInfo},
 		t,
 	); err != nil {
 		util.GLog.Errorf(ctx, "%v", err.Error())
@@ -64,19 +63,6 @@ func extractInfos(ctx context.Context, request interface{}) (*model.Device, *mod
 		return nil, nil, err
 	}
 	return deviceInfo, appInfo, nil
-}
-
-func emitTargetEvent(
-	c context.Context,
-	d *model.Device,
-	a *model.App,
-	t event_queue.TargetEventType,
-) error {
-	return event_queue.EmitTargetEvent(&event_queue.TargetEvent{
-		Ctx:     c,
-		Type:    t,
-		Payload: &model.Target{Device: d, App: a},
-	})
 }
 
 func (api *_TargetAPI) QueryTarget(ctx context.Context, req *v1.TargetQueryReq) (*v1.TargetQueryRes, error) {
