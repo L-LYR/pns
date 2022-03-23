@@ -107,6 +107,10 @@ start() {
 }
 
 update() {
+    if [ -z "${DEBUG}" ]; then
+        exit
+    fi
+
     goto_deploy_directory
     printf "Updating...\n"
     if [ -z "$(docker container ls --format "{{.Status}} {{.Names}}" |
@@ -124,6 +128,7 @@ update() {
         docker cp "$root_path"/"$dir" pns:/pns/
     done
     docker exec -it pns /bin/sh -c make all
+    docker exec -it pns mv -f /pns/build/pns -t /pns
     docker restart pns
 }
 

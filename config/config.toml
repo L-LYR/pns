@@ -6,6 +6,8 @@ name = "HammerLi"
 address = ":10086"
 [server.bizapi]
 address = ":10087"
+[server.admin]
+address = ":10088"
 
 [logger]
 path = "./log"
