@@ -1,4 +1,4 @@
-package dynamic_config
+package local_storage
 
 import (
 	"github.com/L-LYR/pns/internal/model"

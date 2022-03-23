@@ -3,7 +3,7 @@ package dao
 import (
 	"context"
 
-	"github.com/L-LYR/pns/internal/dynamic_config"
+	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao/internal"
 	"go.mongodb.org/mongo-driver/bson"
@@ -38,7 +38,7 @@ func (dao *_TargetMongoDao) SetTarget(
 	t *model.Target,
 	opts ...*options.UpdateOptions,
 ) error {
-	collectionName := dynamic_config.GetAppNameByAppId(t.App.ID)
+	collectionName := local_storage.GetAppNameByAppId(t.App.ID)
 
 	filter := bson.D{bson.E{Key: "_id", Value: t.Device.ID}}
 	update := bson.D{bson.E{Key: "$set", Value: t}}
@@ -52,7 +52,7 @@ func (dao *_TargetMongoDao) GetTarget(
 	deviceId string,
 	appId int,
 ) (*model.Target, error) {
-	collectionName := dynamic_config.GetAppNameByAppId(appId)
+	collectionName := local_storage.GetAppNameByAppId(appId)
 
 	result := &model.Target{}
 	filter := bson.D{bson.E{Key: "_id", Value: deviceId}}
