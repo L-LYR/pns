@@ -6,13 +6,19 @@ services:
   pns:
     image: ${pns_image_name}
     container_name: pns
+    depends_on:
+      - mysql
+      - mongodb
+      - redis
+      - mosquitto
     build:
       context: ..
-      dockerfile: ${deploy_path}/debug.dockerfile
+      dockerfile: ${pns_dockerfile}
       args:
         root_path: ${root_path}
     ports:
       - 10086:10086
+      - 10087:10087
     volumes:
       - ${pns_log_volume}:/pns/log
     restart: always
@@ -36,7 +42,7 @@ services:
       - pns_net
 
   mysql:
-    image: "mysql:5.7"
+    image: "mysql:8.0"
     container_name: "pns_mysql"
     environment:
       - TZ=${TZ}
@@ -96,6 +102,23 @@ services:
       - ${pns_grafana_volume}:/var/lib/grafana
       - ${pns_grafana_provisioning}:/etc/grafana/provisioning
     restart: always
+    networks:
+      - pns_net
+
+  mosquitto:
+    image: "iegomez/mosquitto-go-auth:latest-mosquitto_2.0.14"
+    container_name: "pns_mqtt_broker"
+    depends_on:
+      - mysql
+    ports:
+      - 18830:1883
+    volumes:
+      - ./pns_mosquitto_entrypoint.sh:/mosquitto/init.sh
+      - ./pns_mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ${pns_mosquitto_volume}/data:/mosquitto/data
+      - ${pns_mosquitto_volume}/log:/mosquitto/log
+    restart: always
+    entrypoint: [ "sh", "/mosquitto/init.sh" ]
     networks:
       - pns_net
 

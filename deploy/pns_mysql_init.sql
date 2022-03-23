@@ -13,3 +13,26 @@ create table if not exists `target`(
     `create_time` DATETIME not null comment 'create time of target',
     unique key `uniq_device_id_app_id` (`device_id`, `app_id`)
 ) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
+create table if not exists `app_pusher_config`(
+    `id` smallint unique not null comment 'app id',
+    `pusher_id` tinyint not null comment 'pusher id',
+    `config` JSON not null comment 'app pusher config'
+) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
+create table if not exists `app_config`(
+    `id` smallint unique not null comment 'app id',
+    `name` varchar(256) unique not null comment 'app name'
+) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
+-- Test Data
+insert into `app_pusher_config`
+values(
+        12345,
+        1,
+        JSON_OBJECT(
+            "key",
+            "test_app_name",
+            "secret",
+            "test_app_name"
+        )
+    );
+insert into `app_config`
+values(12345, "test_app_name");

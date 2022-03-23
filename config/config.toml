@@ -4,6 +4,8 @@ name = "HammerLi"
 [server]
 [server.inbound]
 address = ":10086"
+[server.bizapi]
+address = ":10087"
 
 [logger]
 path = "./log"
@@ -24,3 +26,9 @@ user = "root"
 pass = "pns_root"
 name = "pns_target"
 type = "mongo"
+
+[module]
+[module.pusher.mqtt]
+broker = "mosquitto"
+port = "1883"
+timeout = 1

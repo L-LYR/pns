@@ -11,19 +11,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type targetMongoDao struct {
+type _TargetMongoDao struct {
 	*internal.TargetMongoDao
 }
 
 var (
-	TargetMongoDao *targetMongoDao
+	TargetMongoDao *_TargetMongoDao
 )
 
 func MustInit(ctx context.Context) {
 	if dao, err := internal.NewTargetMongoDao(ctx); err != nil {
 		panic(err)
 	} else {
-		TargetMongoDao = &targetMongoDao{dao}
+		TargetMongoDao = &_TargetMongoDao{dao}
 	}
 }
 
@@ -33,7 +33,7 @@ func MustShutdown(ctx context.Context) {
 	}
 }
 
-func (dao *targetMongoDao) SetTarget(
+func (dao *_TargetMongoDao) SetTarget(
 	ctx context.Context,
 	t *model.Target,
 	opts ...*options.UpdateOptions,
@@ -47,7 +47,7 @@ func (dao *targetMongoDao) SetTarget(
 	return err
 }
 
-func (dao *targetMongoDao) GetTarget(
+func (dao *_TargetMongoDao) GetTarget(
 	ctx context.Context,
 	deviceId string,
 	appId int,

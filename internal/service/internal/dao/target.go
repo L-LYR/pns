@@ -11,34 +11,31 @@ import (
 	"github.com/L-LYR/pns/internal/service/internal/dao/internal"
 )
 
-// targetDao is the data access object for table target.
+// _TargetDao is the data access object for table target.
 // You can define custom methods on it to extend its functionality as you wish.
-type targetDao struct {
+type _TargetDao struct {
 	*internal.TargetDao
 }
 
 var (
 	// Target is globally public accessible object for table target operations.
-	Target = targetDao{
+	Target = _TargetDao{
 		internal.NewTargetDao(),
 	}
 )
 
 func FindTargetByID(ctx context.Context, deviceId string, appId int) (*model.Target, error) {
-	var results []*model.Target
-	if res, err := Target.
+	var result *model.Target
+	if record, err := Target.
 		Ctx(ctx).
 		Where("device_id", deviceId).
 		Where("app_id", appId).
-		All(); err != nil {
+		One(); err != nil {
 		return nil, err
-	} else if res.IsEmpty() {
+	} else if record.IsEmpty() {
 		return nil, nil
-	} else if err = res.Structs(&results); err != nil {
+	} else if err = record.Struct(&result); err != nil {
 		return nil, err
-	} else if len(results) > 1 {
-		panic("unreachable")
-	} else {
-		return results[0], nil
 	}
+	return result, nil
 }

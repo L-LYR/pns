@@ -8,5 +8,6 @@ FROM alpine:3.15.0
 WORKDIR /pns
 COPY --from=builder /pns/build/pns /pns/pns
 COPY --from=builder /pns/config /pns/config
-CMD ["/pns/pns"]
-EXPOSE 10086
+EXPOSE 10086 10087
+VOLUME [ "/pns/log" ]
+CMD [ "/pns/pns" ]
