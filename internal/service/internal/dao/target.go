@@ -25,20 +25,17 @@ var (
 )
 
 func FindTargetByID(ctx context.Context, deviceId string, appId int) (*model.Target, error) {
-	var results []*model.Target
-	if res, err := Target.
+	var result *model.Target
+	if record, err := Target.
 		Ctx(ctx).
 		Where("device_id", deviceId).
 		Where("app_id", appId).
-		All(); err != nil {
+		One(); err != nil {
 		return nil, err
-	} else if res.IsEmpty() {
+	} else if record.IsEmpty() {
 		return nil, nil
-	} else if err = res.Structs(&results); err != nil {
+	} else if err = record.Struct(&result); err != nil {
 		return nil, err
-	} else if len(results) > 1 {
-		panic("unreachable")
-	} else {
-		return results[0], nil
 	}
+	return result, nil
 }

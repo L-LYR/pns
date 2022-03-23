@@ -22,6 +22,7 @@ create table if not exists `app_config`(
     `id` smallint unique not null comment 'app id',
     `name` varchar(256) unique not null comment 'app name'
 ) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
+-- Test Data
 insert into `app_pusher_config`
 values(
         12345,
@@ -33,3 +34,5 @@ values(
             "test_app_name"
         )
     );
+insert into `app_config`
+values(12345, "test_app_name");

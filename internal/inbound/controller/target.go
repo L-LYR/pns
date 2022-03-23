@@ -52,7 +52,6 @@ func _UpsertTarget(
 	return nil
 }
 
-// NOTICE: request is *v1.TargetCreateRequest or *v1.TargetUpdateRequest
 func _ExtractInfos(ctx context.Context, request interface{}) (*model.Device, *model.App, error) {
 	deviceInfo := &model.Device{}
 	if err := copier.Copy(deviceInfo, request); err != nil {
