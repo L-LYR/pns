@@ -7,6 +7,7 @@ import (
 	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/inbound"
 	"github.com/L-LYR/pns/internal/monitor"
+	"github.com/L-LYR/pns/internal/outbound"
 	"github.com/L-LYR/pns/internal/service"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcfg"
@@ -26,6 +27,7 @@ func main() {
 
 	inbound.MustRegisterRouters(ctx).Start()
 	bizapi.MustRegisterRouters(ctx).Start()
+	outbound.MustRegisterPushers(ctx)
 
 	g.Wait()
 

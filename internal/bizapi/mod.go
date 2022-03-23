@@ -11,13 +11,13 @@ import (
 )
 
 const (
-	ServerName       = "bizapi"
-	ServerConfigName = "server.bizapi"
+	_ServerName       = "bizapi"
+	_ServerConfigName = "server.bizapi"
 )
 
 func MustRegisterRouters(ctx context.Context) *ghttp.Server {
-	s := g.Server(ServerName)
-	s.SetConfigWithMap(g.Cfg().MustGet(ctx, ServerConfigName).Map())
+	s := g.Server(_ServerName)
+	s.SetConfigWithMap(g.Cfg().MustGet(ctx, _ServerConfigName).Map())
 	// Bind all controller objects
 	s.Group("/", func(group *ghttp.RouterGroup) {
 		group.Middleware(

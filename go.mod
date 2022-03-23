@@ -3,6 +3,7 @@ module github.com/L-LYR/pns
 go 1.17
 
 require (
+	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/gogf/gf/v2 v2.0.3
 	github.com/jinzhu/copier v0.3.5
 	github.com/json-iterator/go v1.1.12

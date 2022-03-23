@@ -20,23 +20,23 @@ func (api *_TargetAPI) CreateTarget(
 	ctx context.Context,
 	req *v1.TargetCreateReq,
 ) (*v1.TargetCreateRes, error) {
-	return nil, upsertTarget(ctx, req, event_queue.CreateTarget)
+	return nil, _UpsertTarget(ctx, req, event_queue.CreateTarget)
 }
 
 func (api *_TargetAPI) UpdateTarget(
 	ctx context.Context,
 	req *v1.TargetUpdateReq,
 ) (*v1.TargetUpdateRes, error) {
-	return nil, upsertTarget(ctx, req, event_queue.UpdateTarget)
+	return nil, _UpsertTarget(ctx, req, event_queue.UpdateTarget)
 }
 
 // NOTICE: request is *v1.TargetCreateReq or *v1.TargetUpdateReq
-func upsertTarget(
+func _UpsertTarget(
 	ctx context.Context,
 	request interface{},
 	t event_queue.PushEventType,
 ) error {
-	deviceInfo, appInfo, err := extractInfos(ctx, request)
+	deviceInfo, appInfo, err := _ExtractInfos(ctx, request)
 	if err != nil {
 		util.GLog.Errorf(ctx, "%v", err.Error())
 		return util.FinalError(gcode.CodeInvalidParameter, err, "Fail to extract infos")
@@ -53,7 +53,7 @@ func upsertTarget(
 }
 
 // NOTICE: request is *v1.TargetCreateRequest or *v1.TargetUpdateRequest
-func extractInfos(ctx context.Context, request interface{}) (*model.Device, *model.App, error) {
+func _ExtractInfos(ctx context.Context, request interface{}) (*model.Device, *model.App, error) {
 	deviceInfo := &model.Device{}
 	if err := copier.Copy(deviceInfo, request); err != nil {
 		return nil, nil, err

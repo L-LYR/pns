@@ -29,7 +29,6 @@ func CommonResponseHandler(r *ghttp.Request) {
 	r.Middleware.Next()
 	ctx := r.GetCtx()
 	err := r.GetError()
-	res := r.GetHandlerResponse()
 	code := gerror.Code(err)
 	if code == gcode.CodeNil && err != nil {
 		code = gcode.CodeInternalError
@@ -39,6 +38,13 @@ func CommonResponseHandler(r *ghttp.Request) {
 	if err != nil {
 		util.GLog.Errorf(ctx, "%+v", err.Error())
 	}
+
+	if r.Response.BufferLength() > 0 {
+		// response is ready, do nothing here
+		return
+	}
+
+	res := r.GetHandlerResponse()
 	if err := r.Response.WriteJson(RespondWith(code, res)); err != nil {
 		util.GLog.Warningf(ctx, "%+v", err.Error())
 	}

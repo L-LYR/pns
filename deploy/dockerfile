@@ -9,4 +9,5 @@ WORKDIR /pns
 COPY --from=builder /pns/build/pns /pns/pns
 COPY --from=builder /pns/config /pns/config
 EXPOSE 10086 10087
-CMD ["/pns/pns"]
+VOLUME [ "/pns/log" ]
+CMD [ "/pns/pns" ]

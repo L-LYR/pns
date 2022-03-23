@@ -10,17 +10,17 @@ const (
 
 type _InMemoryEventQueue struct {
 	working bool
-	cs      map[string]chan Event
+	cs      map[string]chan _Event
 }
 
 // TODO: add channel length monitor
-func newInMemoryEventQueue(topics []string) *_InMemoryEventQueue {
+func _MustNewInMemoryEventQueue(topics []string) *_InMemoryEventQueue {
 	q := &_InMemoryEventQueue{
 		working: false,
-		cs:      make(map[string]chan Event),
+		cs:      make(map[string]chan _Event),
 	}
 	for _, topic := range topics {
-		q.cs[topic] = make(chan Event, _DefaultInMemoryChannelLength)
+		q.cs[topic] = make(chan _Event, _DefaultInMemoryChannelLength)
 	}
 	return q
 }
@@ -29,7 +29,7 @@ func (q *_InMemoryEventQueue) Start() {
 	q.working = true
 }
 
-func (q *_InMemoryEventQueue) Put(topic string, e Event) error {
+func (q *_InMemoryEventQueue) Put(topic string, e _Event) error {
 	if !q.working {
 		return errors.New("event queue is down")
 	}
@@ -41,7 +41,7 @@ func (q *_InMemoryEventQueue) Put(topic string, e Event) error {
 	return nil
 }
 
-func (q *_InMemoryEventQueue) Subscribe(topic string) (<-chan Event, error) {
+func (q *_InMemoryEventQueue) Subscribe(topic string) (<-chan _Event, error) {
 	ch, ok := q.cs[topic]
 	if !ok {
 		return nil, errors.New("unknown topic")

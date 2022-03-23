@@ -42,7 +42,7 @@ services:
       - pns_net
 
   mysql:
-    image: "mysql:5.7"
+    image: "mysql:8.0"
     container_name: "pns_mysql"
     environment:
       - TZ=${TZ}
@@ -107,7 +107,7 @@ services:
 
   mosquitto:
     image: "iegomez/mosquitto-go-auth:latest-mosquitto_2.0.14"
-    container_name: "pns_mqtt_brocker"
+    container_name: "pns_mqtt_broker"
     depends_on:
       - mysql
     ports:

@@ -41,10 +41,10 @@ func SendTargetEvent(
 }
 
 var (
-	_TargetEventWorker = _NewWorker(_TargetEventTopic, 1, _TargetEventConsumer)
+	_TargetEventWorker = _MustNewWorker(_TargetEventTopic, 1, _TargetEventConsumer)
 )
 
-func _TargetEventConsumer(e Event) error {
+func _TargetEventConsumer(e _Event) error {
 	te, ok := e.(*_TargetEvent)
 	if !ok {
 		return errors.New("not TargetEvent")

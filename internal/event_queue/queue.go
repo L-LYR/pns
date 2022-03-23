@@ -2,17 +2,27 @@ package event_queue
 
 import "context"
 
-// Event must contain the context of the request.
-type Event interface {
+// _Event must contain the context of the request.
+type _Event interface {
 	GetCtx() context.Context
 }
-type EventQueue interface {
+
+var (
+	_ _Event = (*_TargetEvent)(nil)
+	_ _Event = (*_PushEvent)(nil)
+)
+
+type _EventQueue interface {
 	Start()
-	Put(string, Event) error
-	Subscribe(string) (<-chan Event, error)
+	Put(string, _Event) error
+	Subscribe(string) (<-chan _Event, error)
 	Shutdown()
 }
 
-func NewEventQueue(topics []string) EventQueue {
-	return newInMemoryEventQueue(topics)
+var (
+	_ _EventQueue = (*_InMemoryEventQueue)(nil)
+)
+
+func _MustNewEventQueue(topics []string) _EventQueue {
+	return _MustNewInMemoryEventQueue(topics)
 }

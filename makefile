@@ -7,5 +7,8 @@ test:
 update:
 	bash ./scripts/deploy.sh update
 
+gen:
+	gf gen dao -g pns -n -s -l "mysql:root:pns_root@tcp(127.0.0.1:3306)/pns"
+
 .PHONY:
-	all test update
+	all test update gen

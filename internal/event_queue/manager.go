@@ -1,20 +1,21 @@
 package event_queue
 
 type _EventQueueManager struct {
-	Queue   EventQueue
-	Workers []Worker
+	Queue   _EventQueue
+	Workers []_Worker
 }
 
 var (
 	_Manager = &_EventQueueManager{
-		Queue: NewEventQueue(
+		Queue: _MustNewEventQueue(
 			[]string{
 				_TargetEventTopic,
 				_PushEventTopic,
 			},
 		),
-		Workers: []Worker{
+		Workers: []_Worker{
 			_TargetEventWorker,
+			_PushEventWorker,
 		},
 	}
 )

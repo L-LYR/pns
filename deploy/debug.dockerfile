@@ -5,4 +5,5 @@ COPY .. .
 RUN go mod tidy
 RUN make all
 EXPOSE 10086 10087
-CMD ["/pns/build/pns"]
+VOLUME [ "/pns/log" ]
+CMD [ "/pns/build/pns" ]

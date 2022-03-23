@@ -11,15 +11,15 @@ import (
 	"github.com/L-LYR/pns/internal/service/internal/dao/internal"
 )
 
-// targetDao is the data access object for table target.
+// _TargetDao is the data access object for table target.
 // You can define custom methods on it to extend its functionality as you wish.
-type targetDao struct {
+type _TargetDao struct {
 	*internal.TargetDao
 }
 
 var (
 	// Target is globally public accessible object for table target operations.
-	Target = targetDao{
+	Target = _TargetDao{
 		internal.NewTargetDao(),
 	}
 )

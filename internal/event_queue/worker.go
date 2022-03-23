@@ -7,16 +7,20 @@ import (
 	"github.com/L-LYR/pns/internal/util"
 )
 
-type Consumer func(Event) error
+type Consumer func(_Event) error
 
-type Worker interface {
+type _Worker interface {
 	Topic() string
-	RunOn(<-chan Event) error
+	RunOn(<-chan _Event) error
 	Shutdown()
 }
 
-func _NewWorker(topic string, dispatchN uint, consumer Consumer) Worker {
-	return &_Worker{
+var (
+	_ _Worker = (*_RealWorker)(nil)
+)
+
+func _MustNewWorker(topic string, dispatchN uint, consumer Consumer) _Worker {
+	return &_RealWorker{
 		topic:     topic,
 		dispatchN: dispatchN,
 		closeChan: make(chan struct{}),
@@ -24,7 +28,7 @@ func _NewWorker(topic string, dispatchN uint, consumer Consumer) Worker {
 	}
 }
 
-type _Worker struct {
+type _RealWorker struct {
 	topic     string
 	dispatchN uint
 	wg        sync.WaitGroup
@@ -32,9 +36,9 @@ type _Worker struct {
 	fn        Consumer
 }
 
-func (w *_Worker) Topic() string { return w.topic }
+func (w *_RealWorker) Topic() string { return w.topic }
 
-func (w *_Worker) RunOn(ch <-chan Event) error {
+func (w *_RealWorker) RunOn(ch <-chan _Event) error {
 	if w.dispatchN == 0 || w.fn == nil {
 		return errors.New("worker is uninitialized")
 	}
@@ -45,7 +49,7 @@ func (w *_Worker) RunOn(ch <-chan Event) error {
 				select {
 				case e := <-ch:
 					if err := w.fn(e); err != nil {
-						util.GLog.Error(e.GetCtx(), "%+v", err)
+						util.GLog.Errorf(e.GetCtx(), "%+v", err)
 					}
 				case <-w.closeChan:
 					w.wg.Done()
@@ -57,7 +61,7 @@ func (w *_Worker) RunOn(ch <-chan Event) error {
 	return nil
 }
 
-func (w *_Worker) Shutdown() {
+func (w *_RealWorker) Shutdown() {
 	w.closeChan <- struct{}{}
 	w.wg.Wait()
 }

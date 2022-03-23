@@ -12,19 +12,22 @@ import (
 )
 
 const (
-	ServerName       = "inbound"
-	ServerConfigName = "server.inbound"
+	_ServerName       = "inbound"
+	_ServerConfigName = "server.inbound"
 )
 
 func MustRegisterRouters(ctx context.Context) *ghttp.Server {
-	s := g.Server(ServerName)
-	s.SetConfigWithMap(g.Cfg().MustGet(ctx, ServerConfigName).Map())
+	s := g.Server(_ServerName)
+	s.SetConfigWithMap(g.Cfg().MustGet(ctx, _ServerConfigName).Map())
 	s.Group("/", func(group *ghttp.RouterGroup) {
 		group.Middleware(
 			middleware.DebugHandler,
 			middleware.CommonResponseHandler,
 		)
-		group.Bind(controller.Target)
+		group.Bind(
+			controller.Target,
+			controller.MQTTAuth,
+		)
 	})
 	s.BindHandler("/metrics", func(r *ghttp.Request) {
 		promhttp.Handler().ServeHTTP(r.Response.Writer, r.Request)

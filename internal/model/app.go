@@ -1,7 +1,12 @@
 package model
 
 type AppConfig struct {
-	ID   int    `json:"appId"`
+	ID   int    `json:"id"`
 	Name string `json:"name"`
-	// TODO: other fields, such as: Key and Secret
+}
+
+type MQTTConfig struct {
+	ID     int    `json:"id"`
+	Key    string `json:"key"`
+	Secret string `json:"secret"`
 }
