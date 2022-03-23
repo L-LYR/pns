@@ -1,5 +1,5 @@
 all:
-	mkdir -p ./build && go mod tidy && go build -v -o ./build/pns ./app/mono_pns/main.go
+	mkdir -p ./build && go mod tidy && go build -v -o ./build/pns ./cmd/mono_pns/main.go
 
 test:
 	go test -v ./...

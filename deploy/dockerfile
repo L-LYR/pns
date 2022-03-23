@@ -2,12 +2,12 @@ FROM golang:alpine AS builder
 WORKDIR /pns
 ENV GOPROXY=https://proxy.golang.com.cn,direct
 COPY .. .
-RUN go build -v -o ./build/pns ./app/mono_pns/main.go
+RUN go build -v -o ./build/pns ./cmd/mono_pns/main.go
 
 FROM alpine:3.15.0
 WORKDIR /pns
 COPY --from=builder /pns/build/pns /pns/pns
 COPY --from=builder /pns/config /pns/config
-EXPOSE 10086 10087
+EXPOSE 10086 10087 10088
 VOLUME [ "/pns/log" ]
 CMD [ "/pns/pns" ]
