@@ -1,5 +1,8 @@
-all:
-	mkdir -p ./build && go mod tidy && go build -v -o ./build/pns ./app/mono_pns/main.go
+all: frontend
+	mkdir -p ./build && go mod tidy && go build -v -o ./build/pns ./cmd/mono_pns_backend/main.go
+
+frontend:
+	GOARCH=wasm GOOS=js go build -v -o ./web/app.wasm ./cmd/pns_frontend/main.go
 
 test:
 	go test -v ./...

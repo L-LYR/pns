@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"github.com/L-LYR/pns/internal/admin"
 	"github.com/L-LYR/pns/internal/bizapi"
 	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/inbound"
@@ -20,14 +21,15 @@ const (
 func main() {
 	ctx := context.Background()
 
-	initConfig()
+	InitGlobalConfig()
 	service.MustInit(ctx)
 	event_queue.MustInit()
 	monitor.MustRegisterMetrics()
 
+	outbound.MustRegisterPushers(ctx)
 	inbound.MustRegisterRouters(ctx).Start()
 	bizapi.MustRegisterRouters(ctx).Start()
-	outbound.MustRegisterPushers(ctx)
+	admin.MustRegisterRouters(ctx).Start()
 
 	g.Wait()
 
@@ -35,6 +37,6 @@ func main() {
 	service.MustShutdown(ctx)
 }
 
-func initConfig() {
+func InitGlobalConfig() {
 	g.Cfg().GetAdapter().(*gcfg.AdapterFile).SetFileName(ConfigFileName)
 }

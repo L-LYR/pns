@@ -7,3 +7,4 @@ dump
 build
 .test_deploy
 .deploy
+web/app.wasm

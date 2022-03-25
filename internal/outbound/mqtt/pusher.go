@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/L-LYR/pns/internal/dynamic_config"
+	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/util"
 	paho "github.com/eclipse/paho.mqtt.golang"
@@ -90,8 +90,8 @@ func MustNewDefaultPusher(ctx context.Context, appId int) *Pusher {
 	}
 	return MustNewPusher(
 		ctx,
-		dynamic_config.GetAppConfigByAppId(appId),
-		dynamic_config.GetPusherAuthByAppId(appId, model.MQTTPusher).(*model.MQTTConfig),
+		local_storage.GetAppConfigByAppId(appId),
+		local_storage.GetPusherAuthByAppId(appId, model.MQTTPusher).(*model.MQTTConfig),
 		_DefaultPusherConfig,
 	)
 }
@@ -122,7 +122,7 @@ func (p *Pusher) Handle(ctx context.Context, task *model.PushTask) error {
 
 // We simply determine that the topic of single push uses the topic with format: "/<app_name>/<device_token>"
 func TopicOf(task *model.PushTask) string {
-	appName := dynamic_config.GetAppNameByAppId(task.App.ID)
+	appName := local_storage.GetAppNameByAppId(task.App.ID)
 	return "/" + appName + "/" + task.Device.ID
 }
 

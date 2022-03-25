@@ -1,9 +1,11 @@
-FROM golang:1.17
+FROM golang:alpine
 WORKDIR /pns
 ENV GOPROXY=https://proxy.golang.com.cn,direct
 COPY .. .
+RUN apk add make
 RUN go mod tidy
 RUN make all
-EXPOSE 10086 10087
+RUN mv /pns/build/pns /pns/pns
+EXPOSE 10086 10087 10088
 VOLUME [ "/pns/log" ]
-CMD [ "/pns/build/pns" ]
+CMD [ "./pns" ]

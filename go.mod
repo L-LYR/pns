@@ -7,6 +7,7 @@ require (
 	github.com/gogf/gf/v2 v2.0.3
 	github.com/jinzhu/copier v0.3.5
 	github.com/json-iterator/go v1.1.12
+	github.com/maxence-charriere/go-app/v9 v9.3.3
 	github.com/prometheus/client_golang v1.12.1
 	go.mongodb.org/mongo-driver v1.8.4
 )
@@ -24,6 +25,7 @@ require (
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/grokify/html-strip-tags-go v0.0.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect

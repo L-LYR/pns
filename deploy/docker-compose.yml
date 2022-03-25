@@ -19,6 +19,7 @@ services:
     ports:
       - 10086:10086
       - 10087:10087
+      - 10088:10088
     volumes:
       - ${pns_log_volume}:/pns/log
     restart: always
@@ -95,6 +96,7 @@ services:
       - GF_SECURITY_ADMIN_USER=root
       - GF_SECURITY_ADMIN_PASSWORD=${db_root_pass}
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ALLOW_EMBEDDING=true
     user: "472"
     ports:
       - 3000:3000
