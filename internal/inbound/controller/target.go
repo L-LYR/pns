@@ -72,3 +72,16 @@ func (api *_TargetAPI) QueryTarget(ctx context.Context, req *v1.TargetQueryReq) 
 	}
 	return &v1.TargetQueryRes{Target: target}, nil
 }
+
+func (api *_TargetAPI) GetToken(ctx context.Context, req *v1.TargetTokenReq) (*v1.TargetTokenRes, error) {
+	// TODO：add expire time logic
+	tokenSource := &util.TokenSource{}
+	if err := copier.Copy(tokenSource, req); err != nil {
+		return nil, err
+	}
+	token, err := util.NewTokenBuilder().Build(tokenSource)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.TargetTokenRes{Token: token}, nil
+}

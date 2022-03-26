@@ -51,3 +51,13 @@ type TargetQueryReq struct {
 type TargetQueryRes struct {
 	Target *model.Target `json:"target"`
 }
+
+type TargetTokenReq struct {
+	g.Meta   `path:"/token" method:"get"`
+	DeviceId string `json:"deviceId" v:"required#device id is required"`
+	AppId    int    `json:"appId" v:"required#app id is required"`
+}
+
+type TargetTokenRes struct {
+	Token string `json:"token"`
+}

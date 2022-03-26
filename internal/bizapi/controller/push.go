@@ -3,7 +3,7 @@ package controller
 import (
 	"context"
 
-	"github.com/L-LYR/pns/internal/bizapi/api/v1"
+	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
 	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/target"
