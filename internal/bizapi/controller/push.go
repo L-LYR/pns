@@ -16,7 +16,7 @@ var Push = _PushAPI{}
 type _PushAPI struct{}
 
 func (api *_PushAPI) Push(ctx context.Context, request *v1.PushReq) (*v1.PushRes, error) {
-	pushTaskId := "Hello World"
+	pushTaskId := util.GeneratePushTaskId()
 
 	response := &v1.PushRes{
 		PushTaskId: pushTaskId,

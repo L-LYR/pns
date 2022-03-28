@@ -14,5 +14,5 @@ type PushReq struct {
 }
 
 type PushRes struct {
-	PushTaskId string `json:"pushTaskId" dc:"use task id to tracing it"`
+	PushTaskId uint64 `json:"pushTaskId" dc:"use task id to tracing it"`
 }

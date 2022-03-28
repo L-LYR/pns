@@ -88,6 +88,8 @@ github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LB
 github.com/go-stack/stack v1.8.0 h1:5SgMzNM5HxrEjV0ww2lTmX6E2Izsfxas4+YHWRs3Lsk=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0/go.mod h1:fyg7847qk6SyHyPtNmDHnmrv/HOrqktSC+C9fM+CJOE=
+github.com/godruoyi/go-snowflake v0.0.1 h1:x4Kb7s5MyZDeHasNbm630gBOggJdl6Fq1JDWGntH/ew=
+github.com/godruoyi/go-snowflake v0.0.1/go.mod h1:6JXMZzmleLpSK9pYpg4LXTcAz54mdYXTeXUvVks17+4=
 github.com/gogf/gf/v2 v2.0.3 h1:T/PSaaE+N/czwC3/fYGv6bvbJZsK6Em2DsNNLbyqQ4w=
 github.com/gogf/gf/v2 v2.0.3/go.mod h1:apktt6TleWtCIwpz63vBqUnw8MX8gWKoZyxgDpXFtgM=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
