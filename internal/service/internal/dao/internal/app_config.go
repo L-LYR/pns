@@ -32,7 +32,7 @@ var appConfigColumns = AppConfigColumns{
 // NewAppConfigDao creates and returns a new DAO object for table data access.
 func NewAppConfigDao() *AppConfigDao {
 	return &AppConfigDao{
-		group:   "pns",
+		group:   "mysql",
 		table:   "app_config",
 		columns: appConfigColumns,
 	}

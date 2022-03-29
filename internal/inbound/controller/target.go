@@ -3,7 +3,7 @@ package controller
 import (
 	"context"
 
-	"github.com/L-LYR/pns/internal/constdef"
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/event_queue"
 	v1 "github.com/L-LYR/pns/internal/inbound/api/v1"
 	"github.com/L-LYR/pns/internal/model"
@@ -44,7 +44,7 @@ func _UpsertTarget(
 	}
 	target := &model.Target{Device: deviceInfo, App: appInfo}
 	if err := event_queue.EventQueueManager.Put(
-		constdef.TargetEventTopic,
+		config.TargetEventTopic(),
 		&model.TargetEvent{Type: t, Ctx: ctx, Target: target},
 	); err != nil {
 		util.GLog.Errorf(ctx, "%v", err.Error())

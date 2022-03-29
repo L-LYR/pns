@@ -1,5 +1,9 @@
 package event_queue
 
+import (
+	"github.com/L-LYR/pns/internal/config"
+)
+
 type _EventQueueManager struct {
 	topics  []string
 	queue   EventQueue
@@ -10,9 +14,9 @@ var (
 	EventQueueManager = &_EventQueueManager{}
 )
 
-func (m *_EventQueueManager) MustRegister(topic string, dispatchN uint, consumer Consumer) {
-	m.topics = append(m.topics, topic)
-	m.workers = append(m.workers, _MustNewWorker(topic, dispatchN, consumer))
+func (m *_EventQueueManager) MustRegister(cfg *config.ConsumerConfig, consumer Consumer) {
+	m.topics = append(m.topics, cfg.Topic)
+	m.workers = append(m.workers, _MustNewWorker(cfg, consumer))
 }
 
 func (m *_EventQueueManager) Put(topic string, event Event) error {

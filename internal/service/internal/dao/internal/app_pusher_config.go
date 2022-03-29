@@ -34,7 +34,7 @@ var appPusherConfigColumns = AppPusherConfigColumns{
 // NewAppPusherConfigDao creates and returns a new DAO object for table data access.
 func NewAppPusherConfigDao() *AppPusherConfigDao {
 	return &AppPusherConfigDao{
-		group:   "pns",
+		group:   "mysql",
 		table:   "app_pusher_config",
 		columns: appPusherConfigColumns,
 	}

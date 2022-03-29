@@ -4,10 +4,9 @@ import (
 	"context"
 	"errors"
 
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/outbound/mqtt"
-	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/util/gconv"
 )
 
 type Pusher interface {
@@ -23,7 +22,7 @@ func MustNewPusher(
 ) Pusher {
 	switch t {
 	case model.MQTTPusher:
-		return mqtt.MustNewPusher(ctx, appId, _LoadDefaultMQTTBrokerConfig(ctx))
+		return mqtt.MustNewPusher(ctx, appId, config.MustLoadMQTTBrokerConfig(ctx, "mqtt"))
 	default:
 		panic("unreachable")
 	}
@@ -55,17 +54,4 @@ func (p *_PusherManager) Handle(ctx context.Context, task *model.PushTask, pushe
 	default:
 		panic("unreachable")
 	}
-}
-
-const (
-	_PusherConfigName = "module.pusher.mqtt"
-)
-
-func _LoadDefaultMQTTBrokerConfig(ctx context.Context) *mqtt.BrokerConfig {
-	brokerConfig := &mqtt.BrokerConfig{}
-	config := g.Cfg().MustGet(ctx, _PusherConfigName).Map()
-	if err := gconv.Struct(config, brokerConfig); err != nil {
-		panic("fail to initialize default pusher config")
-	}
-	return brokerConfig
 }

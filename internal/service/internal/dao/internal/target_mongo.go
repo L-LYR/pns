@@ -2,16 +2,14 @@ package internal
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
-	"github.com/gogf/gf/v2/frame/g"
+	"github.com/L-LYR/pns/internal/config"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
-	MongoConfigName = "database.pns_mongo"
+	_MongoDaoConfigName = "mongo"
 )
 
 type TargetMongoDao struct {
@@ -20,30 +18,15 @@ type TargetMongoDao struct {
 }
 
 func NewTargetMongoDao(ctx context.Context) (*TargetMongoDao, error) {
-	var cfg map[string]interface{}
-	if g.Cfg().Available(ctx) {
-		cfg = g.Cfg().MustGet(ctx, MongoConfigName).Map()
-	}
-	uriFields := make([]interface{}, 0, 4)
-	for _, field := range []string{"user", "pass", "host", "port"} {
-		if _, ok := cfg[field]; !ok {
-			return nil, fmt.Errorf("%s is invalid in mongo config", field)
-		}
-		uriFields = append(uriFields, cfg[field])
-	}
-	uri := fmt.Sprintf("mongodb://%s:%s@%s:%s", uriFields...)
-
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	cfg := config.MustLoadMongoDaoConfig(ctx, _MongoDaoConfigName)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.URI()))
 	if err != nil {
 		return nil, err
 	}
-	dao := &TargetMongoDao{client: *client}
-	if dbName, ok := cfg["name"].(string); ok {
-		dao.dbName = dbName
-	} else {
-		return nil, errors.New("db name is unknown")
-	}
-	return dao, nil
+	return &TargetMongoDao{
+		client: *client,
+		dbName: cfg.Name,
+	}, nil
 }
 
 func (dao *TargetMongoDao) DB() *mongo.Database {

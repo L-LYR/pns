@@ -4,7 +4,7 @@ import (
 	"context"
 
 	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
-	"github.com/L-LYR/pns/internal/constdef"
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/target"
@@ -41,7 +41,7 @@ func (api *_PushAPI) Push(ctx context.Context, request *v1.PushReq) (*v1.PushRes
 	}
 
 	if err := event_queue.EventQueueManager.Put(
-		constdef.PushEventTopic,
+		config.PushEventTopic(),
 		&model.PushEvent{
 			Ctx:    ctx,
 			Type:   model.Push,

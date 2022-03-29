@@ -5,7 +5,7 @@ import (
 
 	"github.com/L-LYR/pns/internal/admin"
 	"github.com/L-LYR/pns/internal/bizapi"
-	"github.com/L-LYR/pns/internal/constdef"
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/inbound"
 	"github.com/L-LYR/pns/internal/monitor"
@@ -13,13 +13,12 @@ import (
 	"github.com/L-LYR/pns/internal/service"
 	"github.com/L-LYR/pns/internal/service/target"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gcfg"
 )
 
 func main() {
 	/* context & config */
 	ctx := GetStartContext()
-	LoadGlobalConfig()
+	config.LoadGlobalConfig()
 
 	/* individual modules */
 	monitor.MustRegisterMetrics()
@@ -28,13 +27,11 @@ func main() {
 
 	/* event queue */
 	event_queue.EventQueueManager.MustRegister(
-		constdef.PushEventTopic,
-		g.Cfg().MustGet(ctx, "module.event_queue.push_event_consumer").Uint(),
+		config.MustLoadConsumerConfig(ctx, "push_event_consumer"),
 		outbound.PushEventConsumer,
 	)
 	event_queue.EventQueueManager.MustRegister(
-		constdef.TargetEventTopic,
-		g.Cfg().MustGet(ctx, "module.event_queue.target_event_consumer").Uint(),
+		config.MustLoadConsumerConfig(ctx, "target_event_consumer"),
 		target.TargetEventConsumer,
 	)
 	event_queue.EventQueueManager.MustStart()
@@ -52,8 +49,4 @@ func main() {
 
 func GetStartContext() context.Context {
 	return context.Background()
-}
-
-func LoadGlobalConfig() {
-	g.Cfg().GetAdapter().(*gcfg.AdapterFile).SetFileName("config.toml")
 }

@@ -46,7 +46,7 @@ var targetColumns = TargetColumns{
 // NewTargetDao creates and returns a new DAO object for table data access.
 func NewTargetDao() *TargetDao {
 	return &TargetDao{
-		group:   "pns",
+		group:   "mysql",
 		table:   "target",
 		columns: targetColumns,
 	}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/util"
@@ -12,11 +13,19 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
+type Qos = byte
+
+const (
+	AtMostOnce  Qos = 0
+	AtLeastOnce Qos = 1
+	ExactlyOnce Qos = 2
+)
+
 type Client struct {
 	Name         string
 	Key          string
 	Secret       string
-	BrokerConfig *BrokerConfig
+	BrokerConfig *config.BrokerConfig
 	Options      *paho.ClientOptions
 
 	Client paho.Client
@@ -27,7 +36,7 @@ func MustNewClient(
 	name string,
 	key string,
 	secret string,
-	brokerConfig *BrokerConfig,
+	brokerConfig *config.BrokerConfig,
 ) *Client {
 	if brokerConfig == nil {
 		panic("pusher config or app config is not given")
@@ -39,7 +48,7 @@ func MustNewClient(
 		BrokerConfig: brokerConfig,
 	}
 	options := paho.NewClientOptions()
-	options.AddBroker(p.BrokerConfig.brokerAddress())
+	options.AddBroker(p.BrokerConfig.BrokerAddress())
 	options.SetClientID(p.Name)
 	options.SetUsername(p.Key)
 	options.SetPassword(p.Secret)
@@ -54,7 +63,7 @@ func MustNewClient(
 func MustNewPusher(
 	ctx context.Context,
 	appId int,
-	brokerConfig *BrokerConfig,
+	brokerConfig *config.BrokerConfig,
 ) *Client {
 	auth := local_storage.GetPusherAuthByAppId(appId, model.MQTTPusher).(*model.MQTTConfig)
 	return MustNewClient(
@@ -86,7 +95,7 @@ func MustNewPusher(
 func (p *Client) Handle(ctx context.Context, task *model.PushTask) error {
 	if !p.Client.IsConnected() {
 		token := p.Client.Connect()
-		if ok := token.WaitTimeout(p.BrokerConfig.timeout()); !ok {
+		if ok := token.WaitTimeout(p.BrokerConfig.WaitTimeout()); !ok {
 			return errors.New("connect timeout")
 		}
 		if err := token.Error(); err != nil {
@@ -101,7 +110,7 @@ func (p *Client) Handle(ctx context.Context, task *model.PushTask) error {
 		return err
 	}
 	token := p.Client.Publish(topic, AtMostOnce, false, payload)
-	if ok := token.WaitTimeout(p.BrokerConfig.timeout()); !ok {
+	if ok := token.WaitTimeout(p.BrokerConfig.WaitTimeout()); !ok {
 		return errors.New("message publish timeout")
 	}
 	return token.Error()
