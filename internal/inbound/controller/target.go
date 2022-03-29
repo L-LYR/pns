@@ -6,6 +6,7 @@ import (
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/event_queue"
 	v1 "github.com/L-LYR/pns/internal/inbound/api/v1"
+	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/target"
 	"github.com/L-LYR/pns/internal/util"
@@ -66,7 +67,11 @@ func _ExtractInfos(ctx context.Context, request interface{}) (*model.Device, *mo
 }
 
 func (api *_TargetAPI) QueryTarget(ctx context.Context, req *v1.TargetQueryReq) (*v1.TargetQueryRes, error) {
-	target, err := target.Query(ctx, req.DeviceId, req.AppId)
+	appName, ok := local_storage.GetAppNameByAppId(req.AppId)
+	if !ok {
+		return nil, util.FinalError(gcode.CodeInvalidParameter, nil, "Unknown app id")
+	}
+	target, err := target.Query(ctx, req.DeviceId, appName)
 	if err != nil {
 		util.GLog.Errorf(ctx, "%v", err.Error())
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to query target info")

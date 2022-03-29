@@ -9,8 +9,10 @@ import (
 	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/util"
+	"github.com/L-LYR/pns/proto/pkg/message"
 	paho "github.com/eclipse/paho.mqtt.golang"
-	jsoniter "github.com/json-iterator/go"
+	"github.com/jinzhu/copier"
+	"google.golang.org/protobuf/proto"
 )
 
 type Qos = byte
@@ -75,23 +77,6 @@ func MustNewPusher(
 	)
 }
 
-// func MustNewReceiver(
-// 	ctx context.Context,
-// 	deviceId string,
-// 	appId int,
-// 	key string,
-// 	secret string,
-// 	brokerConfig *BrokerConfig,
-// ) *Client {
-// 	return MustNewClient(
-// 		ctx,
-// 		util.GenerateTargetClientID(deviceId, appId),
-// 		key,
-// 		secret,
-// 		brokerConfig,
-// 	)
-// }
-
 func (p *Client) Handle(ctx context.Context, task *model.PushTask) error {
 	if !p.Client.IsConnected() {
 		token := p.Client.Connect()
@@ -105,7 +90,12 @@ func (p *Client) Handle(ctx context.Context, task *model.PushTask) error {
 
 	topic := _TopicOf(task)
 	util.GLog.Infof(ctx, "topic: %s", topic)
-	payload, err := jsoniter.MarshalToString(task.Message)
+
+	message := &message.Message{}
+	if err := copier.Copy(message, task.Message); err != nil {
+		return err
+	}
+	payload, err := proto.Marshal(message)
 	if err != nil {
 		return err
 	}

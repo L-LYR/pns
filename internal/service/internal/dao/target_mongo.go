@@ -3,7 +3,6 @@ package dao
 import (
 	"context"
 
-	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao/internal"
 	"go.mongodb.org/mongo-driver/bson"
@@ -35,30 +34,27 @@ func MustShutdown(ctx context.Context) {
 
 func (dao *_TargetMongoDao) SetTarget(
 	ctx context.Context,
+	appName string,
 	t *model.Target,
 	opts ...*options.UpdateOptions,
 ) error {
-	collectionName := local_storage.GetAppNameByAppId(t.App.ID)
-
 	filter := bson.D{bson.E{Key: "_id", Value: t.Device.ID}}
 	update := bson.D{bson.E{Key: "$set", Value: t}}
 
-	_, err := dao.Collection(collectionName).UpdateOne(ctx, filter, update, opts...)
+	_, err := dao.Collection(appName).UpdateOne(ctx, filter, update, opts...)
 	return err
 }
 
 func (dao *_TargetMongoDao) GetTarget(
 	ctx context.Context,
 	deviceId string,
-	appId int,
+	appName string,
 ) (*model.Target, error) {
-	collectionName := local_storage.GetAppNameByAppId(appId)
-
 	result := &model.Target{}
 	filter := bson.D{bson.E{Key: "_id", Value: deviceId}}
 
 	if err := dao.
-		Collection(collectionName).
+		Collection(appName).
 		FindOne(ctx, filter).
 		Decode(result); err != nil {
 		if err == mongo.ErrNoDocuments {

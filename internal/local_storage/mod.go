@@ -6,11 +6,11 @@ import (
 
 // NOTICE: mock
 
-func GetAppNameByAppId(id int) string {
+func GetAppNameByAppId(id int) (string, bool) {
 	if id == 12345 {
-		return "test_app_name"
+		return "test_app_name", true
 	}
-	return ""
+	return "", false
 }
 
 func GetAppConfigByAppId(id int) *model.AppConfig {

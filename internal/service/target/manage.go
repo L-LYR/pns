@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao"
 	"github.com/L-LYR/pns/internal/service/internal/do"
@@ -17,10 +18,12 @@ func Create(ctx context.Context, target *model.Target) error {
 	if err := dao.Target.Transaction(
 		ctx,
 		func(ctx context.Context, tx *gdb.TX) error {
+			appName, _ := local_storage.GetAppNameByAppId(target.App.ID)
+
 			if result, err := dao.TargetMongoDao.GetTarget(
 				ctx,
 				target.Device.ID,
-				target.App.ID,
+				appName,
 			); err != nil {
 				return err
 			} else if result != nil {
@@ -36,6 +39,7 @@ func Create(ctx context.Context, target *model.Target) error {
 
 			if err := dao.TargetMongoDao.SetTarget(
 				ctx,
+				appName,
 				target,
 				options.Update().SetUpsert(true),
 			); err != nil {
@@ -68,6 +72,8 @@ func Update(ctx context.Context, target *model.Target) error {
 	if err := dao.Target.Transaction(
 		ctx,
 		func(ctx context.Context, tx *gdb.TX) error {
+			appName, _ := local_storage.GetAppNameByAppId(target.App.ID)
+
 			updateData := do.Target{}
 			if err := copier.Copy(&updateData, target); err != nil {
 				return err
@@ -80,7 +86,7 @@ func Update(ctx context.Context, target *model.Target) error {
 				target.TokenUpdateTime = now
 			}
 
-			if err := dao.TargetMongoDao.SetTarget(ctx, target); err != nil {
+			if err := dao.TargetMongoDao.SetTarget(ctx, appName, target); err != nil {
 				return err
 			}
 
@@ -101,6 +107,6 @@ func Update(ctx context.Context, target *model.Target) error {
 	return nil
 }
 
-func Query(ctx context.Context, deviceId string, appId int) (*model.Target, error) {
-	return dao.TargetMongoDao.GetTarget(ctx, deviceId, appId)
+func Query(ctx context.Context, deviceId string, appName string) (*model.Target, error) {
+	return dao.TargetMongoDao.GetTarget(ctx, deviceId, appName)
 }
