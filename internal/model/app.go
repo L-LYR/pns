@@ -6,7 +6,9 @@ type AppConfig struct {
 }
 
 type MQTTConfig struct {
-	ID     int    `json:"id"`
-	Key    string `json:"key"`
-	Secret string `json:"secret"`
+	ID             int    `json:"id"`
+	PusherKey      string `json:"pusher_key"`
+	PusherSecret   string `json:"pusher_secret"`
+	ReceiverKey    string `json:"receiver_key"`
+	ReceiverSecret string `json:"receiver_secret"`
 }

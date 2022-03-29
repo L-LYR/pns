@@ -19,7 +19,7 @@ var (
 	TargetMongoDao *_TargetMongoDao
 )
 
-func MustInit(ctx context.Context) {
+func MustInitialize(ctx context.Context) {
 	if dao, err := internal.NewTargetMongoDao(ctx); err != nil {
 		panic(err)
 	} else {

@@ -28,9 +28,13 @@ values(
         12345,
         1,
         JSON_OBJECT(
-            "key",
+            "pusher_key",
             "test_app_name",
-            "secret",
+            "pusher_secret",
+            "test_app_name",
+            "receiver_key",
+            "test_app_name",
+            "receiver_secret",
             "test_app_name"
         )
     );

@@ -7,11 +7,11 @@ import (
 	"github.com/L-LYR/pns/internal/util"
 )
 
-type Consumer func(_Event) error
+type Consumer func(Event) error
 
 type _Worker interface {
 	Topic() string
-	RunOn(<-chan _Event) error
+	RunOn(<-chan Event) error
 	Shutdown()
 }
 
@@ -38,7 +38,7 @@ type _RealWorker struct {
 
 func (w *_RealWorker) Topic() string { return w.topic }
 
-func (w *_RealWorker) RunOn(ch <-chan _Event) error {
+func (w *_RealWorker) RunOn(ch <-chan Event) error {
 	if w.dispatchN == 0 || w.fn == nil {
 		return errors.New("worker is uninitialized")
 	}

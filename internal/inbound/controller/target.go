@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 
+	"github.com/L-LYR/pns/internal/constdef"
 	"github.com/L-LYR/pns/internal/event_queue"
 	v1 "github.com/L-LYR/pns/internal/inbound/api/v1"
 	"github.com/L-LYR/pns/internal/model"
@@ -20,31 +21,31 @@ func (api *_TargetAPI) CreateTarget(
 	ctx context.Context,
 	req *v1.TargetCreateReq,
 ) (*v1.TargetCreateRes, error) {
-	return nil, _UpsertTarget(ctx, req, event_queue.CreateTarget)
+	return nil, _UpsertTarget(ctx, req, model.CreateTarget)
 }
 
 func (api *_TargetAPI) UpdateTarget(
 	ctx context.Context,
 	req *v1.TargetUpdateReq,
 ) (*v1.TargetUpdateRes, error) {
-	return nil, _UpsertTarget(ctx, req, event_queue.UpdateTarget)
+	return nil, _UpsertTarget(ctx, req, model.UpdateTarget)
 }
 
 // NOTICE: request is *v1.TargetCreateReq or *v1.TargetUpdateReq
 func _UpsertTarget(
 	ctx context.Context,
 	request interface{},
-	t event_queue.PushEventType,
+	t model.PushEventType,
 ) error {
 	deviceInfo, appInfo, err := _ExtractInfos(ctx, request)
 	if err != nil {
 		util.GLog.Errorf(ctx, "%v", err.Error())
 		return util.FinalError(gcode.CodeInvalidParameter, err, "Fail to extract infos")
 	}
-	if err := event_queue.SendTargetEvent(
-		ctx,
-		&model.Target{Device: deviceInfo, App: appInfo},
-		t,
+	target := &model.Target{Device: deviceInfo, App: appInfo}
+	if err := event_queue.EventQueueManager.Put(
+		constdef.TargetEventTopic,
+		&model.TargetEvent{Type: t, Ctx: ctx, Target: target},
 	); err != nil {
 		util.GLog.Errorf(ctx, "%v", err.Error())
 		return util.FinalError(gcode.CodeInternalError, err, "Fail to emit target event")

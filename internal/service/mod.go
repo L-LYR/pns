@@ -6,8 +6,8 @@ import (
 	"github.com/L-LYR/pns/internal/service/internal/dao"
 )
 
-func MustInit(ctx context.Context) {
-	dao.MustInit(ctx)
+func MustInitialize(ctx context.Context) {
+	dao.MustInitialize(ctx)
 }
 
 func MustShutdown(ctx context.Context) {
