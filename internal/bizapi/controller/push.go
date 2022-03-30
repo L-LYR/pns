@@ -39,6 +39,7 @@ func (api *_PushAPI) Push(ctx context.Context, req *v1.PushReq) (*v1.PushRes, er
 
 	task := &model.PushTask{
 		ID:     pushTaskId,
+		Type:   model.PersonalPush,
 		Target: target,
 		Message: &model.Message{
 			Title:   req.Title,
@@ -50,7 +51,6 @@ func (api *_PushAPI) Push(ctx context.Context, req *v1.PushReq) (*v1.PushRes, er
 		config.PushEventTopic(),
 		&model.PushEvent{
 			Ctx:    ctx,
-			Type:   model.Push,
 			Pusher: model.MQTTPusher,
 			Task:   task,
 		},

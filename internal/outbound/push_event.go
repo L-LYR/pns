@@ -12,10 +12,5 @@ func PushEventConsumer(e event_queue.Event) error {
 	if !ok {
 		return errors.New("not PushEvent")
 	}
-	switch pe.EventType() {
-	case model.Push:
-		return PusherManager.Handle(pe.GetCtx(), pe.GetTask(), pe.PusherType())
-	default:
-		return errors.New("unknown event type")
-	}
+	return PusherManager.Handle(pe.GetCtx(), pe.GetTask(), pe.PusherType())
 }

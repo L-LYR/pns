@@ -2,23 +2,15 @@ package model
 
 import "context"
 
-type PushEventType = int8
-
-const (
-	Push PushEventType = 1
-)
-
 type PushEvent struct {
-	Type   PushEventType
 	Ctx    context.Context
 	Pusher PusherType
 	Task   *PushTask
 }
 
-func (e *PushEvent) GetCtx() context.Context  { return e.Ctx }
-func (e *PushEvent) GetTask() *PushTask       { return e.Task }
-func (e *PushEvent) EventType() PushEventType { return e.Type }
-func (e *PushEvent) PusherType() PusherType   { return e.Pusher }
+func (e *PushEvent) GetCtx() context.Context { return e.Ctx }
+func (e *PushEvent) GetTask() *PushTask      { return e.Task }
+func (e *PushEvent) PusherType() PusherType  { return e.Pusher }
 
 type TargetEventType = int8
 

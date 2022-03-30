@@ -36,7 +36,7 @@ func (api *_TargetAPI) UpdateTarget(
 func _UpsertTarget(
 	ctx context.Context,
 	request interface{},
-	t model.PushEventType,
+	t model.TargetEventType,
 ) error {
 	deviceInfo, appInfo, err := _ExtractInfos(ctx, request)
 	if err != nil {

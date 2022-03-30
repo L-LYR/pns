@@ -54,6 +54,7 @@ func MustNewClient(
 	options.SetClientID(p.Name)
 	options.SetUsername(p.Key)
 	options.SetPassword(p.Secret)
+	options.SetConnectTimeout(p.BrokerConfig.WaitTimeout())
 	options.SetOnConnectHandler(_OnConnect(ctx, p.Name))
 	options.SetConnectionLostHandler(_OnConnectLost(ctx, p.Name))
 	options.SetReconnectingHandler(_OnReconnecting(ctx))
@@ -77,17 +78,17 @@ func MustNewPusher(
 	)
 }
 
-func (p *Client) Handle(ctx context.Context, task *model.PushTask) error {
+func (p *Client) TryConnect() error {
 	if !p.Client.IsConnected() {
-		token := p.Client.Connect()
-		if ok := token.WaitTimeout(p.BrokerConfig.WaitTimeout()); !ok {
-			return errors.New("connect timeout")
-		}
-		if err := token.Error(); err != nil {
-			return err
-		}
+		return p.Client.Connect().Error()
 	}
+	return nil
+}
 
+func (p *Client) Handle(ctx context.Context, task *model.PushTask) error {
+	if err := p.TryConnect(); err != nil {
+		return err
+	}
 	topic := _TopicOf(task)
 	util.GLog.Infof(ctx, "topic: %s", topic)
 
@@ -106,9 +107,15 @@ func (p *Client) Handle(ctx context.Context, task *model.PushTask) error {
 	return token.Error()
 }
 
-// We simply determine that the topic of single push uses the topic with format: "/<app_name>/<device_token>"
 func _TopicOf(task *model.PushTask) string {
-	return fmt.Sprintf("Push/%d/%s/%d", task.App.ID, task.Device.ID, task.ID)
+	switch task.Type {
+	case model.PersonalPush:
+		return fmt.Sprintf("PPush/%d/%s/%d", task.App.ID, task.Device.ID, task.ID)
+	case model.BroadcastPush:
+		return fmt.Sprintf("PPush/%d/%d", task.App.ID, task.ID)
+	default:
+		panic("unreachable")
+	}
 }
 
 func _OnConnect(ctx context.Context, name string) paho.OnConnectHandler {
