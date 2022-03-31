@@ -7,5 +7,10 @@ import (
 
 func Run() {
 	a := app.New()
-	ui.MainWindow(a).ShowAndRun()
+	a.SetIcon(ui.ResourceLogoPng)
+	window := a.NewWindow("PNS Mobile")
+	window.SetContent(
+		ui.MainContainer(),
+	)
+	window.ShowAndRun()
 }
