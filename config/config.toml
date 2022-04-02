@@ -34,9 +34,6 @@ type = "mongo"
 broker = "mosquitto"
 port = "1883"
 timeout = 1
-[module.event_queue.target_event_consumer]
-topic = "target_event"
-dispatch = 5
 [module.event_queue.push_event_consumer]
 topic = "push_event"
 dispatch = 5

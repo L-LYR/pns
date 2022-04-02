@@ -11,7 +11,6 @@ type Event interface {
 }
 
 var (
-	_ Event = (*model.TargetEvent)(nil)
 	_ Event = (*model.PushEvent)(nil)
 )
 

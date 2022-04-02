@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	_PusherNamePrefix = "pns_pusher"
-	_TargetNamePrefix = "pns_target"
-	_Seperator        = "-"
+	_PusherNamePrefix = "pns-pusher"
+	_TargetNamePrefix = "pns-target"
+	_Seperator        = ":"
 )
 
 func GeneratePusherClientID(appId int) string {

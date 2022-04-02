@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"strconv"
 
 	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
 	"github.com/L-LYR/pns/internal/config"
@@ -21,7 +22,7 @@ func (api *_PushAPI) Push(ctx context.Context, req *v1.PushReq) (*v1.PushRes, er
 	pushTaskId := util.GeneratePushTaskId()
 
 	response := &v1.PushRes{
-		PushTaskId: pushTaskId,
+		PushTaskId: strconv.FormatUint(pushTaskId, 10),
 	}
 
 	appName, ok := local_storage.GetAppNameByAppId(req.AppId)
@@ -29,7 +30,7 @@ func (api *_PushAPI) Push(ctx context.Context, req *v1.PushReq) (*v1.PushRes, er
 		return nil, util.FinalError(gcode.CodeInvalidParameter, nil, "Unknown app id")
 	}
 
-	target, err := target.Query(ctx, req.DeviceId, appName)
+	target, err := target.Query(ctx, appName, req.DeviceId)
 	if err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to query target")
 	}

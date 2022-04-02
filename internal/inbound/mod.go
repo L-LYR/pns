@@ -22,6 +22,7 @@ func MustRegisterRouters(ctx context.Context) *ghttp.Server {
 	s.Group("/", func(group *ghttp.RouterGroup) {
 		group.Middleware(
 			middleware.DebugHandler,
+			middleware.LoggingHandler,
 			middleware.CommonResponseHandler,
 		)
 		group.Bind(

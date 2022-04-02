@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"time"
 
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao/internal"
@@ -42,13 +43,35 @@ func (dao *_TargetMongoDao) SetTarget(
 	update := bson.D{bson.E{Key: "$set", Value: t}}
 
 	_, err := dao.Collection(appName).UpdateOne(ctx, filter, update, opts...)
+
+	return err
+}
+
+func (dao *_TargetMongoDao) SetTargetToken(
+	ctx context.Context,
+	appName string,
+	deviceId string,
+	tokenName string,
+	token string,
+) error {
+	now := time.Now()
+	filter := bson.D{bson.E{Key: "_id", Value: deviceId}}
+	update := bson.D{bson.E{
+		Key: "$set",
+		Value: bson.D{
+			bson.E{Key: "tokens", Value: map[string]string{tokenName: token}},
+			bson.E{Key: "lastActiveTime", Value: now},
+			bson.E{Key: "tokenUpdateTime", Value: now},
+		},
+	}}
+	_, err := dao.Collection(appName).UpdateOne(ctx, filter, update)
 	return err
 }
 
 func (dao *_TargetMongoDao) GetTarget(
 	ctx context.Context,
-	deviceId string,
 	appName string,
+	deviceId string,
 ) (*model.Target, error) {
 	result := &model.Target{}
 	filter := bson.D{bson.E{Key: "_id", Value: deviceId}}

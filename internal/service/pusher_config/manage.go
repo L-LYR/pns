@@ -11,7 +11,7 @@ import (
 func Authorization(ctx context.Context, key string, secret string, clientId string) (bool, string) {
 	appId, isPusher, err := util.ParseClientID(clientId)
 	if err != nil {
-		util.GLog.Errorf(ctx, "%+v", err)
+		util.GLog.Errorf(ctx, "client id: %s, error: %+v", clientId, err)
 		return false, "unknown client"
 	}
 	config := &model.MQTTConfig{}
