@@ -2,6 +2,8 @@ package storage
 
 import "time"
 
+// TODO: implement persistance
+
 type Config struct {
 	ClientID string
 

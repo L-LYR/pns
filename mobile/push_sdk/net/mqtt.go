@@ -55,7 +55,7 @@ func MustNewMQTTClient(ctx context.Context, cfg *storage.Config) *MQTTClient {
 		topicSet: topicSet,
 	}
 	if err := p.TryConnect(); err != nil {
-		util.Log("error: %s", err.Error())
+		util.Log("Error: %s", err.Error())
 	}
 	return p
 }
@@ -100,33 +100,33 @@ func (c *MQTTClient) SubscribeBroadcastPushHandler(fn MessageHandler) {
 
 func (c *MQTTClient) subscribe(topic string, fn paho.MessageHandler) {
 	if err := c.TryConnect(); err != nil {
-		util.Log(err.Error())
+		util.Log("Error: %s", err.Error())
 		return
 	}
 	if token := c.c.Subscribe(topic, AtMostOnce, fn); !token.WaitTimeout(c.options.ConnectTimeout) {
 		util.Log("subscribe timeout")
 		return
 	} else if err := token.Error(); err != nil {
-		util.Log(err.Error())
+		util.Log("Error: %s", err.Error())
 		return
 	}
-	util.Log("subscribe %s topic successfully", topic)
+	util.Log("Info: Subscribe %s topic successfully", topic)
 }
 
 func _OnConnect(ctx context.Context) paho.OnConnectHandler {
 	return func(client paho.Client) {
-		util.Log("mqtt connecting")
+		util.Log("Notice: mqtt connected")
 	}
 }
 
 func _OnConnectLost(ctx context.Context) paho.ConnectionLostHandler {
 	return func(client paho.Client, err error) {
-		util.Log("mqtt lost connection")
+		util.Log("Notice: mqtt lost connection")
 	}
 }
 
 func _OnReconnecting(ctx context.Context) paho.ReconnectHandler {
 	return func(client paho.Client, options *paho.ClientOptions) {
-		util.Log("mqtt reconnecting")
+		util.Log("Notice: mqtt reconnecting")
 	}
 }

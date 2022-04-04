@@ -7,6 +7,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/godruoyi/go-snowflake v0.0.1
 	github.com/gogf/gf/v2 v2.0.3
+	github.com/google/uuid v1.3.0
 	github.com/jinzhu/copier v0.3.5
 	github.com/json-iterator/go v1.1.12
 	github.com/maxence-charriere/go-app/v9 v9.3.3
@@ -34,7 +35,6 @@ require (
 	github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/grokify/html-strip-tags-go v0.0.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
