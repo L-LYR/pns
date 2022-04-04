@@ -71,10 +71,10 @@ func (m *MainView) View(_ fyne.Window) fyne.CanvasObject {
 	themeSelector := container.NewGridWithColumns(
 		2,
 		widget.NewButton("Dark", func() {
-			fyne.CurrentApp().Settings().SetTheme(theme.DarkTheme())
+			fyne.CurrentApp().Settings().SetTheme(theme.DarkTheme()) //lint:ignore SA1019 no reason
 		}),
 		widget.NewButton("Light", func() {
-			fyne.CurrentApp().Settings().SetTheme(theme.LightTheme())
+			fyne.CurrentApp().Settings().SetTheme(theme.LightTheme()) //lint:ignore SA1019 no reason
 		}),
 	)
 
