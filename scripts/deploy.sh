@@ -15,7 +15,7 @@ fi
 deploy_config_path="$root_path/deploy"
 build_path="$root_path/build"
 TZ="$(cat /etc/timezone)" || exit
-source_dir=("cmd" "assets" "config" "docs" "internal" "web")
+source_dir=("cmd" "config" "docs" "internal" "web")
 
 # define and export env variables
 export root_path

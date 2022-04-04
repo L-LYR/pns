@@ -6,21 +6,30 @@ import (
 
 // NOTICE: mock
 
-func GetAppNameByAppId(id int) string {
-	return "test_app_name"
+func GetAppNameByAppId(id int) (string, bool) {
+	if id == 12345 {
+		return "test_app_name", true
+	}
+	return "", false
 }
 
 func GetAppConfigByAppId(id int) *model.AppConfig {
-	return &model.AppConfig{
-		ID:   12345,
-		Name: "test_app_name",
+	if id == 12345 {
+		return &model.AppConfig{
+			ID:   12345,
+			Name: "test_app_name",
+		}
 	}
+	return nil
 }
 
 func GetPusherAuthByAppId(appId int, pusherId model.PusherType) interface{} {
-	return &model.MQTTConfig{
-		ID:     12345,
-		Key:    "test_app_name",
-		Secret: "test_app_name",
+	if appId == 12345 && pusherId == model.MQTTPusher {
+		return &model.MQTTConfig{
+			ID:           12345,
+			PusherKey:    "test_app_name",
+			PusherSecret: "test_app_name",
+		}
 	}
+	return nil
 }

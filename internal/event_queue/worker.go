@@ -4,14 +4,15 @@ import (
 	"errors"
 	"sync"
 
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/util"
 )
 
-type Consumer func(_Event) error
+type Consumer func(Event) error
 
 type _Worker interface {
 	Topic() string
-	RunOn(<-chan _Event) error
+	RunOn(<-chan Event) error
 	Shutdown()
 }
 
@@ -19,30 +20,28 @@ var (
 	_ _Worker = (*_RealWorker)(nil)
 )
 
-func _MustNewWorker(topic string, dispatchN uint, consumer Consumer) _Worker {
+func _MustNewWorker(cfg *config.ConsumerConfig, consumer Consumer) _Worker {
 	return &_RealWorker{
-		topic:     topic,
-		dispatchN: dispatchN,
+		cfg:       cfg,
 		closeChan: make(chan struct{}),
 		fn:        consumer,
 	}
 }
 
 type _RealWorker struct {
-	topic     string
-	dispatchN uint
+	cfg       *config.ConsumerConfig
 	wg        sync.WaitGroup
 	closeChan chan struct{}
 	fn        Consumer
 }
 
-func (w *_RealWorker) Topic() string { return w.topic }
+func (w *_RealWorker) Topic() string { return w.cfg.Topic }
 
-func (w *_RealWorker) RunOn(ch <-chan _Event) error {
-	if w.dispatchN == 0 || w.fn == nil {
+func (w *_RealWorker) RunOn(ch <-chan Event) error {
+	if w.cfg == nil || !w.cfg.Check() || w.fn == nil {
 		return errors.New("worker is uninitialized")
 	}
-	for i := uint(0); i < w.dispatchN; i++ {
+	for i := uint(0); i < w.cfg.Dispatch; i++ {
 		w.wg.Add(1)
 		go func() {
 			for {

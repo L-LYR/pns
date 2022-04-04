@@ -2,9 +2,10 @@ package controller
 
 import (
 	"context"
+	"time"
 
-	"github.com/L-LYR/pns/internal/event_queue"
 	v1 "github.com/L-LYR/pns/internal/inbound/api/v1"
+	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/target"
 	"github.com/L-LYR/pns/internal/util"
@@ -16,59 +17,106 @@ var Target = &_TargetAPI{}
 
 type _TargetAPI struct{}
 
-func (api *_TargetAPI) CreateTarget(
+func (api *_TargetAPI) UpsertTarget(
 	ctx context.Context,
-	req *v1.TargetCreateReq,
-) (*v1.TargetCreateRes, error) {
-	return nil, _UpsertTarget(ctx, req, event_queue.CreateTarget)
-}
-
-func (api *_TargetAPI) UpdateTarget(
-	ctx context.Context,
-	req *v1.TargetUpdateReq,
-) (*v1.TargetUpdateRes, error) {
-	return nil, _UpsertTarget(ctx, req, event_queue.UpdateTarget)
-}
-
-// NOTICE: request is *v1.TargetCreateReq or *v1.TargetUpdateReq
-func _UpsertTarget(
-	ctx context.Context,
-	request interface{},
-	t event_queue.PushEventType,
-) error {
-	deviceInfo, appInfo, err := _ExtractInfos(ctx, request)
+	req *v1.UpdateTargetReq,
+) (*v1.UpdateTargetRes, error) {
+	targetInfo, err := _ExtractInfos(ctx, req)
 	if err != nil {
-		util.GLog.Errorf(ctx, "%v", err.Error())
-		return util.FinalError(gcode.CodeInvalidParameter, err, "Fail to extract infos")
+		return nil, util.FinalError(gcode.CodeInvalidParameter, err, "Fail to extract target info")
 	}
-	if err := event_queue.SendTargetEvent(
-		ctx,
-		&model.Target{Device: deviceInfo, App: appInfo},
-		t,
-	); err != nil {
-		util.GLog.Errorf(ctx, "%v", err.Error())
-		return util.FinalError(gcode.CodeInternalError, err, "Fail to emit target event")
+	util.GLog.Printf(ctx, "%+v %+v", targetInfo.App, targetInfo.Device)
+	if err := target.Upsert(ctx, targetInfo); err != nil {
+		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to update target info")
 	}
-	return nil
+	return nil, nil
 }
 
-func _ExtractInfos(ctx context.Context, request interface{}) (*model.Device, *model.App, error) {
+func _ExtractInfos(
+	ctx context.Context,
+	req *v1.UpdateTargetReq,
+) (*model.Target, error) {
 	deviceInfo := &model.Device{}
-	if err := copier.Copy(deviceInfo, request); err != nil {
-		return nil, nil, err
+	if err := copier.Copy(deviceInfo, req); err != nil {
+		return nil, err
 	}
 	appInfo := &model.App{}
-	if err := copier.Copy(appInfo, request); err != nil {
-		return nil, nil, err
+	if err := copier.Copy(appInfo, req); err != nil {
+		return nil, err
 	}
-	return deviceInfo, appInfo, nil
+	return &model.Target{
+		Device: deviceInfo,
+		App:    appInfo,
+		Tokens: &model.TokenSet{}, // here must new an empty token set
+	}, nil
 }
 
-func (api *_TargetAPI) QueryTarget(ctx context.Context, req *v1.TargetQueryReq) (*v1.TargetQueryRes, error) {
-	target, err := target.Query(ctx, req.DeviceId, req.AppId)
+func (api *_TargetAPI) QueryTarget(
+	ctx context.Context,
+	req *v1.QueryTargetReq,
+) (*v1.QueryTargetRes, error) {
+	appName, ok := local_storage.GetAppNameByAppId(req.AppId)
+	if !ok {
+		return nil, util.FinalError(gcode.CodeInvalidParameter, nil, "Unknown app id")
+	}
+	target, err := target.Query(ctx, appName, req.DeviceId)
 	if err != nil {
-		util.GLog.Errorf(ctx, "%v", err.Error())
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to query target info")
 	}
-	return &v1.TargetQueryRes{Target: target}, nil
+	return &v1.QueryTargetRes{Target: target}, nil
+}
+
+// TODO: make token expire time into config
+const (
+	_TokenExpireTime = 7 * 24 * 3600 * time.Second
+)
+
+func _CheckTokenExpire(last time.Time) bool {
+	return last.Add(_TokenExpireTime).Before(time.Now())
+}
+
+func (api *_TargetAPI) GetToken(
+	ctx context.Context,
+	req *v1.GetTokenReq,
+) (*v1.GetTokenRes, error) {
+	appName, ok := local_storage.GetAppNameByAppId(req.AppId)
+	if !ok {
+		return nil, util.FinalError(gcode.CodeInvalidParameter, nil, "Unknown app id")
+	}
+
+	targetInfo, err := target.Query(ctx, appName, req.DeviceId)
+	if err != nil {
+		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to check device id")
+	}
+
+	if targetInfo == nil {
+		return nil, util.FinalError(gcode.CodeInvalidRequest, nil, "Unknown target")
+	}
+
+	if !_CheckTokenExpire(targetInfo.TokenUpdateTime) {
+		return &v1.GetTokenRes{Token: targetInfo.Tokens.Self}, nil
+	}
+
+	token, err := _GenerateToken(req.AppId, req.DeviceId)
+	if err != nil {
+		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to generate token")
+	}
+
+	if err := target.UpdateToken(ctx, appName, req.DeviceId, "self", token); err != nil {
+		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to update token")
+	}
+	return &v1.GetTokenRes{Token: token}, nil
+}
+
+func _GenerateToken(appId int, deviceId string) (string, error) {
+	token, err := util.NewTokenBuilder().Build(
+		&util.TokenSource{
+			AppId:    appId,
+			DeviceId: deviceId,
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }

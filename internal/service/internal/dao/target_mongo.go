@@ -2,8 +2,8 @@ package dao
 
 import (
 	"context"
+	"time"
 
-	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao/internal"
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,7 +19,7 @@ var (
 	TargetMongoDao *_TargetMongoDao
 )
 
-func MustInit(ctx context.Context) {
+func MustInitialize(ctx context.Context) {
 	if dao, err := internal.NewTargetMongoDao(ctx); err != nil {
 		panic(err)
 	} else {
@@ -35,30 +35,49 @@ func MustShutdown(ctx context.Context) {
 
 func (dao *_TargetMongoDao) SetTarget(
 	ctx context.Context,
+	appName string,
 	t *model.Target,
 	opts ...*options.UpdateOptions,
 ) error {
-	collectionName := local_storage.GetAppNameByAppId(t.App.ID)
-
 	filter := bson.D{bson.E{Key: "_id", Value: t.Device.ID}}
 	update := bson.D{bson.E{Key: "$set", Value: t}}
 
-	_, err := dao.Collection(collectionName).UpdateOne(ctx, filter, update, opts...)
+	_, err := dao.Collection(appName).UpdateOne(ctx, filter, update, opts...)
+
+	return err
+}
+
+func (dao *_TargetMongoDao) SetTargetToken(
+	ctx context.Context,
+	appName string,
+	deviceId string,
+	tokenName string,
+	token string,
+) error {
+	now := time.Now()
+	filter := bson.D{bson.E{Key: "_id", Value: deviceId}}
+	update := bson.D{bson.E{
+		Key: "$set",
+		Value: bson.D{
+			bson.E{Key: "tokens", Value: map[string]string{tokenName: token}},
+			bson.E{Key: "lastActiveTime", Value: now},
+			bson.E{Key: "tokenUpdateTime", Value: now},
+		},
+	}}
+	_, err := dao.Collection(appName).UpdateOne(ctx, filter, update)
 	return err
 }
 
 func (dao *_TargetMongoDao) GetTarget(
 	ctx context.Context,
+	appName string,
 	deviceId string,
-	appId int,
 ) (*model.Target, error) {
-	collectionName := local_storage.GetAppNameByAppId(appId)
-
 	result := &model.Target{}
 	filter := bson.D{bson.E{Key: "_id", Value: deviceId}}
 
 	if err := dao.
-		Collection(collectionName).
+		Collection(appName).
 		FindOne(ctx, filter).
 		Decode(result); err != nil {
 		if err == mongo.ErrNoDocuments {

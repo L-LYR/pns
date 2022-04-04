@@ -1,28 +1,30 @@
 package event_queue
 
-import "context"
+import (
+	"context"
 
-// _Event must contain the context of the request.
-type _Event interface {
+	"github.com/L-LYR/pns/internal/model"
+)
+
+type Event interface {
 	GetCtx() context.Context
 }
 
 var (
-	_ _Event = (*_TargetEvent)(nil)
-	_ _Event = (*_PushEvent)(nil)
+	_ Event = (*model.PushEvent)(nil)
 )
 
-type _EventQueue interface {
+type EventQueue interface {
 	Start()
-	Put(string, _Event) error
-	Subscribe(string) (<-chan _Event, error)
+	Put(string, Event) error
+	Subscribe(string) (<-chan Event, error)
 	Shutdown()
 }
 
 var (
-	_ _EventQueue = (*_InMemoryEventQueue)(nil)
+	_ EventQueue = (*_InMemoryEventQueue)(nil)
 )
 
-func _MustNewEventQueue(topics []string) _EventQueue {
+func _MustNewEventQueue(topics ...string) EventQueue {
 	return _MustNewInMemoryEventQueue(topics)
 }

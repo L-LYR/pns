@@ -9,9 +9,9 @@ import (
 )
 
 func Authorization(ctx context.Context, key string, secret string, clientId string) (bool, string) {
-	appId, err := util.ParseClientID(clientId)
+	appId, isPusher, err := util.ParseClientID(clientId)
 	if err != nil {
-		util.GLog.Errorf(ctx, "%+v", err)
+		util.GLog.Errorf(ctx, "client id: %s, error: %+v", clientId, err)
 		return false, "unknown client"
 	}
 	config := &model.MQTTConfig{}
@@ -19,7 +19,9 @@ func Authorization(ctx context.Context, key string, secret string, clientId stri
 		util.GLog.Errorf(ctx, "%+v", err)
 		return false, "internal error"
 	}
-	if config.Key == key && config.Secret == secret {
+	if isPusher && config.PusherKey == key && config.PusherSecret == secret {
+		return true, ""
+	} else if !isPusher && config.ReceiverKey == key && config.ReceiverSecret == secret {
 		return true, ""
 	}
 	return false, "unauthorized"
