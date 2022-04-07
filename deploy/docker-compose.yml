@@ -1,4 +1,3 @@
-# reference: https://stackoverflow.com/questions/42912755/how-to-create-a-db-for-mongodb-container-on-start-up
 version: "3.10"
 
 services:
@@ -43,7 +42,7 @@ services:
       - pns_net
 
   mysql:
-    image: "mysql:8.0"
+    image: "mysql:8.0-oracle"
     container_name: "pns_mysql"
     environment:
       - TZ=${TZ}
