@@ -10,10 +10,6 @@ import (
 	"github.com/L-LYR/pns/proto/pkg/message"
 )
 
-var (
-	log = binding.NewStringList()
-)
-
 type MainView struct{}
 
 func NewMainView() *MainView { return &MainView{} }
@@ -35,13 +31,12 @@ func (m *MainView) View(_ fyne.Window) fyne.CanvasObject {
 		},
 	)
 
-	push_sdk.RegisterGlobalLogHandler(func(s string) {
-		log.Append(s)
-		logPane.ScrollToBottom()
-	})
+	log.AddListener(binding.NewDataListener(
+		func() { logPane.ScrollToBottom() },
+	))
 
 	pushButton := widget.NewButton("Send Myself a Push", func() {
-		push_sdk.PushMyself("Hello", "World")
+		PushMyself("Hello", "World")
 	})
 
 	targetInfoButtons := container.NewGridWithColumns(
@@ -57,13 +52,15 @@ func (m *MainView) View(_ fyne.Window) fyne.CanvasObject {
 	subscribeButtons := container.NewGridWithColumns(
 		2,
 		widget.NewButton("Subscribe PPush", func() {
-			push_sdk.RegisterPersonalPushHandler(func(m *message.Message) {
+			push_sdk.RegisterPersonalPushHandler(func(m *message.Message) error {
 				fyne.CurrentApp().SendNotification(fyne.NewNotification(m.Title, m.Content))
+				return nil
 			})
 		}),
 		widget.NewButton("Subscribe BPush", func() {
-			push_sdk.RegisterBroadcastPushHandler(func(m *message.Message) {
+			push_sdk.RegisterBroadcastPushHandler(func(m *message.Message) error {
 				fyne.CurrentApp().SendNotification(fyne.NewNotification(m.Title, m.Content))
+				return nil
 			})
 		}),
 	)
@@ -71,10 +68,10 @@ func (m *MainView) View(_ fyne.Window) fyne.CanvasObject {
 	themeSelector := container.NewGridWithColumns(
 		2,
 		widget.NewButton("Dark", func() {
-			fyne.CurrentApp().Settings().SetTheme(theme.DarkTheme())
+			fyne.CurrentApp().Settings().SetTheme(theme.DarkTheme()) //lint:ignore SA1019 no reason
 		}),
 		widget.NewButton("Light", func() {
-			fyne.CurrentApp().Settings().SetTheme(theme.LightTheme())
+			fyne.CurrentApp().Settings().SetTheme(theme.LightTheme()) //lint:ignore SA1019 no reason
 		}),
 	)
 
@@ -90,7 +87,6 @@ func (m *MainView) View(_ fyne.Window) fyne.CanvasObject {
 			subscribeButtons,
 			themeSelector,
 		),
-
 		nil,
 		nil,
 		container.NewVScroll(logPane),

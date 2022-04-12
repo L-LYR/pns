@@ -12,6 +12,7 @@ type Event interface {
 
 var (
 	_ Event = (*model.PushEvent)(nil)
+	_ Event = (*model.LogEvent)(nil)
 )
 
 type EventQueue interface {

@@ -28,6 +28,7 @@ func MustRegisterRouters(ctx context.Context) *ghttp.Server {
 		group.Bind(
 			controller.Target,
 			controller.MQTTAuth,
+			controller.Log,
 		)
 	})
 	s.BindHandler("/metrics", func(r *ghttp.Request) {

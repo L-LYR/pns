@@ -28,7 +28,7 @@ func FindConfigByKey(ctx context.Context, pusher model.PusherType, appId int, co
 	record, err := AppPusherConfig.
 		Ctx(ctx).
 		Fields("config").
-		Where("pusher_id", pusher).
+		Where("pusherId", pusher).
 		Where("id", appId).
 		One()
 	if err != nil {

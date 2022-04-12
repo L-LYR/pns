@@ -7,7 +7,7 @@ import (
 type Target struct {
 	*Device `bson:"inline"`
 	*App    `bson:"inline"`
-	Tokens  *TokenSet `json:"tokens,omitempty" bson:"tokens"`
+	Tokens  *TokenSet `json:"tokens" bson:"tokens"`
 }
 
 func (l *Target) Equal(r *Target) bool {

@@ -7,7 +7,7 @@ var (
 )
 
 type _PushTaskIdGenerator interface {
-	Get() uint64 // should be thread-safe
+	Get() int // should be thread-safe
 }
 
 var (
@@ -16,13 +16,13 @@ var (
 
 type _SnowflakeIdGenerator struct{}
 
-func (s *_SnowflakeIdGenerator) Get() uint64 { return snowflake.ID() }
+func (s *_SnowflakeIdGenerator) Get() int { return int(snowflake.ID()) }
 
 func _MustNewSnowflakeIdGenerator() *_SnowflakeIdGenerator {
 	snowflake.SetMachineID(1)
 	return &_SnowflakeIdGenerator{}
 }
 
-func GeneratePushTaskId() uint64 {
+func GeneratePushTaskId() int {
 	return _DefaultPushTaskIdGenerator.Get()
 }

@@ -1,4 +1,4 @@
-package net
+package http
 
 import (
 	"bytes"
@@ -9,41 +9,41 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-type HTTPClient struct {
+type Client struct {
 	base string
 	c    *http.Client
 }
 
 type Payload map[string]interface{}
 
-func MustNewHTTPClient(base string) *HTTPClient {
-	return &HTTPClient{
+func MustNewHTTPClient(base string) *Client {
+	return &Client{
 		base: base,
 		c:    &http.Client{},
 	}
 }
 
-func (c *HTTPClient) POST(path string, payload Payload) (Payload, error) {
+func (c *Client) POST(path string, payload Payload) (Payload, error) {
 	return c.Do(c.base+path, http.MethodPost, payload)
 }
 
-func (c *HTTPClient) PATCH(path string, payload Payload) (Payload, error) {
+func (c *Client) PATCH(path string, payload Payload) (Payload, error) {
 	return c.Do(c.base+path, http.MethodPatch, payload)
 }
 
-func (c *HTTPClient) PUT(path string, payload Payload) (Payload, error) {
+func (c *Client) PUT(path string, payload Payload) (Payload, error) {
 	return c.Do(c.base+path, http.MethodPut, payload)
 }
 
-func (c *HTTPClient) GET(path string, payload Payload) (Payload, error) {
+func (c *Client) GET(path string, payload Payload) (Payload, error) {
 	return c.Do(c.base+path, http.MethodGet, payload)
 }
 
-func (c *HTTPClient) DELETE(path string, payload Payload) (Payload, error) {
+func (c *Client) DELETE(path string, payload Payload) (Payload, error) {
 	return c.Do(c.base+path, http.MethodDelete, payload)
 }
 
-func (c *HTTPClient) Do(URL string, Method string, payload Payload) (Payload, error) {
+func (c *Client) Do(URL string, Method string, payload Payload) (Payload, error) {
 	type responseBody struct {
 		ErrorCode    int     `json:"errorCode"`
 		ErrorMessage string  `json:"errorMessage"`

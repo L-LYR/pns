@@ -11,6 +11,7 @@ import (
 	"github.com/L-LYR/pns/internal/monitor"
 	"github.com/L-LYR/pns/internal/outbound"
 	"github.com/L-LYR/pns/internal/service"
+	log "github.com/L-LYR/pns/internal/service/push_log"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -28,6 +29,10 @@ func main() {
 	event_queue.EventQueueManager.MustRegister(
 		config.MustLoadConsumerConfig(ctx, "push_event_consumer"),
 		outbound.PushEventConsumer,
+	)
+	event_queue.EventQueueManager.MustRegister(
+		config.MustLoadConsumerConfig(ctx, "log_event_consumer"),
+		log.LogEventConsumer,
 	)
 	event_queue.EventQueueManager.MustStart()
 	/* servers */

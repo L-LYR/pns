@@ -3,10 +3,13 @@ package outbound
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/outbound/mqtt"
+	log "github.com/L-LYR/pns/internal/service/push_log"
 )
 
 type Pusher interface {
@@ -44,14 +47,23 @@ func (p *_PusherManager) MustRegisterPushers(ctx context.Context) {
 }
 
 func (p *_PusherManager) Handle(ctx context.Context, task *model.PushTask, pusher model.PusherType) error {
+	log.PutLogEvent(ctx, task.LogMeta(), time.Now().UnixMilli(), "task handle", "success")
+	var err error
 	switch pusher {
 	case model.MQTTPusher:
 		pusher, ok := p.MQTTPushers[task.Target.App.ID]
 		if !ok {
-			return errors.New("pusher not found")
+			err = errors.New("pusher not found")
+			break
 		}
-		return pusher.Handle(ctx, task)
+		err = pusher.Handle(ctx, task)
 	default:
 		panic("unreachable")
 	}
+	if err != nil {
+		log.PutLogEvent(ctx, task.LogMeta(), time.Now().UnixMilli(), "push", fmt.Sprintf("Error: %s, fail", err.Error()))
+		return err
+	}
+	log.PutLogEvent(ctx, task.LogMeta(), time.Now().UnixMilli(), "push", "success")
+	return nil
 }
