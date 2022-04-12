@@ -1,13 +1,16 @@
 .PHONY: all test update gen mobile fontend proto
 
 all: frontend
-	mkdir -p ./build && go mod tidy && go build -v -o ./build/pns ./cmd/mono_pns_backend/main.go
+	mkdir -p ./build && go mod tidy && go build -v -o ./build/pns ./cmd/mono_pns_backend/main.go && mv -r ./config ./build
 
 proto:
 	cd proto && bash generate.sh
 
-frontend:
-	GOARCH=wasm GOOS=js go build -v -o ./web/app.wasm ./cmd/pns_frontend/main.go
+settings:
+	bash ./scripts/frontend_config.sh ./web/settings.json ./internal/admin/frontend/settings/raw.go
+
+frontend: settings
+	GOARCH=wasm GOOS=js go build -v -o ./web/app.wasm ./cmd/pns_frontend/main.go && mv -r ./web ./build
 
 mobile:
 	cd ./cmd/pns_mobile && fyne package --os android --appID pns.mobile.demo --icon ../../mobile/img/logo.png --name PNS-Mobile && mv *.apk ../../build

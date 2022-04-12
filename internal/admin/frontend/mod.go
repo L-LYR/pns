@@ -25,6 +25,7 @@ var (
 )
 
 func MustRegisterFrontendRouters() {
+	settings.MustLoadConfig()
 	ui.BaseHPadding = settings.BaseHPadding
 	ui.BlockPadding = settings.BlockPadding
 	app.Route("/", components.NewHomePage())
