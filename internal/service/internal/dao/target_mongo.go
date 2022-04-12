@@ -16,18 +16,18 @@ type _TargetMongoDao struct {
 }
 
 var (
-	TargetMongoDao *_TargetMongoDao
+	TargetMongoDao _TargetMongoDao
 )
 
-func MustInitialize(ctx context.Context) {
+func MustInitTargetMongoDao(ctx context.Context) {
 	if dao, err := internal.NewTargetMongoDao(ctx); err != nil {
 		panic(err)
 	} else {
-		TargetMongoDao = &_TargetMongoDao{dao}
+		TargetMongoDao = _TargetMongoDao{dao}
 	}
 }
 
-func MustShutdown(ctx context.Context) {
+func MustShutdownTargetMongoDao(ctx context.Context) {
 	if err := TargetMongoDao.Shutdown(ctx); err != nil {
 		panic(err)
 	}

@@ -3,12 +3,13 @@ package controller
 import (
 	"context"
 	"strconv"
+	"time"
 
 	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
-	"github.com/L-LYR/pns/internal/config"
-	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
+	"github.com/L-LYR/pns/internal/outbound"
+	log "github.com/L-LYR/pns/internal/service/push_log"
 	"github.com/L-LYR/pns/internal/service/target"
 	"github.com/L-LYR/pns/internal/util"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -19,12 +20,6 @@ var Push = _PushAPI{}
 type _PushAPI struct{}
 
 func (api *_PushAPI) Push(ctx context.Context, req *v1.PushReq) (*v1.PushRes, error) {
-	pushTaskId := util.GeneratePushTaskId()
-
-	response := &v1.PushRes{
-		PushTaskId: strconv.FormatUint(pushTaskId, 10),
-	}
-
 	appName, ok := local_storage.GetAppNameByAppId(req.AppId)
 	if !ok {
 		return nil, util.FinalError(gcode.CodeInvalidParameter, nil, "Unknown app id")
@@ -39,7 +34,7 @@ func (api *_PushAPI) Push(ctx context.Context, req *v1.PushReq) (*v1.PushRes, er
 	}
 
 	task := &model.PushTask{
-		ID:     pushTaskId,
+		ID:     util.GeneratePushTaskId(),
 		Type:   model.PersonalPush,
 		Target: target,
 		Message: &model.Message{
@@ -48,16 +43,23 @@ func (api *_PushAPI) Push(ctx context.Context, req *v1.PushReq) (*v1.PushRes, er
 		},
 	}
 
-	if err := event_queue.EventQueueManager.Put(
-		config.PushEventTopic(),
-		&model.PushEvent{
-			Ctx:    ctx,
-			Pusher: model.MQTTPusher,
-			Task:   task,
-		},
+	meta := task.LogMeta()
+	if err := log.PutTaskRequestLog(ctx, meta); err != nil {
+		util.GLog.Warning(ctx, "Fail to add task list entry")
+	}
+
+	if err := log.PutLogEvent(
+		ctx, meta,
+		time.Now().UnixMilli(), "task creation", "success",
 	); err != nil {
+		util.GLog.Warning(ctx, "Fail to put task creation log")
+	}
+
+	if err := outbound.PutMQTTPushEvent(ctx, task); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")
 	}
 
-	return response, nil
+	return &v1.PushRes{
+		PushTaskId: strconv.FormatInt(int64(task.ID), 10),
+	}, nil
 }

@@ -80,7 +80,13 @@ func MustNewPusher(
 
 func (p *Client) TryConnect() error {
 	if !p.Client.IsConnected() {
-		return p.Client.Connect().Error()
+		if token := p.Client.Connect(); token.WaitTimeout(p.Options.ConnectTimeout) {
+			return nil
+		} else if err := token.Error(); err != nil {
+			return err
+		} else {
+			return errors.New("connection timeout")
+		}
 	}
 	return nil
 }
@@ -110,9 +116,9 @@ func (p *Client) Handle(ctx context.Context, task *model.PushTask) error {
 func _TopicOf(task *model.PushTask) string {
 	switch task.Type {
 	case model.PersonalPush:
-		return fmt.Sprintf("PPush/%d/%s/%d", task.App.ID, task.Device.ID, task.ID)
+		return fmt.Sprintf("%s/%d/%s/%d", task.Type.Name(), task.App.ID, task.Device.ID, task.ID)
 	case model.BroadcastPush:
-		return fmt.Sprintf("PPush/%d/%d", task.App.ID, task.ID)
+		return fmt.Sprintf("%s/%d/%d", task.Type.Name(), task.App.ID, task.ID)
 	default:
 		panic("unreachable")
 	}

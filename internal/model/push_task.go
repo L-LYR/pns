@@ -7,10 +7,29 @@ const (
 	BroadcastPush PushTaskType = 2
 )
 
+func (t PushTaskType) Name() string {
+	switch t {
+	case PersonalPush:
+		return "PPush"
+	case BroadcastPush:
+		return "BPush"
+	default:
+		panic("unreachable")
+	}
+}
+
 type PushTask struct {
-	ID   uint64 `json:"id"`
-	Type PushTaskType
+	ID   int          `json:"id"`
+	Type PushTaskType `json:"type"`
 	*Target
 	*Message
 	// TODO: Parameters
+}
+
+func (t *PushTask) LogMeta() *PushLogMeta {
+	return &PushLogMeta{
+		TaskId:   t.ID,
+		AppId:    t.App.ID,
+		DeviceId: t.Device.ID,
+	}
 }

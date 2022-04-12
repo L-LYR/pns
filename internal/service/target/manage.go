@@ -15,8 +15,8 @@ func Upsert(ctx context.Context, target *model.Target) error {
 	appName, _ := local_storage.GetAppNameByAppId(target.App.ID)
 	if result, _ := dao.TargetMongoDao.GetTarget( // ignore this error
 		ctx,
-		target.Device.ID,
 		appName,
+		target.Device.ID,
 	); result != nil {
 		if result.Equal(target) {
 			return nil

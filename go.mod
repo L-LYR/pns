@@ -5,6 +5,7 @@ go 1.17
 require (
 	fyne.io/fyne/v2 v2.1.4
 	github.com/eclipse/paho.mqtt.golang v1.3.5
+	github.com/go-redis/redis/v8 v8.11.4
 	github.com/godruoyi/go-snowflake v0.0.1
 	github.com/gogf/gf/v2 v2.0.3
 	github.com/google/uuid v1.3.0
@@ -28,7 +29,6 @@ require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-gl/gl v0.0.0-20210813123233-e4099ee2221f // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20211024062804-40e447a793be // indirect
-	github.com/go-redis/redis/v8 v8.11.4 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/godbus/dbus/v5 v5.0.4 // indirect

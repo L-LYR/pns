@@ -15,7 +15,7 @@ use pns;
 -- ) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
 create table if not exists `app_pusher_config`(
     `id` smallint unique not null comment 'app id',
-    `pusher_id` tinyint not null comment 'pusher id',
+    `pusherId` tinyint not null comment 'pusher id',
     `config` JSON not null comment 'app pusher config'
 ) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
 create table if not exists `app_config`(
@@ -28,13 +28,13 @@ values(
         12345,
         1,
         JSON_OBJECT(
-            "pusher_key",
+            "pusherKey",
             "test_app_name",
-            "pusher_secret",
+            "pusherSecret",
             "test_app_name",
-            "receiver_key",
+            "receiverKey",
             "test_app_name",
-            "receiver_secret",
+            "receiverSecret",
             "test_app_name"
         )
     );

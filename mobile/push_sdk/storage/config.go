@@ -5,7 +5,7 @@ import "time"
 // TODO: implement persistance
 
 type Config struct {
-	ClientID string
+	ClientId string
 
 	AppId  int
 	Key    string

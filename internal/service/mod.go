@@ -7,9 +7,10 @@ import (
 )
 
 func MustInitialize(ctx context.Context) {
-	dao.MustInitialize(ctx)
+	dao.MustInitTargetMongoDao(ctx)
+	dao.MustInitLogRedisDao(ctx)
 }
 
 func MustShutdown(ctx context.Context) {
-	dao.MustShutdown(ctx)
+	dao.MustShutdownTargetMongoDao(ctx)
 }
