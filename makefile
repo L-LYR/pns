@@ -13,7 +13,7 @@ frontend: settings
 	GOARCH=wasm GOOS=js go build -v -o ./web/app.wasm ./cmd/pns_frontend/main.go && mv -r ./web ./build
 
 mobile:
-	cd ./cmd/pns_mobile && fyne package --os android --appID pns.mobile.demo --icon ../../mobile/img/logo.png --name PNS-Mobile && mv *.apk ../../build
+	cd ./mobile/demo && make all
 
 test:
 	go test -v ./...
