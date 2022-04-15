@@ -5,10 +5,21 @@ type AppConfig struct {
 	Name string `json:"name"`
 }
 
+// members of config are all string type
+
 type MQTTConfig struct {
-	ID             int    `json:"id"`
-	PusherKey      string `json:"pusherKey"`
-	PusherSecret   string `json:"pusherSecret"`
-	ReceiverKey    string `json:"receiverKey"`
-	ReceiverSecret string `json:"receiverSecret"`
+	PusherKey      string `json:"pusherKey" copier:"must,nopanic"`
+	PusherSecret   string `json:"pusherSecret" copier:"must,nopanic"`
+	ReceiverKey    string `json:"receiverKey" copier:"must,nopanic"`
+	ReceiverSecret string `json:"receiverSecret" copier:"must,nopanic"`
+}
+
+type FCMConfig struct {
+	Key string `json:"key" copier:"must,nopanic"`
+}
+
+type APNsConfig struct {
+	AuthKey string `json:"authKey" copier:"must,nopanic"`
+	KeyID   string `json:"keyID" copier:"must,nopanic"`
+	TeamID  string `json:"teamID" copier:"must,nopanic"`
 }

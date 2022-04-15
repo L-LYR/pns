@@ -28,7 +28,7 @@ func MustRegisterRouters(ctx context.Context) *ghttp.Server {
 		group.Bind(
 			controller.Push,
 			controller.Task,
-			// controller.AppConfig,
+			controller.App,
 		)
 	})
 	// Register Open API docs
