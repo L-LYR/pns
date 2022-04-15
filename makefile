@@ -1,4 +1,4 @@
-.PHONY: all test update gen mobile fontend proto
+.PHONY: all test update gen fontend proto build_dir frontend_settings
 
 
 all: build_dir frontend
@@ -9,9 +9,6 @@ build_dir:
 
 frontend:
 	GOARCH=wasm GOOS=js go build -v -o ./web/app.wasm ./cmd/pns_frontend/main.go && cp -R ./web ./build/web
-
-mobile:
-	cd ./mobile/demo && make all
 
 test:
 	go test -v ./...
