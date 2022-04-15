@@ -21,3 +21,7 @@ func PutTaskLog(ctx context.Context, l *model.LogEntry) error {
 func GetTaskLogByID(ctx context.Context, id int) ([]*model.LogEntry, error) {
 	return dao.LogRedisDao.GetTaskLogByID(ctx, id)
 }
+
+func GetTaskStatusByID(ctx context.Context, id int) (*model.LogEntry, error) {
+	return dao.LogRedisDao.GetTaskLastLogByID(ctx, id)
+}

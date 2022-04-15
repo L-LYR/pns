@@ -28,5 +28,9 @@ func (api *_TaskAPI) Log(ctx context.Context, req *v1.TaskLogReq) (*v1.TaskLogRe
 }
 
 func (api *_TaskAPI) Status(ctx context.Context, req *v1.TaskStatusReq) (*v1.TaskStatusRes, error) {
-	return nil, nil
+	entry, err := log.GetTaskStatusByID(ctx, req.TaskId)
+	if err != nil {
+		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to get task log")
+	}
+	return &v1.TaskStatusRes{Status: entry.Readable()}, nil
 }

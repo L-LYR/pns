@@ -17,7 +17,7 @@ var (
 )
 
 func MustLoadConfig() {
-	err := jsoniter.UnmarshalFromString(_RawGlobalSettings, GlobalSettings)
+	err := jsoniter.UnmarshalFromString(_RawSettings, GlobalSettings)
 	if err != nil {
 		panic(err)
 	}

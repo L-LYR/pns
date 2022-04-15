@@ -4,7 +4,7 @@
 
 package settings
 
-var _RawGlobalSettings = `{
+var _RawSettings = `{
   "embedPages": {
     "inbound": {
       "url": "http://localhost:10086/swagger"

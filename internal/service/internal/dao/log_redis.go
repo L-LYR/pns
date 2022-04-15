@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"time"
 
@@ -142,4 +143,24 @@ func (dao *_LogRedisDao) GetTaskLogByID(
 		}
 	}
 	return log, nil
+}
+
+func (dao *_LogRedisDao) GetTaskLastLogByID(
+	ctx context.Context,
+	id int,
+) (*model.LogEntry, error) {
+	client := dao.LogRedisDao.Client(ctx)
+	key := strconv.FormatInt(int64(id), 10)
+	rawLog, err := client.ZRevRange(ctx, key, 0, 0).Result()
+	if err != nil {
+		return nil, err
+	}
+	if len(rawLog) == 0 {
+		return nil, errors.New("not found")
+	}
+	entry := &model.LogEntry{}
+	if err := entry.Decode(rawLog[0]); err != nil {
+		return model.DummyEntry, err
+	}
+	return entry, nil
 }
