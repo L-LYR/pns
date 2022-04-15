@@ -37,6 +37,9 @@ func MustNewConfigFromString(s string) *Config {
 	if err := jsoniter.UnmarshalFromString(s, c); err != nil {
 		panic(err)
 	}
+	c.DeviceId = util.GenerateDeviceId()
+	c.ClientId = util.GenerateClientId("pns-target", c.DeviceId, c.App.ID)
+	c.Token = make(map[string]string)
 	return c
 }
 

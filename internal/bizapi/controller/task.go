@@ -32,5 +32,8 @@ func (api *_TaskAPI) Status(ctx context.Context, req *v1.TaskStatusReq) (*v1.Tas
 	if err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to get task log")
 	}
+	if entry == nil {
+		return nil, util.FinalError(gcode.CodeNotFound, err, "Task not found")
+	}
 	return &v1.TaskStatusRes{Status: entry.Readable()}, nil
 }

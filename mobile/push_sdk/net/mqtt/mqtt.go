@@ -137,6 +137,10 @@ func MustNewMQTTClient(options *Options) *Client {
 
 	p.c = paho.NewClient(options.ClientOptions)
 
+	if err := p.TryConnect(); err != nil {
+		p.options.logHandler("Error: %s", err.Error())
+	}
+
 	return p
 }
 
@@ -147,11 +151,9 @@ func (c *Client) SetLogHandler(fn LogHandler) {
 func (c *Client) TryConnect() error {
 	if !c.c.IsConnected() {
 		if token := c.c.Connect(); token.WaitTimeout(c.options.ConnectTimeout) {
-			return nil
+			return errors.New("connection timeout")
 		} else if err := token.Error(); err != nil {
 			return err
-		} else {
-			return errors.New("connection timeout")
 		}
 	}
 	return nil
@@ -196,7 +198,7 @@ func (c *Client) subscribe(topic string, fn paho.MessageHandler) {
 		return
 	}
 	c.options.topicSet.Handlers[topic] = fn
-	if token := c.c.Subscribe(topic, AtMostOnce, fn); !token.WaitTimeout(c.options.ConnectTimeout) {
+	if token := c.c.Subscribe(topic, AtMostOnce, fn); token.WaitTimeout(c.options.ConnectTimeout) {
 		c.options.logHandler("Error: subscribe timeout")
 		return
 	} else if err := token.Error(); err != nil {

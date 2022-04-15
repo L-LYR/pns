@@ -2,7 +2,6 @@ package dao
 
 import (
 	"context"
-	"errors"
 	"strconv"
 	"time"
 
@@ -156,7 +155,7 @@ func (dao *_LogRedisDao) GetTaskLastLogByID(
 		return nil, err
 	}
 	if len(rawLog) == 0 {
-		return nil, errors.New("not found")
+		return nil, nil
 	}
 	entry := &model.LogEntry{}
 	if err := entry.Decode(rawLog[0]); err != nil {

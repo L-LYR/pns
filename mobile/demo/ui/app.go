@@ -39,7 +39,7 @@ func PushMyself(title string, content string) {
 }
 
 func Run() {
-	a := app.New()
+	a := app.NewWithID("PNS")
 	a.SetIcon(ResourceLogoPng)
 	a.Settings().SetTheme(theme.LightTheme())
 	// Init Push SDK
