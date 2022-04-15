@@ -30,8 +30,8 @@ type TopicSet struct {
 func NewTopicSet(cfg *storage.Config) *TopicSet {
 	ts := &TopicSet{Handlers: make(map[string]paho.MessageHandler)}
 	if cfg != nil {
-		ts.PersonalTopic = fmt.Sprintf("PPush/%d/%s/+", cfg.AppId, cfg.DeviceId)
-		ts.BroadcastTopic = fmt.Sprintf("BPush/%d/+", cfg.AppId)
+		ts.PersonalTopic = fmt.Sprintf("PPush/%d/%s/+", cfg.App.ID, cfg.DeviceId)
+		ts.BroadcastTopic = fmt.Sprintf("BPush/%d/+", cfg.App.ID)
 	}
 	return ts
 }
@@ -82,8 +82,8 @@ func NewOptions() *Options {
 func (o *Options) SetWithCfg(cfg *storage.Config) {
 	o.AddBroker(cfg.GetAddress())
 	o.SetClientID(cfg.ClientId)
-	o.SetUsername(cfg.Key)
-	o.SetPassword(cfg.Secret)
+	o.SetUsername(cfg.App.Key)
+	o.SetPassword(cfg.App.Secret)
 	o.SetConnectTimeout(cfg.GetConnectTimeout())
 }
 

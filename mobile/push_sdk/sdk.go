@@ -2,15 +2,11 @@ package push_sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/L-LYR/pns/mobile/push_sdk/net/http"
 	"github.com/L-LYR/pns/mobile/push_sdk/net/mqtt"
 	"github.com/L-LYR/pns/mobile/push_sdk/storage"
-	"github.com/L-LYR/pns/mobile/push_sdk/util"
-)
-
-const (
-	PUSH_SDK_VERSION = "0.0.1"
 )
 
 var (
@@ -30,7 +26,11 @@ type _PushSDK struct {
 
 func MustInitialize(cfg *storage.Config, fn LogHandler) {
 	ctx := context.Background()
-	gHTTPClient := http.MustNewHTTPClient("http://192.168.137.1:10086")
+	gHTTPClient := http.MustNewHTTPClient(cfg.Sdk.Inbound.Base)
+
+	if fn == nil {
+		fn = DefaultLogHandler()
+	}
 
 	PushSDK = &_PushSDK{
 		ctx:         ctx,
@@ -53,21 +53,9 @@ func MustInitialize(cfg *storage.Config, fn LogHandler) {
 	PushSDK.gMQTTClient = mqtt.MustNewMQTTClient(options)
 }
 
-func DefaultConfig() *storage.Config {
-	deviceId := util.GenerateDeviceId()
-	appId := 12345
-	appName := "test_app_name"
-	return &storage.Config{
-		ClientId:       util.GenerateClientId("pns-target", deviceId, appId),
-		AppId:          appId,
-		Key:            appName,
-		Secret:         appName,
-		DeviceId:       deviceId,
-		Broker:         "192.168.137.1",
-		Port:           "18830",
-		RetryInterval:  1000,
-		ConnectTimeout: 60,
-		Token:          make(map[string]string),
+func DefaultLogHandler() LogHandler {
+	return func(s string, v ...interface{}) {
+		fmt.Printf(s, v...)
 	}
 }
 
@@ -89,9 +77,9 @@ func (sdk *_PushSDK) UpdateTargetInfo() {
 		"brand":              "chrome",
 		"model":              "chrome",
 		"tzName":             "Asia/Shanghai",
-		"appId":              PushSDK.cfg.AppId,
-		"appVersion":         "3.3.3",
-		"pushSDKVersion":     PUSH_SDK_VERSION,
+		"appId":              PushSDK.cfg.App.ID,
+		"appVersion":         PushSDK.cfg.App.Version,
+		"pushSDKVersion":     PushSDK.cfg.Sdk.Version,
 		"language":           "cn",
 		"inAppPushStatus":    1,
 		"systemPushStatus":   1,
@@ -108,7 +96,7 @@ func (sdk *_PushSDK) UpdateTargetInfo() {
 func (sdk *_PushSDK) GetToken() {
 	payload, err := sdk.gHTTPClient.GET("/token", http.Payload{
 		"deviceId": sdk.cfg.DeviceId,
-		"appId":    sdk.cfg.AppId,
+		"appId":    sdk.cfg.App.ID,
 	})
 	if err != nil {
 		sdk.gLogHandler("Error: %s", err.Error())

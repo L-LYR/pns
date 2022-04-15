@@ -6,10 +6,10 @@ all: frontend
 proto:
 	cd proto && bash generate.sh
 
-settings:
-	bash ./scripts/frontend_config.sh ./web/settings.json ./internal/admin/frontend/settings/raw.go
+frontend_settings:
+	bash ./scripts/generate_settings.sh ./web/settings.json ./internal/admin/frontend/settings/raw.go settings
 
-frontend: settings
+frontend: frontend_settings
 	GOARCH=wasm GOOS=js go build -v -o ./web/app.wasm ./cmd/pns_frontend/main.go && mv -r ./web ./build
 
 mobile:

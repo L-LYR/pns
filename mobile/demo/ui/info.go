@@ -20,7 +20,7 @@ func (i *InfoView) View(w fyne.Window) fyne.CanvasObject {
 		"Device ID:\n" +
 			"  " + push_sdk.GetConfig().DeviceId + "\n" +
 			"App ID:\n" +
-			"  " + strconv.FormatInt(int64(push_sdk.GetConfig().AppId), 10) + "\n",
+			"  " + strconv.FormatInt(int64(push_sdk.GetConfig().GetAppId()), 10) + "\n",
 	)
 	return container.NewBorder(
 		nil, nil, nil, nil,

@@ -13,7 +13,7 @@ import (
 var (
 	log = binding.NewStringList()
 
-	logHandler = func(s string, v ...interface{}) {
+	LogHandler = func(s string, v ...interface{}) {
 		log.Append(fmt.Sprintf(s, v...))
 	}
 
@@ -22,25 +22,23 @@ var (
 
 func PushMyself(title string, content string) {
 	payload, err := bizHTTPClient.POST("/push", http.Payload{
-		"deviceId": push_sdk.GetConfig().DeviceId,
-		"appId":    push_sdk.GetConfig().AppId,
+		"deviceId": push_sdk.GetConfig().GetDeviceId(),
+		"appId":    push_sdk.GetConfig().GetAppId(),
 		"title":    title,
 		"content":  content,
 	})
 	if err != nil {
-		logHandler("Error: %s", err.Error())
+		LogHandler("Error: %s", err.Error())
 	} else {
 		if s, ok := payload["pushTaskId"]; ok {
-			logHandler("Info: Task ID: %+v", s)
+			LogHandler("Info: Task ID: %+v", s)
 		} else {
-			logHandler("Error: no push task id")
+			LogHandler("Error: no push task id")
 		}
 	}
 }
 
 func Run() {
-	push_sdk.MustInitialize(push_sdk.DefaultConfig(), logHandler)
-
 	a := app.New()
 	a.SetIcon(ResourceLogoPng)
 	a.Settings().SetTheme(theme.LightTheme())
