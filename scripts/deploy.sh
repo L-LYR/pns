@@ -5,12 +5,12 @@
 
 # initialize basic global variables
 root_path=$(realpath "$0" | xargs dirname | xargs dirname)
-if [ -z "${DEBUG}" ]; then
+if [ -z "$DEBUG" ]; then
     deploy_path="$root_path/.deploy"
-    pns_dockerfile="${deploy_path}/dockerfile"
+    pns_dockerfile="$deploy_path/dockerfile"
 else
     deploy_path="$root_path/.test_deploy"
-    pns_dockerfile="${deploy_path}/debug.dockerfile"
+    pns_dockerfile="$deploy_path/debug.dockerfile"
 fi
 deploy_config_path="$root_path/deploy"
 build_path="$root_path/build"
@@ -107,7 +107,7 @@ start() {
 }
 
 update() {
-    if [ -z "${DEBUG}" ]; then
+    if [ -z "$DEBUG" ]; then
         exit
     fi
 

@@ -26,7 +26,6 @@ func GetAppConfigByAppId(id int) *model.AppConfig {
 func GetPusherAuthByAppId(appId int, pusherId model.PusherType) interface{} {
 	if appId == 12345 && pusherId == model.MQTTPusher {
 		return &model.MQTTConfig{
-			ID:           12345,
 			PusherKey:    "test_app_name",
 			PusherSecret: "test_app_name",
 		}

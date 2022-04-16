@@ -34,6 +34,10 @@ body {
 
 .goapp-app-info,
 .background {
+  background: linear-gradient(#2e343a, #1c1d1f);
+}
+
+.iframe-background {
   background: #e9ecef;
 }
 
@@ -62,21 +66,21 @@ h6 {
 .app-title {
   font-size: 30px;
   letter-spacing: 6px;
-  color: black;
+  color: white;
 }
 
 .h1,
 h1 {
   font-size: 26px;
   letter-spacing: 4px;
-  color: black;
+  color: white;
 }
 
 h2,
 .h2 {
   font-size: 18px;
   letter-spacing: 2px;
-  color: black;
+  color: white;
 }
 
 .header-separator,
@@ -85,14 +89,14 @@ h2,
 .h2 {
   padding-bottom: 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  color: black;
+  color: white;
 }
 
 h3,
 .h3 {
   font-size: 16px;
   letter-spacing: 1px;
-  color: black;
+  color: white;
 }
 
 p,
@@ -181,7 +185,7 @@ input[type="password"]:focus {
 }
 
 strong {
-  color: black;
+  color: white;
   font-weight: 400;
 }
 
@@ -307,7 +311,7 @@ strong {
 }
 
 .focus {
-  color: black !important;
+  color: white !important;
 }
 
 .error {

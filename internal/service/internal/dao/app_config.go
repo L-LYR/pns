@@ -5,7 +5,10 @@
 package dao
 
 import (
+	"context"
+
 	"github.com/L-LYR/pns/internal/service/internal/dao/internal"
+	"github.com/L-LYR/pns/internal/service/internal/do"
 )
 
 // _AppConfigDao is the data access object for table app_config.
@@ -22,3 +25,13 @@ var (
 )
 
 // Fill with you ideas below.
+
+func CreateApp(ctx context.Context, appName string, appId int) error {
+	_, err := AppConfig.Ctx(ctx).Insert(
+		do.AppConfig{
+			Id:   appId,
+			Name: appName,
+		},
+	)
+	return err
+}

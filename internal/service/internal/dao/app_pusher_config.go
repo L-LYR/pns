@@ -9,6 +9,9 @@ import (
 
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao/internal"
+	"github.com/L-LYR/pns/internal/service/internal/do"
+	"github.com/gogf/gf/v2/container/gvar"
+	"github.com/gogf/gf/v2/encoding/gjson"
 )
 
 // _AppPusherConfigDao is the data access object for table app_pusher_config.
@@ -24,7 +27,7 @@ var (
 	}
 )
 
-func FindConfigByKey(ctx context.Context, pusher model.PusherType, appId int, configPointer interface{}) error {
+func FindConfigByKey(ctx context.Context, appId int, pusher model.PusherType) (*gvar.Var, error) {
 	record, err := AppPusherConfig.
 		Ctx(ctx).
 		Fields("config").
@@ -32,7 +35,18 @@ func FindConfigByKey(ctx context.Context, pusher model.PusherType, appId int, co
 		Where("id", appId).
 		One()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return record.GMap().GetVar("config").Struct(configPointer)
+	return record.GMap().GetVar("config"), nil
+}
+
+func CreateConfig(ctx context.Context, appId int, pusher model.PusherType, configPointer interface{}) error {
+	_, err := AppPusherConfig.Ctx(ctx).Insert(
+		do.AppPusherConfig{
+			Id:       appId,
+			PusherId: pusher,
+			Config:   gjson.NewWithTag(configPointer, "json", true),
+		},
+	)
+	return err
 }

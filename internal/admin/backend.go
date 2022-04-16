@@ -8,6 +8,10 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
+/*
+	Only this file can depend on goframe.
+*/
+
 const (
 	_ServerName       = "admin"
 	_ServerConfigName = "server.admin"

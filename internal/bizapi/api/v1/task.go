@@ -19,5 +19,5 @@ type TaskStatusReq struct {
 }
 
 type TaskStatusRes struct {
-	//TODO: design status storage
+	Status string
 }

@@ -1,0 +1,13 @@
+{
+  "embedPages": {
+    "inbound": {
+      "url": "http://localhost:10086/swagger"
+    },
+    "business": {
+      "url": "http://localhost:10087/swagger"
+    },
+    "monitor": {
+      "url": "http://localhost:3000"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-package pusher_config
+package app
 
 import (
 	"context"
@@ -15,7 +15,10 @@ func Authorization(ctx context.Context, key string, secret string, clientId stri
 		return false, "unknown client"
 	}
 	config := &model.MQTTConfig{}
-	if err := dao.FindConfigByKey(ctx, model.MQTTPusher, appId, config); err != nil {
+	if v, err := dao.FindConfigByKey(ctx, appId, model.MQTTPusher); err != nil {
+		util.GLog.Errorf(ctx, "%+v", err)
+		return false, "internal error"
+	} else if err := v.Struct(config); err != nil {
 		util.GLog.Errorf(ctx, "%+v", err)
 		return false, "internal error"
 	}
@@ -25,4 +28,20 @@ func Authorization(ctx context.Context, key string, secret string, clientId stri
 		return true, ""
 	}
 	return false, "unauthorized"
+}
+
+func Create(ctx context.Context, appName string, appId int) error {
+	return dao.CreateApp(ctx, appName, appId)
+}
+
+func CreateConfig(ctx context.Context, appId int, pusher model.PusherType, configPointer interface{}) error {
+	return dao.CreateConfig(ctx, appId, pusher, configPointer)
+}
+
+func QueryConfig(ctx context.Context, appId int, pusher model.PusherType) (map[string]string, error) {
+	v, err := dao.FindConfigByKey(ctx, appId, pusher)
+	if err != nil {
+		return nil, err
+	}
+	return v.MapStrStr(), nil
 }

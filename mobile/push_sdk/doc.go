@@ -1,4 +1,4 @@
-package mobile
+package push_sdk
 
 /*
 	This package is only used in mobile client.

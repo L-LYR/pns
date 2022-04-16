@@ -3,8 +3,8 @@ package controller
 import (
 	"context"
 
-	"github.com/L-LYR/pns/internal/inbound/api/v1"
-	"github.com/L-LYR/pns/internal/service/pusher_config"
+	v1 "github.com/L-LYR/pns/internal/inbound/api/v1"
+	"github.com/L-LYR/pns/internal/service/app"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -16,7 +16,7 @@ func (api *_MQTTAuthAPI) Auth(
 	ctx context.Context,
 	req *v1.MQTTAuthReq,
 ) (*v1.MQTTAuthRes, error) {
-	ok, reason := pusher_config.Authorization(ctx, req.Username, req.Password, req.ClientId)
+	ok, reason := app.Authorization(ctx, req.Username, req.Password, req.ClientId)
 	res := &v1.MQTTAuthRes{CommonAuthRes: v1.CommonAuthRes{Ok: ok, Error: reason}}
 	if err := g.RequestFromCtx(ctx).Response.WriteJson(res); err != nil {
 		return nil, err

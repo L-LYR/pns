@@ -17,3 +17,7 @@ func RegisterPersonalPushHandler(fn MessageHandler) {
 func RegisterBroadcastPushHandler(fn MessageHandler) {
 	PushSDK.RegisterBroadcastPushHandler(fn)
 }
+
+func MustNewConfigFromString(s string) *storage.Config {
+	return storage.MustNewConfigFromString(s)
+}
