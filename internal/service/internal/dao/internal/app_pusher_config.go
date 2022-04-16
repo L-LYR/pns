@@ -19,15 +19,15 @@ type AppPusherConfigDao struct {
 
 // AppPusherConfigColumns defines and stores column names for table app_pusher_config.
 type AppPusherConfigColumns struct {
-	Id       string // app id
+	AppId    string // app id
 	PusherId string // pusher id
 	Config   string // app pusher config
 }
 
 //  appPusherConfigColumns holds the columns for table app_pusher_config.
 var appPusherConfigColumns = AppPusherConfigColumns{
-	Id:       "id",
-	PusherId: "pusher_id",
+	AppId:    "appId",
+	PusherId: "pusherId",
 	Config:   "config",
 }
 

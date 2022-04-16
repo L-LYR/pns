@@ -29,27 +29,25 @@ func (api *_AppAPI) CreateConfig(ctx context.Context, req *v1.CreateAppConfigReq
 		return nil, util.FinalError(gcode.CodeValidationFailed, err, "Fail to parse pusher type")
 	}
 
-	var config interface{}
+	delete(req.Config, "appId") // for fear that if the request config has a field named appId
+
+	config := model.NewEmptyPusherConfig(req.AppId, t)
 	switch t {
 	case model.FCMPusher:
-		FCMConfig := &model.FCMConfig{}
-		if err := copier.Copy(FCMConfig, req.Config); err != nil {
+		if err := copier.Copy(config, req.Config); err != nil {
 			return nil, util.FinalError(gcode.CodeValidationFailed, err, "Fail to parse config")
 		}
-		config = FCMConfig
 	case model.APNsPusher:
-		APNsConfig := &model.APNsConfig{}
-		if err := copier.Copy(APNsConfig, req.Config); err != nil {
+		if err := copier.Copy(config, req.Config); err != nil {
 			return nil, util.FinalError(gcode.CodeValidationFailed, err, "Fail to parse config")
 		}
-		config = APNsConfig
 	case model.MQTTPusher:
 		return nil, util.FinalError(gcode.CodeInvalidParameter, nil, "Wrong request")
 	default:
 		panic("unreachable")
 	}
 
-	if err := app.CreateConfig(ctx, req.AppId, t, config); err != nil {
+	if err := app.CreateConfig(ctx, config); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to insert new app config")
 	}
 	return &v1.CreateAppConfigRes{}, nil
@@ -57,11 +55,15 @@ func (api *_AppAPI) CreateConfig(ctx context.Context, req *v1.CreateAppConfigReq
 
 func (api *_AppAPI) OpenMQTT(ctx context.Context, req *v1.OpenMQTTReq) (*v1.OpenMQTTRes, error) {
 	//TODO: check app created
-	config := _GenerateRandMQTTConfig()
-	if err := app.CreateConfig(ctx, req.AppId, model.MQTTPusher, config); err != nil {
+	config := _GenerateRandMQTTConfig(req.AppId)
+	res := &v1.OpenMQTTRes{MQTTConfig: &v1.MQTTConfig{}}
+	if err := copier.Copy(res.MQTTConfig, config); err != nil {
+		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to combine response")
+	}
+	if err := app.CreateConfig(ctx, config); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to insert new mqtt config")
 	}
-	return &v1.OpenMQTTRes{MQTTConfig: config}, nil
+	return res, nil
 }
 
 // TODO: this function will return the whole config content,
@@ -77,9 +79,10 @@ func (api *_AppAPI) QueryConfig(ctx context.Context, req *v1.QueryAppConfigReq) 
 	return &v1.QueryAppConfigRes{Config: config}, nil
 }
 
-func _GenerateRandMQTTConfig() *v1.MQTTConfig {
-	return &v1.MQTTConfig{
+func _GenerateRandMQTTConfig(appId int) *model.MQTTConfig {
+	return &model.MQTTConfig{
 		// TODO: make the length of key and secret configurable
+		ID:             appId,
 		PusherKey:      util.RandString(32),
 		PusherSecret:   util.RandString(32),
 		ReceiverKey:    util.RandString(32),

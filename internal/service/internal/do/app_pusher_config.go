@@ -12,7 +12,7 @@ import (
 // AppPusherConfig is the golang structure of table app_pusher_config for DAO operations like Where/Data.
 type AppPusherConfig struct {
 	g.Meta   `orm:"table:app_pusher_config, do:true"`
-	Id       interface{} // app id
+	AppId    interface{} // app id
 	PusherId interface{} // pusher id
 	Config   *gjson.Json // app pusher config
 }

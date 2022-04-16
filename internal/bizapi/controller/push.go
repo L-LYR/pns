@@ -6,9 +6,9 @@ import (
 	"time"
 
 	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
-	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/outbound"
+	"github.com/L-LYR/pns/internal/service/cache"
 	log "github.com/L-LYR/pns/internal/service/push_log"
 	"github.com/L-LYR/pns/internal/service/target"
 	"github.com/L-LYR/pns/internal/util"
@@ -20,7 +20,7 @@ var Push = _PushAPI{}
 type _PushAPI struct{}
 
 func (api *_PushAPI) Push(ctx context.Context, req *v1.PushReq) (*v1.PushRes, error) {
-	appName, ok := local_storage.GetAppNameByAppId(req.AppId)
+	appName, ok := cache.Config.GetAppNameByAppId(req.AppId)
 	if !ok {
 		return nil, util.FinalError(gcode.CodeInvalidParameter, nil, "Unknown app id")
 	}

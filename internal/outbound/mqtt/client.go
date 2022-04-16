@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/L-LYR/pns/internal/config"
-	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/util"
 	"github.com/L-LYR/pns/proto/pkg/message"
@@ -66,14 +65,14 @@ func MustNewClient(
 func MustNewPusher(
 	ctx context.Context,
 	appId int,
+	pusherConfig *model.MQTTConfig,
 	brokerConfig *config.BrokerConfig,
 ) *Client {
-	auth := local_storage.GetPusherAuthByAppId(appId, model.MQTTPusher).(*model.MQTTConfig)
 	return MustNewClient(
 		ctx,
 		util.GeneratePusherClientID(appId),
-		auth.PusherKey,
-		auth.PusherSecret,
+		pusherConfig.PusherKey,
+		pusherConfig.PusherSecret,
 		brokerConfig,
 	)
 }

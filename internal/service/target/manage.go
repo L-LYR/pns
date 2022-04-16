@@ -4,15 +4,15 @@ import (
 	"context"
 	"time"
 
-	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
+	"github.com/L-LYR/pns/internal/service/cache"
 	"github.com/L-LYR/pns/internal/service/internal/dao"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func Upsert(ctx context.Context, target *model.Target) error {
 	now := time.Now()
-	appName, _ := local_storage.GetAppNameByAppId(target.App.ID)
+	appName, _ := cache.Config.GetAppNameByAppId(target.App.ID)
 	if result, _ := dao.TargetMongoDao.GetTarget( // ignore this error
 		ctx,
 		appName,

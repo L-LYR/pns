@@ -9,7 +9,9 @@ import (
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/outbound/mqtt"
+	"github.com/L-LYR/pns/internal/service/cache"
 	log "github.com/L-LYR/pns/internal/service/push_log"
+	"github.com/L-LYR/pns/internal/util"
 )
 
 type Pusher interface {
@@ -17,19 +19,6 @@ type Pusher interface {
 }
 
 var _ Pusher = (*mqtt.Client)(nil)
-
-func MustNewPusher(
-	ctx context.Context,
-	appId int,
-	t model.PusherType,
-) Pusher {
-	switch t {
-	case model.MQTTPusher:
-		return mqtt.MustNewPusher(ctx, appId, config.MustLoadMQTTBrokerConfig(ctx, "mqtt"))
-	default:
-		panic("unreachable")
-	}
-}
 
 type _PusherManager struct {
 	MQTTPushers map[int]Pusher
@@ -42,8 +31,21 @@ var (
 )
 
 func (p *_PusherManager) MustRegisterPushers(ctx context.Context) {
-	appId := 12345
-	p.MQTTPushers[appId] = MustNewPusher(ctx, appId, model.MQTTPusher)
+	brokerConfig := config.MustLoadMQTTBrokerConfig(ctx, "mqtt")
+	cache.Config.RangePusherConfig(
+		model.MQTTPusher,
+		func(appId int, pusherConfig model.PusherConfig) error {
+			p.MQTTPushers[appId] = mqtt.MustNewPusher(
+				ctx,
+				appId,
+				pusherConfig.(*model.MQTTConfig),
+				brokerConfig,
+			)
+			util.GLog.Infof(ctx, "Success to initialize mqtt pusher of app %d", appId)
+			return nil
+		},
+	)
+	util.GLog.Infof(ctx, "Success to initialize %d mqtt pusher", len(p.MQTTPushers))
 }
 
 func (p *_PusherManager) Handle(ctx context.Context, task *model.PushTask, pusher model.PusherType) error {

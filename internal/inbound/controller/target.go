@@ -5,8 +5,8 @@ import (
 	"time"
 
 	v1 "github.com/L-LYR/pns/internal/inbound/api/v1"
-	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
+	"github.com/L-LYR/pns/internal/service/cache"
 	"github.com/L-LYR/pns/internal/service/target"
 	"github.com/L-LYR/pns/internal/util"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -55,7 +55,7 @@ func (api *_TargetAPI) QueryTarget(
 	ctx context.Context,
 	req *v1.QueryTargetReq,
 ) (*v1.QueryTargetRes, error) {
-	appName, ok := local_storage.GetAppNameByAppId(req.AppId)
+	appName, ok := cache.Config.GetAppNameByAppId(req.AppId)
 	if !ok {
 		return nil, util.FinalError(gcode.CodeInvalidParameter, nil, "Unknown app id")
 	}
@@ -79,7 +79,7 @@ func (api *_TargetAPI) GetToken(
 	ctx context.Context,
 	req *v1.GetTokenReq,
 ) (*v1.GetTokenRes, error) {
-	appName, ok := local_storage.GetAppNameByAppId(req.AppId)
+	appName, ok := cache.Config.GetAppNameByAppId(req.AppId)
 	if !ok {
 		return nil, util.FinalError(gcode.CodeInvalidParameter, nil, "Unknown app id")
 	}

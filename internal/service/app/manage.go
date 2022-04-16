@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/L-LYR/pns/internal/model"
+	"github.com/L-LYR/pns/internal/service/cache"
 	"github.com/L-LYR/pns/internal/service/internal/dao"
 	"github.com/L-LYR/pns/internal/util"
 )
@@ -31,11 +32,22 @@ func Authorization(ctx context.Context, key string, secret string, clientId stri
 }
 
 func Create(ctx context.Context, appName string, appId int) error {
-	return dao.CreateApp(ctx, appName, appId)
+	if err := dao.CreateApp(ctx, appName, appId); err != nil {
+		return err
+	}
+	cache.Config.AddAppConfig(&model.AppConfig{
+		ID:   appId,
+		Name: appName,
+	})
+	return nil
 }
 
-func CreateConfig(ctx context.Context, appId int, pusher model.PusherType, configPointer interface{}) error {
-	return dao.CreateConfig(ctx, appId, pusher, configPointer)
+func CreateConfig(ctx context.Context, config model.PusherConfig) error {
+	if err := dao.CreateConfig(ctx, config); err != nil {
+		return err
+	}
+	cache.Config.AddPusherConfig(config)
+	return nil
 }
 
 func QueryConfig(ctx context.Context, appId int, pusher model.PusherType) (map[string]string, error) {
