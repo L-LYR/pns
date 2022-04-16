@@ -1,6 +1,8 @@
 package event_queue
 
 import (
+	"context"
+
 	"github.com/L-LYR/pns/internal/config"
 )
 
@@ -23,7 +25,7 @@ func (m *_EventQueueManager) Put(topic string, event Event) error {
 	return m.queue.Put(topic, event)
 }
 
-func (m *_EventQueueManager) MustStart() {
+func (m *_EventQueueManager) MustStart(ctx context.Context) {
 	m.queue = _MustNewEventQueue(m.topics...)
 	m.queue.Start()
 	for _, w := range m.workers {
@@ -37,7 +39,7 @@ func (m *_EventQueueManager) MustStart() {
 	}
 }
 
-func (m *_EventQueueManager) MustShutdown() {
+func (m *_EventQueueManager) MustShutdown(ctx context.Context) {
 	m.queue.Shutdown()
 	for _, w := range m.workers {
 		w.Shutdown()

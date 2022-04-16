@@ -25,16 +25,14 @@ func (api *_LogAPI) Log(ctx context.Context, req *v1.LogReq) (*v1.LogRes, error)
 		return nil, util.FinalError(gcode.CodeValidationFailed, err, "Fail to parse timestamp")
 	}
 
-	if err := log.PutLogEvent(
+	log.PutLogEvent(
 		ctx, &model.PushLogMeta{
 			TaskId:   int(taskId),
 			AppId:    req.AppId,
 			DeviceId: req.DeviceId,
 		},
 		ts, req.Where, req.Hint,
-	); err != nil {
-		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send log event")
-	}
+	)
 
 	return &v1.LogRes{}, nil
 }

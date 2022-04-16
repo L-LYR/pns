@@ -18,7 +18,7 @@ type UpdateTargetReq struct {
 	PrivacyPushStatus  int            `json:"privacyPushStatus"`
 	BusinessPushStatus map[string]int `json:"businessPushStatus"`
 
-	AppId          int    `json:"appId" v:"required#app id is required" copier:"AppId"`
+	AppId          int    `json:"appId" v:"required|app-exist#app id is required" copier:"AppId"`
 	AppVersion     string `json:"appVersion" v:"required# app version is required"`
 	PushSdkVersion string `json:"pushSdkVersion" v:"required#push sdk version is required"`
 	Language       string `json:"language" v:"required#language is required"`
@@ -29,7 +29,7 @@ type UpdateTargetRes struct{}
 type QueryTargetReq struct {
 	g.Meta   `path:"/target" method:"get"`
 	DeviceId string `json:"deviceId" v:"required#device id is required"`
-	AppId    int    `json:"appId" v:"required#app id is required"`
+	AppId    int    `json:"appId" v:"required|app-exist#app id is required"`
 }
 
 type QueryTargetRes struct {
@@ -39,7 +39,7 @@ type QueryTargetRes struct {
 type GetTokenReq struct {
 	g.Meta   `path:"/token" method:"get"`
 	DeviceId string `json:"deviceId" v:"required#device id is required"`
-	AppId    int    `json:"appId" v:"required#app id is required"`
+	AppId    int    `json:"appId" v:"required|app-exist#app id is required"`
 }
 
 type GetTokenRes struct {

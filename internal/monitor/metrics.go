@@ -1,6 +1,10 @@
 package monitor
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"context"
+
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 // TODO: add a metric manager
 var (
@@ -12,6 +16,6 @@ var (
 	)
 )
 
-func MustRegisterMetrics() {
+func MustRegisterMetrics(ctx context.Context) {
 	prometheus.MustRegister(UpsertTargetEventMetric)
 }

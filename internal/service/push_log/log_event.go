@@ -7,10 +7,11 @@ import (
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/model"
+	"github.com/L-LYR/pns/internal/util"
 )
 
 func LogEventConsumer(e event_queue.Event) error {
-	le, ok := e.(*model.LogEvent)
+	le, ok := e.(*model.PushLogEvent)
 	if !ok {
 		return errors.New("not LogEvent")
 	}
@@ -23,10 +24,10 @@ func PutLogEvent(
 	timestamp int64,
 	where string,
 	hint string,
-) error {
-	return event_queue.EventQueueManager.Put(
+) {
+	if err := event_queue.EventQueueManager.Put(
 		config.LogEventTopic(),
-		&model.LogEvent{
+		&model.PushLogEvent{
 			Ctx: ctx,
 			Entry: &model.LogEntry{
 				LogBase: &model.LogBase{
@@ -37,5 +38,11 @@ func PutLogEvent(
 				Hint: hint,
 			},
 		},
-	)
+	); err != nil {
+		util.GLog.Errorf(
+			ctx,
+			"Fail to put log event, meta: %+v, timestamp: %d, where: %s, hint: %s",
+			meta, timestamp, where, hint,
+		)
+	}
 }

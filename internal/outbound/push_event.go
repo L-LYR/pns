@@ -9,20 +9,27 @@ import (
 	"github.com/L-LYR/pns/internal/model"
 )
 
-func PushEventConsumer(e event_queue.Event) error {
-	pe, ok := e.(*model.PushEvent)
+func PushTaskEventConsumer(e event_queue.Event) error {
+	pe, ok := e.(*model.PushTaskEvent)
 	if !ok {
 		return errors.New("not PushEvent")
 	}
-	return PusherManager.Handle(pe.GetCtx(), pe.GetTask(), pe.PusherType())
+	switch pe.GetTask().Type {
+	case model.PersonalPush:
+		return MQTTPusherManager.Handle(pe.GetCtx(), pe.GetTask(), pe.PusherType())
+	case model.BroadcastPush:
+		panic("not implemented yet")
+	default:
+		panic("unreachable")
+	}
 }
 
-func PutMQTTPushEvent(ctx context.Context, task *model.PushTask) error {
+func PutPushTaskEvent(ctx context.Context, task *model.PushTask, pusherType model.PusherType) error {
 	return event_queue.EventQueueManager.Put(
 		config.PushEventTopic(),
-		&model.PushEvent{
+		&model.PushTaskEvent{
 			Ctx:    ctx,
-			Pusher: model.MQTTPusher,
+			Pusher: pusherType,
 			Task:   task,
 		},
 	)

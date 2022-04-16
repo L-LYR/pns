@@ -15,6 +15,19 @@ const (
 	APNsPusher PusherType = 3
 )
 
+func (t PusherType) Name() string {
+	switch t {
+	case MQTTPusher:
+		return "mqtt"
+	case FCMPusher:
+		return "fcm"
+	case APNsPusher:
+		return "apns"
+	default:
+		panic("unreachable")
+	}
+}
+
 func ParsePusherType(name string) (PusherType, error) {
 	switch name {
 	case "mqtt":

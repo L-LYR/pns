@@ -25,6 +25,11 @@ type _ConfigCache struct {
 	apnsPusherConfig sync.Map
 }
 
+func (c *_ConfigCache) CheckAppExistByAppId(id int) bool {
+	_, ok := c.appConfig.Load(id)
+	return ok
+}
+
 func (c *_ConfigCache) GetAppNameByAppId(id int) (string, bool) {
 	cfg, ok := c.appConfig.Load(id)
 	if !ok {
@@ -39,6 +44,25 @@ func (c *_ConfigCache) GetAppConfigByAppId(id int) (*model.AppConfig, bool) {
 		return nil, false
 	}
 	return cfg.(*model.AppConfig), true
+}
+
+func (c *_ConfigCache) GetPusherConfigByAppId(id int, t model.PusherType) (model.PusherConfig, bool) {
+	var config interface{}
+	var ok bool
+	switch t {
+	case model.MQTTPusher:
+		config, ok = c.mqttPusherConfig.Load(id)
+	case model.FCMPusher:
+		config, ok = c.fcmPusherConfig.Load(id)
+	case model.APNsPusher:
+		config, ok = c.apnsPusherConfig.Load(id)
+	default:
+		panic("unreachable")
+	}
+	if !ok {
+		return nil, false
+	}
+	return config.(model.PusherConfig), ok
 }
 
 func (c *_ConfigCache) GetMQTTPusherConfigByAppId(id int) (*model.MQTTConfig, bool) {
@@ -73,7 +97,7 @@ func (c *_ConfigCache) RangePusherConfig(t model.PusherType, fn func(appId int, 
 	case model.MQTTPusher:
 		c.mqttPusherConfig.Range(func(key, value interface{}) bool {
 			err = fn(key.(int), value.(model.PusherConfig))
-			return err != nil
+			return err == nil
 		})
 	case model.FCMPusher:
 		return errors.New("not implemented yet")

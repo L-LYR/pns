@@ -36,6 +36,7 @@ func (api *_PushAPI) Push(ctx context.Context, req *v1.PushReq) (*v1.PushRes, er
 	task := &model.PushTask{
 		ID:     util.GeneratePushTaskId(),
 		Type:   model.PersonalPush,
+		Retry:  0,
 		Target: target,
 		Message: &model.Message{
 			Title:   req.Title,
@@ -48,14 +49,9 @@ func (api *_PushAPI) Push(ctx context.Context, req *v1.PushReq) (*v1.PushRes, er
 		util.GLog.Warning(ctx, "Fail to add task list entry")
 	}
 
-	if err := log.PutLogEvent(
-		ctx, meta,
-		time.Now().UnixMilli(), "task creation", "success",
-	); err != nil {
-		util.GLog.Warning(ctx, "Fail to put task creation log")
-	}
+	log.PutLogEvent(ctx, meta, time.Now().UnixMilli(), "task creation", "success")
 
-	if err := outbound.PutMQTTPushEvent(ctx, task); err != nil {
+	if err := outbound.PutPushTaskEvent(ctx, task, model.MQTTPusher); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")
 	}
 

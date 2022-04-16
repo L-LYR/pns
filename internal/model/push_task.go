@@ -19,8 +19,9 @@ func (t PushTaskType) Name() string {
 }
 
 type PushTask struct {
-	ID   int          `json:"id"`
-	Type PushTaskType `json:"type"`
+	ID    int          `json:"id"`
+	Type  PushTaskType `json:"type"`
+	Retry int          `json:"retry"`
 	*Target
 	*Message
 	// TODO: Parameters

@@ -32,16 +32,13 @@ type Client struct {
 	Client paho.Client
 }
 
-func MustNewClient(
+func _MustNewClient(
 	ctx context.Context,
 	name string,
 	key string,
 	secret string,
 	brokerConfig *config.BrokerConfig,
 ) *Client {
-	if brokerConfig == nil {
-		panic("pusher config or app config is not given")
-	}
 	p := &Client{
 		Name:         name,
 		Key:          key,
@@ -68,7 +65,7 @@ func MustNewPusher(
 	pusherConfig *model.MQTTConfig,
 	brokerConfig *config.BrokerConfig,
 ) *Client {
-	return MustNewClient(
+	return _MustNewClient(
 		ctx,
 		util.GeneratePusherClientID(appId),
 		pusherConfig.PusherKey,

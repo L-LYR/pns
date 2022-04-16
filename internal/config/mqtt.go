@@ -19,8 +19,8 @@ func (c *BrokerConfig) WaitTimeout() time.Duration {
 	return time.Duration(c.Timeout) * time.Second
 }
 
-func MustLoadMQTTBrokerConfig(ctx context.Context, name string) *BrokerConfig {
+func MustLoadMQTTBrokerConfig(ctx context.Context) *BrokerConfig {
 	brokerConfig := &BrokerConfig{}
-	MustLoadConfig(ctx, "module.pusher."+name, brokerConfig)
+	MustLoadConfig(ctx, "module.pusher.mqtt", brokerConfig)
 	return brokerConfig
 }
