@@ -3,7 +3,6 @@ package controller
 import (
 	"context"
 	"strconv"
-	"time"
 
 	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
 	"github.com/L-LYR/pns/internal/model"
@@ -44,12 +43,7 @@ func (api *_PushAPI) Push(ctx context.Context, req *v1.PushReq) (*v1.PushRes, er
 		},
 	}
 
-	meta := task.LogMeta()
-	if err := log.PutTaskRequestLog(ctx, meta); err != nil {
-		util.GLog.Warning(ctx, "Fail to add task list entry")
-	}
-
-	log.PutLogEvent(ctx, meta, time.Now().UnixMilli(), "task creation", "success")
+	log.PutTaskLog(ctx, task.LogMeta(), "task creation", "success")
 
 	if err := outbound.PutPushTaskEvent(ctx, task, model.MQTTPusher); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")

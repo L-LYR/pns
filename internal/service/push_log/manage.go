@@ -2,22 +2,37 @@ package log
 
 import (
 	"context"
+	"time"
 
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao"
 )
 
-// Task Request Log, sync
-func PutTaskRequestLog(ctx context.Context, meta *model.PushLogMeta) error {
+func PutTaskEntry(ctx context.Context, meta *model.LogMeta) error {
 	return dao.LogRedisDao.AppendTaskEntry(ctx, meta)
 }
 
-// Generic Task Log, async
-func PutTaskLog(ctx context.Context, l *model.LogEntry) error {
-	return dao.LogRedisDao.AppendTaskLog(ctx, l)
+func PutTaskLog(
+	ctx context.Context,
+	meta *model.LogMeta,
+	where string,
+	hint string,
+) error {
+	return dao.LogRedisDao.AppendTaskLog(ctx, &model.LogEntry{
+		LogBase: &model.LogBase{
+			Meta:  meta,
+			T:     time.Now().UnixMilli(),
+			Where: where,
+		},
+		Hint: hint,
+	})
 }
 
-// Get Task Log by Task ID
+// async
+func PutPushLog(ctx context.Context, l *model.LogEntry) error {
+	return dao.LogRedisDao.AppendPushLog(ctx, l)
+}
+
 func GetTaskLogByID(ctx context.Context, id int) ([]*model.LogEntry, error) {
 	return dao.LogRedisDao.GetTaskLogByID(ctx, id)
 }

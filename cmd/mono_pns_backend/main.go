@@ -20,7 +20,6 @@ func main() {
 	/* context & config */
 	ctx := GetStartContext()
 	config.LoadGlobalConfig()
-
 	/* individual modules */
 	validator.MustRegisterRules(ctx)
 	monitor.MustRegisterMetrics(ctx)
@@ -33,16 +32,14 @@ func main() {
 	)
 	event_queue.EventQueueManager.MustRegister(
 		config.MustLoadConsumerConfig(ctx, "log_event_consumer"),
-		log.LogEventConsumer,
+		log.PushLogEventConsumer,
 	)
 	event_queue.EventQueueManager.MustStart(ctx)
 	/* servers */
 	inbound.MustRegisterRouters(ctx).Start()
 	bizapi.MustRegisterRouters(ctx).Start()
 	admin.MustRegisterRouters(ctx).Start()
-
 	g.Wait()
-
 	/* clean up */
 	event_queue.EventQueueManager.MustShutdown(ctx)
 	service.MustShutdown(ctx)

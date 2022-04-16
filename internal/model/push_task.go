@@ -27,8 +27,8 @@ type PushTask struct {
 	// TODO: Parameters
 }
 
-func (t *PushTask) LogMeta() *PushLogMeta {
-	return &PushLogMeta{
+func (t *PushTask) LogMeta() *LogMeta {
+	return &LogMeta{
 		TaskId:   t.ID,
 		AppId:    t.App.ID,
 		DeviceId: t.Device.ID,

@@ -19,19 +19,19 @@ func MustLoadConsumerConfig(ctx context.Context, name string) *ConsumerConfig {
 }
 
 var (
-	_PushEventTopic   string
-	_LogEventTopic string
+	_PushEventTopic    string
+	_PushLogEventTopic string
 )
 
-func PushEventTopic() string   { return _PushEventTopic }
-func LogEventTopic() string { return _LogEventTopic }
+func PushEventTopic() string    { return _PushEventTopic }
+func PushLogEventTopic() string { return _PushLogEventTopic }
 
 func _SetTopicName(cfgName string, topic string) {
 	switch cfgName {
 	case "push_event_consumer":
 		_PushEventTopic = topic
 	case "log_event_consumer":
-		_LogEventTopic = topic
+		_PushLogEventTopic = topic
 	default:
 		panic("unreachable")
 	}

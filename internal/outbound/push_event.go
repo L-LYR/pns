@@ -7,6 +7,7 @@ import (
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/model"
+	log "github.com/L-LYR/pns/internal/service/push_log"
 )
 
 func PushTaskEventConsumer(e event_queue.Event) error {
@@ -14,14 +15,11 @@ func PushTaskEventConsumer(e event_queue.Event) error {
 	if !ok {
 		return errors.New("not PushEvent")
 	}
-	switch pe.GetTask().Type {
-	case model.PersonalPush:
-		return MQTTPusherManager.Handle(pe.GetCtx(), pe.GetTask(), pe.PusherType())
-	case model.BroadcastPush:
-		panic("not implemented yet")
-	default:
-		panic("unreachable")
-	}
+	log.PutTaskLog(
+		pe.GetCtx(), pe.GetTask().LogMeta(),
+		"task handle", "success",
+	)
+	return MQTTPusherManager.Handle(pe.GetCtx(), pe.GetTask(), pe.PusherType())
 }
 
 func PutPushTaskEvent(ctx context.Context, task *model.PushTask, pusherType model.PusherType) error {

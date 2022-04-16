@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
@@ -43,17 +42,6 @@ type _PusherManager struct {
 	pusherMutex sync.RWMutex
 	pusherType  model.PusherType
 	pushers     map[int]Pusher
-}
-
-var (
-	MQTTPusherManager = &_PusherManager{
-		pusherType: model.MQTTPusher,
-		pushers:    make(map[int]Pusher),
-	}
-)
-
-func MustInitialize(ctx context.Context) {
-	MQTTPusherManager.MustRegisterPushers(ctx, model.MQTTPusher)
 }
 
 // This function is used in initialization stage which is not concurrent-safe.
@@ -106,28 +94,42 @@ func (p *_PusherManager) _TryAddPusher(ctx context.Context, appId int, pusherTyp
 
 // Try to re-put task into queue, but if it is failed, task status will be set as dead
 func (p *_PusherManager) _ReputTask(ctx context.Context, task *model.PushTask, pusherType model.PusherType) {
+	meta := task.LogMeta()
 	task.Retry++
 	if task.Retry > 3 {
-		log.PutLogEvent(ctx, task.LogMeta(), time.Now().UnixMilli(), "retry", "dead")
+		log.PutPushLogEvent(ctx, "dead", model.NewLogBase(meta, "end"))
 		return
 	}
 	if err := PutPushTaskEvent(ctx, task, pusherType); err != nil {
-		log.PutLogEvent(ctx, task.LogMeta(), time.Now().UnixMilli(), "retry", fmt.Sprintf("Error: %s, fail", err.Error()))
+		log.PutPushLogEvent(
+			ctx,
+			fmt.Sprintf("Error: %s, fail", err.Error()),
+			model.NewLogBase(meta, "retry"),
+		)
 		return
 	}
-	log.PutLogEvent(ctx, task.LogMeta(), time.Now().UnixMilli(), "retry", "success")
+	log.PutPushLogEvent(ctx, "success", model.NewLogBase(meta, "retry"))
 }
 
 func (p *_PusherManager) Handle(ctx context.Context, task *model.PushTask, pusherType model.PusherType) error {
+	meta := task.LogMeta()
 	pusher, ok := p._GetPusher(ctx, task.Target.App.ID, pusherType)
 	if !ok {
 		util.GLog.Warningf(ctx, "No mqtt pusher for app %d", task.Target.App.ID)
 		p._ReputTask(ctx, task, pusherType)
 		return nil
-	} else if err := pusher.Handle(ctx, task); err != nil {
-		log.PutLogEvent(ctx, task.LogMeta(), time.Now().UnixMilli(), "push", fmt.Sprintf("Error: %s, fail", err.Error()))
+	}
+	if err := log.PutTaskEntry(ctx, meta); err != nil {
+		util.GLog.Warning(ctx, "Fail to add task list entry, meta:%+v", meta)
+	}
+	if err := pusher.Handle(ctx, task); err != nil {
+		log.PutPushLogEvent(
+			ctx,
+			fmt.Sprintf("Error: %s, fail", err.Error()),
+			model.NewLogBase(meta, "push"),
+		)
 		return err
 	}
-	log.PutLogEvent(ctx, task.LogMeta(), time.Now().UnixMilli(), "push", "success")
+	log.PutPushLogEvent(ctx, "success", model.NewLogBase(meta, "push"))
 	return nil
 }

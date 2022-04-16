@@ -94,7 +94,25 @@ func (dao *_LogRedisDao) AppendTaskLog(
 	if err != nil {
 		return err
 	}
-	key := strconv.FormatInt(int64(log.Meta.TaskId), 10)
+	key := log.Meta.TaskStatusKey()
+	if err := dao._ZListAppend(ctx, key, value, float64(log.T)); err != nil {
+		return err
+	}
+	if err := dao._SweepExpireEntry(ctx, key); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (dao *_LogRedisDao) AppendPushLog(
+	ctx context.Context,
+	log *model.LogEntry,
+) error {
+	value, err := log.Encode()
+	if err != nil {
+		return err
+	}
+	key := log.Meta.PushKey()
 	if err := dao._ZListAppend(ctx, key, value, float64(log.T)); err != nil {
 		return err
 	}
@@ -106,14 +124,14 @@ func (dao *_LogRedisDao) AppendTaskLog(
 
 func (dao *_LogRedisDao) AppendTaskEntry(
 	ctx context.Context,
-	meta *model.PushLogMeta,
+	meta *model.LogMeta,
 ) error {
 	key := meta.EntryKey()
-	value := strconv.FormatInt(int64(meta.TaskId), 10)
+	value := meta.TaskStatusKey()
 	if err := dao._ZListAppend(ctx, key, value, float64(time.Now().UnixMilli())); err != nil {
 		return err
 	}
-	if err := dao._SweepExpireEntry(ctx, value); err != nil {
+	if err := dao._SweepExpireEntry(ctx, key); err != nil {
 		return err
 	}
 	return nil

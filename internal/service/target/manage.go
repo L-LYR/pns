@@ -65,3 +65,29 @@ func UpdateToken(
 		token,
 	)
 }
+
+func Scan(
+	ctx context.Context,
+	appName string,
+	fn func(*model.Target) error,
+	errorHandler func(error),
+) (int64, error) {
+	cursor, err := dao.TargetMongoDao.NaiveCursor(ctx, appName)
+	if err != nil {
+		return 0, err
+	}
+	count := int64(0)
+	for cursor.Next(context.TODO()) {
+		result := &model.Target{}
+		if err := cursor.Decode(&result); err != nil {
+			errorHandler(err)
+			continue
+		}
+		if err := fn(result); err != nil {
+			errorHandler(err)
+			continue
+		}
+		count++
+	}
+	return count, cursor.Close(ctx)
+}
