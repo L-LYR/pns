@@ -66,5 +66,9 @@ func (l *LogEntry) Readable() string {
 	return fmt.Sprintf("[%s] %s at %s", time.UnixMilli(l.T).Format(time.RFC3339), l.Hint, l.Where)
 }
 
+func (l *LogEntry) Status() string {
+	return fmt.Sprintf("%s at %s", l.Hint, l.Where)
+}
+
 // fyne notification does not provide onClick method
 // so we cannot get the click event.

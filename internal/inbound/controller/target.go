@@ -6,7 +6,6 @@ import (
 
 	v1 "github.com/L-LYR/pns/internal/inbound/api/v1"
 	"github.com/L-LYR/pns/internal/model"
-	"github.com/L-LYR/pns/internal/service/cache"
 	"github.com/L-LYR/pns/internal/service/target"
 	"github.com/L-LYR/pns/internal/util"
 	"github.com/gogf/gf/v2/errors/gcode"
@@ -55,11 +54,7 @@ func (api *_TargetAPI) QueryTarget(
 	ctx context.Context,
 	req *v1.QueryTargetReq,
 ) (*v1.QueryTargetRes, error) {
-	appName, ok := cache.Config.GetAppNameByAppId(req.AppId)
-	if !ok {
-		return nil, util.FinalError(gcode.CodeInvalidParameter, nil, "Unknown app id")
-	}
-	target, err := target.Query(ctx, appName, req.DeviceId)
+	target, err := target.Query(ctx, req.AppId, req.DeviceId)
 	if err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to query target info")
 	}
@@ -79,12 +74,7 @@ func (api *_TargetAPI) GetToken(
 	ctx context.Context,
 	req *v1.GetTokenReq,
 ) (*v1.GetTokenRes, error) {
-	appName, ok := cache.Config.GetAppNameByAppId(req.AppId)
-	if !ok {
-		return nil, util.FinalError(gcode.CodeInvalidParameter, nil, "Unknown app id")
-	}
-
-	targetInfo, err := target.Query(ctx, appName, req.DeviceId)
+	targetInfo, err := target.Query(ctx, req.AppId, req.DeviceId)
 	if err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to check device id")
 	}
@@ -102,7 +92,7 @@ func (api *_TargetAPI) GetToken(
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to generate token")
 	}
 
-	if err := target.UpdateToken(ctx, appName, req.DeviceId, "self", token); err != nil {
+	if err := target.UpdateToken(ctx, req.AppId, req.DeviceId, "self", token); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to update token")
 	}
 	return &v1.GetTokenRes{Token: token}, nil

@@ -21,3 +21,14 @@ type TaskStatusReq struct {
 type TaskStatusRes struct {
 	Status string
 }
+
+type PushLogReq struct {
+	g.Meta   `path:"/push/log" method:"get"`
+	TaskId   int    `json:"taskId" dc:"push task id" v:"required#push task id is required"`
+	AppId    int    `json:"appId" dc:"app id" v:"required#app id is required"`
+	DeviceId string `json:"deviceId" dc:"device id" v:"required#device id is required"`
+}
+
+type PushLogRes struct {
+	LogEntry []string `json:"logEntry" dc:"readable log entries"`
+}

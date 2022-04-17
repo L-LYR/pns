@@ -181,3 +181,28 @@ func (dao *_LogRedisDao) GetTaskLastLogByID(
 	}
 	return entry, nil
 }
+
+func (dao *_LogRedisDao) GetPushLogByMeta(
+	ctx context.Context,
+	meta *model.LogMeta,
+) ([]*model.LogEntry, error) {
+	client := dao.LogRedisDao.Client(ctx)
+	key := meta.PushKey()
+	rawLog, err := client.ZRangeByScore(ctx, key, &redis.ZRangeBy{
+		Min: "-inf",
+		Max: "inf",
+	}).Result()
+	if err != nil {
+		return nil, err
+	}
+	log := make([]*model.LogEntry, 0, len(rawLog))
+	for i := range rawLog {
+		entry := &model.LogEntry{}
+		if err := entry.Decode(rawLog[i]); err != nil {
+			log = append(log, model.DummyEntry)
+		} else {
+			log = append(log, entry)
+		}
+	}
+	return log, nil
+}

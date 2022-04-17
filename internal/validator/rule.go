@@ -8,6 +8,11 @@ import (
 	"github.com/gogf/gf/v2/util/gvalid"
 )
 
+/*
+	When parameters becomes more and more, they becomes to depend on each other.
+	So here, we use rules to control the validation.
+*/
+
 type Rule struct {
 	Name string
 	Fn   gvalid.RuleFunc

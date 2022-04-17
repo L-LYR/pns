@@ -4,7 +4,7 @@ import (
 	"github.com/L-LYR/pns/mobile/push_sdk/storage"
 )
 
-func GetConfig() *storage.Config { return PushSDK.GetConfig() }
+func GetConfig() *storage.Config { return storage.GlobalConfig }
 
 func UpdateTargetInfo() { PushSDK.UpdateTargetInfo() }
 

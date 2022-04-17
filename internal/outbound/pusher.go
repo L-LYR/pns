@@ -14,7 +14,7 @@ import (
 )
 
 type Pusher interface {
-	Handle(context.Context, *model.PushTask) error
+	Handle(context.Context, model.PushTask) error
 }
 
 var _ Pusher = (*mqtt.Client)(nil)
@@ -61,23 +61,23 @@ func (p *_PusherManager) MustRegisterPushers(ctx context.Context, pusherType mod
 }
 
 // This function will try to new a pusher.
-func (p *_PusherManager) _GetPusher(ctx context.Context, appId int, pusherType model.PusherType) (Pusher, bool) {
+func (p *_PusherManager) _GetPusher(ctx context.Context, appId int) (Pusher, bool) {
 	p.pusherMutex.RLock()
 	if pusher, ok := p.pushers[appId]; ok {
 		p.pusherMutex.RUnlock()
 		return pusher, true
 	}
 	p.pusherMutex.RUnlock()
-	if pusher, ok := p._TryAddPusher(ctx, appId, pusherType); ok {
-		util.GLog.Infof(ctx, "Success to initialize %s pusher for app %d", pusherType.Name(), appId)
+	if pusher, ok := p._TryAddPusher(ctx, appId); ok {
+		util.GLog.Infof(ctx, "Success to initialize %s pusher for app %d", p.pusherType.Name(), appId)
 		return pusher, true
 	}
-	util.GLog.Infof(ctx, "Fail to initialize %s pusher for app %d", pusherType.Name(), appId)
+	util.GLog.Infof(ctx, "Fail to initialize %s pusher for app %d", p.pusherType.Name(), appId)
 	return nil, false
 }
 
-func (p *_PusherManager) _TryAddPusher(ctx context.Context, appId int, pusherType model.PusherType) (Pusher, bool) {
-	config, ok := cache.Config.GetPusherConfigByAppId(appId, pusherType)
+func (p *_PusherManager) _TryAddPusher(ctx context.Context, appId int) (Pusher, bool) {
+	config, ok := cache.Config.GetPusherConfigByAppId(appId, p.pusherType)
 	util.GLog.Infof(ctx, "Try to add pusher")
 	if !ok {
 		return nil, false
@@ -87,20 +87,19 @@ func (p *_PusherManager) _TryAddPusher(ctx context.Context, appId int, pusherTyp
 	if pusher, ok := p.pushers[appId]; ok {
 		return pusher, true
 	}
-	pusher := _MustNewPusher(ctx, appId, pusherType, config)
+	pusher := _MustNewPusher(ctx, appId, p.pusherType, config)
 	p.pushers[appId] = pusher
 	return pusher, true
 }
 
 // Try to re-put task into queue, but if it is failed, task status will be set as dead
-func (p *_PusherManager) _ReputTask(ctx context.Context, task *model.PushTask, pusherType model.PusherType) {
-	meta := task.LogMeta()
-	task.Retry++
-	if task.Retry > 3 {
+func (p *_PusherManager) _ReputTask(ctx context.Context, task model.PushTask, pusherType model.PusherType) {
+	meta := task.GetLogMeta()
+	if task.Retry() {
 		log.PutPushLogEvent(ctx, "dead", model.NewLogBase(meta, "end"))
 		return
 	}
-	if err := PutPushTaskEvent(ctx, task, pusherType); err != nil {
+	if err := PutPushTaskEvent(ctx, task); err != nil {
 		log.PutPushLogEvent(
 			ctx,
 			fmt.Sprintf("Error: %s, fail", err.Error()),
@@ -111,12 +110,12 @@ func (p *_PusherManager) _ReputTask(ctx context.Context, task *model.PushTask, p
 	log.PutPushLogEvent(ctx, "success", model.NewLogBase(meta, "retry"))
 }
 
-func (p *_PusherManager) Handle(ctx context.Context, task *model.PushTask, pusherType model.PusherType) error {
-	meta := task.LogMeta()
-	pusher, ok := p._GetPusher(ctx, task.Target.App.ID, pusherType)
+func (p *_PusherManager) Handle(ctx context.Context, task model.PushTask) error {
+	meta := task.GetLogMeta()
+	pusher, ok := p._GetPusher(ctx, task.GetAppId())
 	if !ok {
-		util.GLog.Warningf(ctx, "No mqtt pusher for app %d", task.Target.App.ID)
-		p._ReputTask(ctx, task, pusherType)
+		util.GLog.Warningf(ctx, "No mqtt pusher for app %d", task.GetAppId())
+		p._ReputTask(ctx, task, p.pusherType)
 		return nil
 	}
 	if err := log.PutTaskEntry(ctx, meta); err != nil {
@@ -128,6 +127,7 @@ func (p *_PusherManager) Handle(ctx context.Context, task *model.PushTask, pushe
 			fmt.Sprintf("Error: %s, fail", err.Error()),
 			model.NewLogBase(meta, "push"),
 		)
+		p._ReputTask(ctx, task, p.pusherType)
 		return err
 	}
 	log.PutPushLogEvent(ctx, "success", model.NewLogBase(meta, "push"))

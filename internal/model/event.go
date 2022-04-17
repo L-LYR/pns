@@ -3,14 +3,12 @@ package model
 import "context"
 
 type PushTaskEvent struct {
-	Ctx    context.Context
-	Pusher PusherType
-	Task   *PushTask
+	Ctx  context.Context
+	Task PushTask
 }
 
 func (e *PushTaskEvent) GetCtx() context.Context { return e.Ctx }
-func (e *PushTaskEvent) GetTask() *PushTask      { return e.Task }
-func (e *PushTaskEvent) PusherType() PusherType  { return e.Pusher }
+func (e *PushTaskEvent) GetTask() PushTask       { return e.Task }
 
 type PushLogEvent struct {
 	Ctx   context.Context

@@ -15,20 +15,40 @@ func PushTaskEventConsumer(e event_queue.Event) error {
 	if !ok {
 		return errors.New("not PushEvent")
 	}
+
 	log.PutTaskLog(
-		pe.GetCtx(), pe.GetTask().LogMeta(),
+		pe.GetCtx(), pe.GetTask().GetLogMeta(),
 		"task handle", "success",
 	)
-	return MQTTPusherManager.Handle(pe.GetCtx(), pe.GetTask(), pe.PusherType())
+
+	var err error
+	taskHint := "success"
+
+	switch pe.GetTask().GetPusher() {
+	case model.MQTTPusher:
+		err = MQTTPusherManager.Handle(pe.GetCtx(), pe.GetTask())
+	default:
+		panic("unreachable")
+	}
+
+	if err != nil {
+		taskHint = "fail"
+	}
+
+	log.PutTaskLog(
+		pe.GetCtx(), pe.GetTask().GetLogMeta(),
+		"task done", taskHint,
+	)
+
+	return err
 }
 
-func PutPushTaskEvent(ctx context.Context, task *model.PushTask, pusherType model.PusherType) error {
+func PutPushTaskEvent(ctx context.Context, task model.PushTask) error {
 	return event_queue.EventQueueManager.Put(
 		config.PushEventTopic(),
 		&model.PushTaskEvent{
-			Ctx:    ctx,
-			Pusher: pusherType,
-			Task:   task,
+			Ctx:  ctx,
+			Task: task,
 		},
 	)
 }

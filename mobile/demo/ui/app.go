@@ -21,7 +21,7 @@ var (
 )
 
 func PushMyself(title string, content string) {
-	payload, err := bizHTTPClient.POST("/push", http.Payload{
+	payload, err := bizHTTPClient.POST("/push/direct", http.Payload{
 		"deviceId": push_sdk.GetConfig().GetDeviceId(),
 		"appId":    push_sdk.GetConfig().GetAppId(),
 		"title":    title,

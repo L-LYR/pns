@@ -21,7 +21,7 @@ const (
 )
 
 type TopicSet struct {
-	PersonalTopic  string
+	DirectTopic    string
 	BroadcastTopic string
 
 	Handlers map[string]paho.MessageHandler
@@ -30,7 +30,7 @@ type TopicSet struct {
 func NewTopicSet(cfg *storage.Config) *TopicSet {
 	ts := &TopicSet{Handlers: make(map[string]paho.MessageHandler)}
 	if cfg != nil {
-		ts.PersonalTopic = fmt.Sprintf("PPush/%d/%s/+", cfg.App.ID, cfg.DeviceId)
+		ts.DirectTopic = fmt.Sprintf("DPush/%d/%s/+", cfg.App.ID, cfg.DeviceId)
 		ts.BroadcastTopic = fmt.Sprintf("BPush/%d/+", cfg.App.ID)
 	}
 	return ts
@@ -51,12 +51,16 @@ func _NewEventLog(topic string, where string, err error) map[string]interface{} 
 	eventLog["timestamp"] = time.Now().UnixMilli()
 	ss := strings.Split(topic, "/")
 	switch ss[0] {
-	case "PPush": // ss[1]: app id, ss[2]: device id, ss[3]: task id
+	case "DPush": // ss[1]: app id, ss[2]: device id, ss[3]: task id
 		eventLog["appId"] = ss[1]
 		eventLog["deviceId"] = ss[2]
 		eventLog["taskId"] = ss[3]
+	case "BPush":
+		eventLog["appId"] = ss[1]
+		eventLog["deviceId"] = storage.GlobalConfig.GetDeviceId()
+		eventLog["taskId"] = ss[2]
 	default:
-		panic("Unreachable")
+		panic("unreachable")
 	}
 	return eventLog
 }
@@ -185,7 +189,7 @@ func (c *Client) _WrapHandler(fn MessageHandler) paho.MessageHandler {
 }
 
 func (c *Client) SubscribePersonalPush(fn MessageHandler) {
-	c.subscribe(c.options.topicSet.PersonalTopic, c._WrapHandler(fn))
+	c.subscribe(c.options.topicSet.DirectTopic, c._WrapHandler(fn))
 }
 
 func (c *Client) SubscribeBroadcastPush(fn MessageHandler) {
@@ -205,4 +209,5 @@ func (c *Client) subscribe(topic string, fn paho.MessageHandler) {
 		c.options.logHandler("Error: %s", err.Error())
 		return
 	}
+	c.options.logHandler("Success to subscribe %s", topic)
 }

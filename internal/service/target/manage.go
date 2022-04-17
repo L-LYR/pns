@@ -2,11 +2,13 @@ package target
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/cache"
 	"github.com/L-LYR/pns/internal/service/internal/dao"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -44,19 +46,27 @@ func Upsert(ctx context.Context, target *model.Target) error {
 
 func Query(
 	ctx context.Context,
-	appName string,
+	appId int,
 	deviceId string,
 ) (*model.Target, error) {
+	appName, ok := cache.Config.GetAppNameByAppId(appId)
+	if !ok {
+		return nil, errors.New("wrong app id")
+	}
 	return dao.TargetMongoDao.GetTarget(ctx, appName, deviceId)
 }
 
 func UpdateToken(
 	ctx context.Context,
-	appName string,
+	appId int,
 	deviceId string,
 	tokenName string,
 	token string,
 ) error {
+	appName, ok := cache.Config.GetAppNameByAppId(appId)
+	if !ok {
+		return errors.New("wrong app id")
+	}
 	return dao.TargetMongoDao.SetTargetToken(
 		ctx,
 		appName,
@@ -66,28 +76,6 @@ func UpdateToken(
 	)
 }
 
-func Scan(
-	ctx context.Context,
-	appName string,
-	fn func(*model.Target) error,
-	errorHandler func(error),
-) (int64, error) {
-	cursor, err := dao.TargetMongoDao.NaiveCursor(ctx, appName)
-	if err != nil {
-		return 0, err
-	}
-	count := int64(0)
-	for cursor.Next(context.TODO()) {
-		result := &model.Target{}
-		if err := cursor.Decode(&result); err != nil {
-			errorHandler(err)
-			continue
-		}
-		if err := fn(result); err != nil {
-			errorHandler(err)
-			continue
-		}
-		count++
-	}
-	return count, cursor.Close(ctx)
+func Cursor(ctx context.Context, appName string) (*mongo.Cursor, error) {
+	return dao.TargetMongoDao.NaiveCursor(ctx, appName)
 }

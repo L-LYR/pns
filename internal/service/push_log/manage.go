@@ -40,3 +40,7 @@ func GetTaskLogByID(ctx context.Context, id int) ([]*model.LogEntry, error) {
 func GetTaskStatusByID(ctx context.Context, id int) (*model.LogEntry, error) {
 	return dao.LogRedisDao.GetTaskLastLogByID(ctx, id)
 }
+
+func GetPushLogByMeta(ctx context.Context, meta *model.LogMeta) ([]*model.LogEntry, error) {
+	return dao.LogRedisDao.GetPushLogByMeta(ctx, meta)
+}

@@ -2,12 +2,12 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"strconv"
 
 	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/outbound"
-	"github.com/L-LYR/pns/internal/service/cache"
 	log "github.com/L-LYR/pns/internal/service/push_log"
 	"github.com/L-LYR/pns/internal/service/target"
 	"github.com/L-LYR/pns/internal/util"
@@ -18,38 +18,73 @@ var Push = _PushAPI{}
 
 type _PushAPI struct{}
 
-func (api *_PushAPI) Push(ctx context.Context, req *v1.PushReq) (*v1.PushRes, error) {
-	appName, ok := cache.Config.GetAppNameByAppId(req.AppId)
-	if !ok {
-		return nil, util.FinalError(gcode.CodeInvalidParameter, nil, "Unknown app id")
+func (api *_PushAPI) DirectPush(ctx context.Context, req *v1.DirectPushReq) (*v1.DirectPushRes, error) {
+	task, err := _BuildDirectPushTask(ctx, req)
+	if err != nil {
+		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to build push task")
 	}
 
-	target, err := target.Query(ctx, appName, req.DeviceId)
+	log.PutTaskLog(ctx, task.GetLogMeta(), "direct push task creation", "success")
+
+	if err := outbound.PutPushTaskEvent(ctx, task); err != nil {
+		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")
+	}
+
+	return &v1.DirectPushRes{
+		PushTaskId: strconv.FormatInt(int64(task.ID), 10),
+	}, nil
+}
+
+func _BuildDirectPushTask(ctx context.Context, req *v1.DirectPushReq) (*model.DirectPushTask, error) {
+	target, err := target.Query(ctx, req.AppId, req.DeviceId)
 	if err != nil {
-		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to query target")
+		return nil, errors.New("fail to query target")
 	}
 	if target == nil {
-		return nil, util.FinalError(gcode.CodeInvalidParameter, nil, "Target not found")
+		return nil, errors.New("target not found")
 	}
-
-	task := &model.PushTask{
+	return &model.DirectPushTask{
 		ID:     util.GeneratePushTaskId(),
-		Type:   model.PersonalPush,
-		Retry:  0,
+		Pusher: model.MQTTPusher,
+		RetryCounter: &model.RetryCounter{
+			Counter: model.RetryTimes(req.Retry),
+		},
 		Target: target,
 		Message: &model.Message{
 			Title:   req.Title,
 			Content: req.Content,
 		},
+	}, nil
+}
+
+func (api *_PushAPI) BroadcastPush(ctx context.Context, req *v1.BroadcastPushReq) (*v1.BroadcastPushRes, error) {
+	task, err := _BuildBroadcastPushTask(ctx, req)
+	if err != nil {
+		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to build push task")
 	}
 
-	log.PutTaskLog(ctx, task.LogMeta(), "task creation", "success")
+	log.PutTaskLog(ctx, task.GetLogMeta(), "broadcast push task creation", "success")
 
-	if err := outbound.PutPushTaskEvent(ctx, task, model.MQTTPusher); err != nil {
+	if err := outbound.PutPushTaskEvent(ctx, task); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")
 	}
 
-	return &v1.PushRes{
+	return &v1.BroadcastPushRes{
 		PushTaskId: strconv.FormatInt(int64(task.ID), 10),
+	}, nil
+}
+
+func _BuildBroadcastPushTask(ctx context.Context, req *v1.BroadcastPushReq) (*model.BroadcastTask, error) {
+	return &model.BroadcastTask{
+		ID:     util.GeneratePushTaskId(),
+		AppId:  req.AppId,
+		Pusher: model.MQTTPusher,
+		RetryCounter: &model.RetryCounter{
+			Counter: model.NeverRetry,
+		},
+		Message: &model.Message{
+			Title:   req.Title,
+			Content: req.Content,
+		},
 	}, nil
 }
