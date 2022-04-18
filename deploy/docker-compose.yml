@@ -20,7 +20,7 @@ services:
       - 10087:10087
       - 10088:10088
     volumes:
-      - ./pns_entrypoint.sh:/pns/entrypoint.sh
+      - ./pns/pns_entrypoint.sh:/pns/entrypoint.sh
       - ${pns_log_volume}:/pns/log
     restart: always
     entrypoint: [ "sh", "/pns/entrypoint.sh" ]
@@ -38,7 +38,7 @@ services:
       - 27017:27017
     volumes:
       - ${pns_mongo_volume}:/data/db
-      - ./pns_mongo_init.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./pns_mongo/pns_mongo_init.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     restart: always
     networks:
       - pns_net
@@ -53,8 +53,8 @@ services:
       - 3306:3306
     volumes:
       - ${pns_mysql_volume}:/var/lib/mysql
-      - ./pns_mysql.cnf:/etc/my.cnf
-      - ./pns_mysql_init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./pns_mysql/pns_mysql.cnf:/etc/my.cnf
+      - ./pns_mysql/pns_mysql_init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: always
     networks:
       - pns_net
@@ -78,7 +78,7 @@ services:
       - 9090:9090
     volumes:
       - ${pns_prometheus_volume}:/prometheus
-      - ./pns_prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./pns_monitor/pns_prometheus.yml:/etc/prometheus/prometheus.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -86,6 +86,7 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--storage.tsdb.retention.time=48h'
       - '--web.enable-lifecycle'
+      - '--enable-feature=remote-write-receiver'
     restart: always
     networks:
       - pns_net
@@ -103,7 +104,7 @@ services:
       - 3000:3000
     volumes:
       - ${pns_grafana_volume}:/var/lib/grafana
-      - ${pns_grafana_provisioning}:/etc/grafana/provisioning
+      - ./pns_monitor/pns_grafana_provisioning:/etc/grafana/provisioning
     restart: always
     networks:
       - pns_net
@@ -116,8 +117,8 @@ services:
     ports:
       - 18830:1883
     volumes:
-      - ./pns_mosquitto_entrypoint.sh:/mosquitto/init.sh
-      - ./pns_mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./pns_mqtt_broker/pns_mosquitto_entrypoint.sh:/mosquitto/init.sh
+      - ./pns_mqtt_broker/pns_mosquitto.conf:/mosquitto/config/mosquitto.conf
       - ${pns_mosquitto_volume}/data:/mosquitto/data
       - ${pns_mosquitto_volume}/log:/mosquitto/log
     restart: always
