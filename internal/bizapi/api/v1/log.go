@@ -32,3 +32,25 @@ type PushLogReq struct {
 type PushLogRes struct {
 	LogEntry []string `json:"logEntry" dc:"readable log entries"`
 }
+
+// The apis bellow just returns the list of task ids.
+// TODO: join the logs
+
+type DeviceLogReq struct {
+	g.Meta   `path:"/device/log" method:"get"`
+	AppId    int    `json:"appId" dc:"app id" v:"required#app id is required"`
+	DeviceId string `json:"deviceId" dc:"device id" v:"required#device id is required"`
+}
+
+type DeviceLogRes struct {
+	TaskIds []string `json:"taskIds" dc:"broadcast task ids of app"`
+}
+
+type AppLogReq struct {
+	g.Meta `path:"/app/log" method:"get"`
+	AppId  int `json:"appId" dc:"app id" v:"required#app id is required"`
+}
+
+type AppLogRes struct {
+	TaskIds []string `json:"taskIds" dc:"broadcast task ids of app"`
+}

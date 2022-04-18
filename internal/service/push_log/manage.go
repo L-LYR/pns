@@ -30,6 +30,9 @@ func PutTaskLog(
 
 // async
 func PutPushLog(ctx context.Context, l *model.LogEntry) error {
+	if err := dao.LogRedisDao.CheckAndAppendTaskEntry(ctx, l.Meta); err != nil {
+		return err
+	}
 	return dao.LogRedisDao.AppendPushLog(ctx, l)
 }
 
@@ -43,4 +46,8 @@ func GetTaskStatusByID(ctx context.Context, id int) (*model.LogEntry, error) {
 
 func GetPushLogByMeta(ctx context.Context, meta *model.LogMeta) ([]*model.LogEntry, error) {
 	return dao.LogRedisDao.GetPushLogByMeta(ctx, meta)
+}
+
+func GetTaskEntryListByMeta(ctx context.Context, meta *model.LogMeta) ([]string, error) {
+	return dao.LogRedisDao.GetTaskEntryListByMeta(ctx, meta)
 }

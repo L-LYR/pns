@@ -2,7 +2,7 @@ package outbound
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"sync"
 
 	"github.com/L-LYR/pns/internal/config"
@@ -93,43 +93,33 @@ func (p *_PusherManager) _TryAddPusher(ctx context.Context, appId int) (Pusher, 
 }
 
 // Try to re-put task into queue, but if it is failed, task status will be set as dead
-func (p *_PusherManager) _ReputTask(ctx context.Context, task model.PushTask, pusherType model.PusherType) {
+func (p *_PusherManager) _ReputTask(ctx context.Context, task model.PushTask, pusherType model.PusherType) error {
 	meta := task.GetLogMeta()
 	if task.Retry() {
-		log.PutPushLogEvent(ctx, "dead", model.NewLogBase(meta, "end"))
-		return
+		log.PutTaskLog(ctx, meta, "retry", "fail")
+		return errors.New("fail to retry")
 	}
 	if err := PutPushTaskEvent(ctx, task); err != nil {
-		log.PutPushLogEvent(
-			ctx,
-			fmt.Sprintf("Error: %s, fail", err.Error()),
-			model.NewLogBase(meta, "retry"),
-		)
-		return
+		util.GLog.Warning(ctx, "Task %d fail to retry", task.GetID())
+		return p._ReputTask(ctx, task, pusherType)
+
 	}
-	log.PutPushLogEvent(ctx, "success", model.NewLogBase(meta, "retry"))
+	log.PutTaskLog(ctx, meta, "retry", "success")
+	return nil
 }
 
 func (p *_PusherManager) Handle(ctx context.Context, task model.PushTask) error {
 	meta := task.GetLogMeta()
 	pusher, ok := p._GetPusher(ctx, task.GetAppId())
 	if !ok {
-		util.GLog.Warningf(ctx, "No mqtt pusher for app %d", task.GetAppId())
-		p._ReputTask(ctx, task, p.pusherType)
-		return nil
+		util.GLog.Warningf(ctx, "No %s pusher for app %d", task.GetPusher().Name(), task.GetAppId())
+		return p._ReputTask(ctx, task, p.pusherType)
 	}
 	if err := log.PutTaskEntry(ctx, meta); err != nil {
 		util.GLog.Warning(ctx, "Fail to add task list entry, meta:%+v", meta)
 	}
 	if err := pusher.Handle(ctx, task); err != nil {
-		log.PutPushLogEvent(
-			ctx,
-			fmt.Sprintf("Error: %s, fail", err.Error()),
-			model.NewLogBase(meta, "push"),
-		)
-		p._ReputTask(ctx, task, p.pusherType)
-		return err
+		return p._ReputTask(ctx, task, p.pusherType)
 	}
-	log.PutPushLogEvent(ctx, "success", model.NewLogBase(meta, "push"))
 	return nil
 }
