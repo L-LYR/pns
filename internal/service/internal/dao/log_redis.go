@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"time"
 
@@ -36,12 +37,17 @@ func MustShutdownLogRedisDao(ctx context.Context) {
 
 1. Task Log
 
-Task ID -> Request Log / Send Log / Recv Log / Show Log ......
+Task ID -> Server Log List
 
-2. Task Entry List
+2. Push Log
 
-App ID + Device ID -> Task ID 1 / Task ID 2 / Task ID 3 ......
+App ID : Device ID : Task ID -> Client Log List
 
+3. Task Entry List
+
+1) App ID : Device ID -> Task ID 1 / Task ID 2 / Task ID 3 ......
+
+2) App ID -> Broadcast Task ID 1 / ......
 */
 
 // TODO: make this configurable
@@ -49,23 +55,7 @@ const (
 	_InactiveDuration = 3 * 24 * 3600 * time.Second
 )
 
-func (dao *_LogRedisDao) _SweepExpireEntry(
-	ctx context.Context,
-	key string,
-) error {
-	upperBound := time.Now().Add(-_InactiveDuration).Unix()
-	if _, err := dao.LogRedisDao.Client(ctx).ZRemRangeByScore(
-		ctx,
-		key,
-		"-inf",
-		strconv.FormatInt(upperBound, 10),
-	).Result(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (dao *_LogRedisDao) _ZListAppend(
+func (dao *_LogRedisDao) _AppendLog(
 	ctx context.Context,
 	key string,
 	value string,
@@ -83,6 +73,13 @@ func (dao *_LogRedisDao) _ZListAppend(
 		Result(); err != nil {
 		return err
 	}
+	upperBound := time.Now().Add(-_InactiveDuration).Unix()
+	if _, err := client.ZRemRangeByScore(
+		ctx, key, "-inf",
+		strconv.FormatInt(upperBound, 10),
+	).Result(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -94,14 +91,7 @@ func (dao *_LogRedisDao) AppendTaskLog(
 	if err != nil {
 		return err
 	}
-	key := log.Meta.TaskStatusKey()
-	if err := dao._ZListAppend(ctx, key, value, float64(log.T)); err != nil {
-		return err
-	}
-	if err := dao._SweepExpireEntry(ctx, key); err != nil {
-		return err
-	}
-	return nil
+	return dao._AppendLog(ctx, log.Meta.TaskStatusKey(), value, float64(log.T))
 }
 
 func (dao *_LogRedisDao) AppendPushLog(
@@ -112,27 +102,30 @@ func (dao *_LogRedisDao) AppendPushLog(
 	if err != nil {
 		return err
 	}
-	key := log.Meta.PushKey()
-	if err := dao._ZListAppend(ctx, key, value, float64(log.T)); err != nil {
-		return err
-	}
-	if err := dao._SweepExpireEntry(ctx, key); err != nil {
-		return err
-	}
-	return nil
+	return dao._AppendLog(ctx, log.Meta.PushKey(), value, float64(log.T))
 }
 
 func (dao *_LogRedisDao) AppendTaskEntry(
 	ctx context.Context,
 	meta *model.LogMeta,
 ) error {
-	key := meta.EntryKey()
-	value := meta.TaskStatusKey()
-	if err := dao._ZListAppend(ctx, key, value, float64(time.Now().UnixMilli())); err != nil {
-		return err
-	}
-	if err := dao._SweepExpireEntry(ctx, key); err != nil {
-		return err
+	return dao._AppendLog(
+		ctx, meta.EntryKey(),
+		meta.TaskStatusKey(),
+		float64(time.Now().UnixMilli()),
+	)
+}
+
+func (dao *_LogRedisDao) CheckAndAppendTaskEntry(
+	ctx context.Context,
+	meta *model.LogMeta,
+) error {
+	_, err := dao.Client(ctx).ZScore(
+		ctx, meta.EntryKey(),
+		meta.TaskStatusKey(),
+	).Result()
+	if errors.Is(err, redis.Nil) {
+		return dao.AppendTaskEntry(ctx, meta)
 	}
 	return nil
 }
@@ -187,8 +180,7 @@ func (dao *_LogRedisDao) GetPushLogByMeta(
 	meta *model.LogMeta,
 ) ([]*model.LogEntry, error) {
 	client := dao.LogRedisDao.Client(ctx)
-	key := meta.PushKey()
-	rawLog, err := client.ZRangeByScore(ctx, key, &redis.ZRangeBy{
+	rawLog, err := client.ZRangeByScore(ctx, meta.PushKey(), &redis.ZRangeBy{
 		Min: "-inf",
 		Max: "inf",
 	}).Result()
@@ -205,4 +197,19 @@ func (dao *_LogRedisDao) GetPushLogByMeta(
 		}
 	}
 	return log, nil
+}
+
+func (dao *_LogRedisDao) GetTaskEntryListByMeta(
+	ctx context.Context,
+	meta *model.LogMeta,
+) ([]string, error) {
+	client := dao.LogRedisDao.Client(ctx)
+	rawLog, err := client.ZRangeByScore(ctx, meta.EntryKey(), &redis.ZRangeBy{
+		Min: "-inf",
+		Max: "inf",
+	}).Result()
+	if err != nil {
+		return nil, err
+	}
+	return rawLog, nil
 }

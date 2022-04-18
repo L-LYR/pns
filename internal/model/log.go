@@ -16,10 +16,13 @@ type LogMeta struct {
 }
 
 func (b *LogMeta) PushKey() string {
-	return fmt.Sprintf("%d:%s:%d", b.AppId, b.DeviceId, b.TaskId)
+	return fmt.Sprintf("%d:%d:%s", b.AppId, b.TaskId, b.DeviceId)
 }
 
 func (b *LogMeta) EntryKey() string {
+	if b.DeviceId == "" {
+		return strconv.FormatInt(int64(b.AppId), 10)
+	}
 	return fmt.Sprintf("%d:%s", b.AppId, b.DeviceId)
 }
 
