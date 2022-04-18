@@ -7,6 +7,7 @@ package dao
 import (
 	"context"
 
+	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao/internal"
 	"github.com/L-LYR/pns/internal/service/internal/do"
 )
@@ -34,4 +35,17 @@ func CreateApp(ctx context.Context, appName string, appId int) error {
 		},
 	)
 	return err
+}
+
+// only used in cache
+func LoadAllAppConfig(ctx context.Context) ([]*model.AppConfig, error) {
+	records, err := AppConfig.Ctx(ctx).All()
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*model.AppConfig, records.Len())
+	if err := records.Structs(&result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }

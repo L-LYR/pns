@@ -73,3 +73,11 @@ func DefaultConfig() *Config {
 		},
 	}
 }
+
+var (
+	GlobalConfig = &Config{}
+)
+
+func SetGlobalConfig(c *Config) {
+	GlobalConfig = c
+}

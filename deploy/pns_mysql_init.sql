@@ -14,12 +14,12 @@ use pns;
 --     unique key `uniq_device_id_app_id` (`device_id`, `app_id`)
 -- ) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
 create table if not exists `app_pusher_config`(
-    `id` smallint unique not null comment 'app id',
+    `appId` int unique not null comment 'app id',
     `pusherId` tinyint not null comment 'pusher id',
     `config` JSON not null comment 'app pusher config'
 ) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
 create table if not exists `app_config`(
-    `id` smallint unique not null comment 'app id',
+    `id` int unique not null comment 'app id',
     `name` varchar(256) unique not null comment 'app name'
 ) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
 -- Test Data

@@ -2,17 +2,19 @@ package target
 
 import (
 	"context"
+	"errors"
 	"time"
 
-	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
+	"github.com/L-LYR/pns/internal/service/cache"
 	"github.com/L-LYR/pns/internal/service/internal/dao"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func Upsert(ctx context.Context, target *model.Target) error {
 	now := time.Now()
-	appName, _ := local_storage.GetAppNameByAppId(target.App.ID)
+	appName, _ := cache.Config.GetAppNameByAppId(target.App.ID)
 	if result, _ := dao.TargetMongoDao.GetTarget( // ignore this error
 		ctx,
 		appName,
@@ -44,19 +46,27 @@ func Upsert(ctx context.Context, target *model.Target) error {
 
 func Query(
 	ctx context.Context,
-	appName string,
+	appId int,
 	deviceId string,
 ) (*model.Target, error) {
+	appName, ok := cache.Config.GetAppNameByAppId(appId)
+	if !ok {
+		return nil, errors.New("wrong app id")
+	}
 	return dao.TargetMongoDao.GetTarget(ctx, appName, deviceId)
 }
 
 func UpdateToken(
 	ctx context.Context,
-	appName string,
+	appId int,
 	deviceId string,
 	tokenName string,
 	token string,
 ) error {
+	appName, ok := cache.Config.GetAppNameByAppId(appId)
+	if !ok {
+		return errors.New("wrong app id")
+	}
 	return dao.TargetMongoDao.SetTargetToken(
 		ctx,
 		appName,
@@ -64,4 +74,8 @@ func UpdateToken(
 		tokenName,
 		token,
 	)
+}
+
+func Cursor(ctx context.Context, appName string) (*mongo.Cursor, error) {
+	return dao.TargetMongoDao.NaiveCursor(ctx, appName)
 }

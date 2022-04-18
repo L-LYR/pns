@@ -7,23 +7,48 @@ import (
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/model"
+	log "github.com/L-LYR/pns/internal/service/push_log"
 )
 
-func PushEventConsumer(e event_queue.Event) error {
-	pe, ok := e.(*model.PushEvent)
+func PushTaskEventConsumer(e event_queue.Event) error {
+	pe, ok := e.(*model.PushTaskEvent)
 	if !ok {
 		return errors.New("not PushEvent")
 	}
-	return PusherManager.Handle(pe.GetCtx(), pe.GetTask(), pe.PusherType())
+
+	log.PutTaskLog(
+		pe.GetCtx(), pe.GetTask().GetLogMeta(),
+		"task handle", "success",
+	)
+
+	var err error
+	taskHint := "success"
+
+	switch pe.GetTask().GetPusher() {
+	case model.MQTTPusher:
+		err = MQTTPusherManager.Handle(pe.GetCtx(), pe.GetTask())
+	default:
+		panic("unreachable")
+	}
+
+	if err != nil {
+		taskHint = "fail"
+	}
+
+	log.PutTaskLog(
+		pe.GetCtx(), pe.GetTask().GetLogMeta(),
+		"task done", taskHint,
+	)
+
+	return err
 }
 
-func PutMQTTPushEvent(ctx context.Context, task *model.PushTask) error {
+func PutPushTaskEvent(ctx context.Context, task model.PushTask) error {
 	return event_queue.EventQueueManager.Put(
 		config.PushEventTopic(),
-		&model.PushEvent{
-			Ctx:    ctx,
-			Pusher: model.MQTTPusher,
-			Task:   task,
+		&model.PushTaskEvent{
+			Ctx:  ctx,
+			Task: task,
 		},
 	)
 }

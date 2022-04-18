@@ -4,16 +4,17 @@ import (
 	"context"
 
 	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
+	"github.com/L-LYR/pns/internal/model"
 	log "github.com/L-LYR/pns/internal/service/push_log"
 	"github.com/L-LYR/pns/internal/util"
 	"github.com/gogf/gf/v2/errors/gcode"
 )
 
-var Task = _TaskAPI{}
+var Log = _LogAPI{}
 
-type _TaskAPI struct{}
+type _LogAPI struct{}
 
-func (api *_TaskAPI) Log(ctx context.Context, req *v1.TaskLogReq) (*v1.TaskLogRes, error) {
+func (api *_LogAPI) TaskLog(ctx context.Context, req *v1.TaskLogReq) (*v1.TaskLogRes, error) {
 	entries, err := log.GetTaskLogByID(ctx, req.TaskId)
 	if err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to get task log")
@@ -27,7 +28,7 @@ func (api *_TaskAPI) Log(ctx context.Context, req *v1.TaskLogReq) (*v1.TaskLogRe
 	return res, nil
 }
 
-func (api *_TaskAPI) Status(ctx context.Context, req *v1.TaskStatusReq) (*v1.TaskStatusRes, error) {
+func (api *_LogAPI) TaskStatus(ctx context.Context, req *v1.TaskStatusReq) (*v1.TaskStatusRes, error) {
 	entry, err := log.GetTaskStatusByID(ctx, req.TaskId)
 	if err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to get task log")
@@ -35,5 +36,23 @@ func (api *_TaskAPI) Status(ctx context.Context, req *v1.TaskStatusReq) (*v1.Tas
 	if entry == nil {
 		return nil, util.FinalError(gcode.CodeNotFound, err, "Task not found")
 	}
-	return &v1.TaskStatusRes{Status: entry.Readable()}, nil
+	return &v1.TaskStatusRes{Status: entry.Status()}, nil
+}
+
+func (api *_LogAPI) PushLog(ctx context.Context, req *v1.PushLogReq) (*v1.PushLogRes, error) {
+	entries, err := log.GetPushLogByMeta(ctx, &model.LogMeta{
+		TaskId:   req.TaskId,
+		AppId:    req.AppId,
+		DeviceId: req.DeviceId,
+	})
+	if err != nil {
+		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to get task log")
+	}
+	res := &v1.PushLogRes{
+		LogEntry: make([]string, 0, len(entries)),
+	}
+	for i := range entries {
+		res.LogEntry = append(res.LogEntry, entries[i].Readable())
+	}
+	return res, nil
 }

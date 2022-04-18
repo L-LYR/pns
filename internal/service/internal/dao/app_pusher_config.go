@@ -32,7 +32,7 @@ func FindConfigByKey(ctx context.Context, appId int, pusher model.PusherType) (*
 		Ctx(ctx).
 		Fields("config").
 		Where("pusherId", pusher).
-		Where("id", appId).
+		Where("appId", appId).
 		One()
 	if err != nil {
 		return nil, err
@@ -40,13 +40,35 @@ func FindConfigByKey(ctx context.Context, appId int, pusher model.PusherType) (*
 	return record.GMap().GetVar("config"), nil
 }
 
-func CreateConfig(ctx context.Context, appId int, pusher model.PusherType, configPointer interface{}) error {
+func CreateConfig(ctx context.Context, config model.PusherConfig) error {
 	_, err := AppPusherConfig.Ctx(ctx).Insert(
 		do.AppPusherConfig{
-			Id:       appId,
-			PusherId: pusher,
-			Config:   gjson.NewWithTag(configPointer, "json", true),
+			AppId:    config.AppId(),
+			PusherId: config.PusherType(),
+			Config:   gjson.NewWithTag(config, "json", true),
 		},
 	)
 	return err
+}
+
+// only used in cache
+func LoadAllPusherConfig(ctx context.Context) ([]model.PusherConfig, error) {
+	records, err := AppPusherConfig.Ctx(ctx).All()
+	if err != nil {
+		return nil, err
+	}
+	result := make([]model.PusherConfig, 0, records.Len())
+	for _, record := range records {
+		m := record.GMap()
+		config := model.NewEmptyPusherConfig(
+			m.GetVar("appId").Int(),
+			model.PusherType(m.GetVar("pusherId").Int8()),
+		)
+		if err := m.GetVar("config").Struct(config); err != nil {
+			return nil, err
+		}
+		result = append(result, config)
+	}
+	return result, err
+
 }

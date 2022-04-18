@@ -27,7 +27,7 @@ func MustRegisterRouters(ctx context.Context) *ghttp.Server {
 		)
 		group.Bind(
 			controller.Push,
-			controller.Task,
+			controller.Log,
 			controller.App,
 		)
 	})

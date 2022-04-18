@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/L-LYR/pns/internal/config"
-	"github.com/L-LYR/pns/internal/local_storage"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/util"
 	"github.com/L-LYR/pns/proto/pkg/message"
@@ -33,16 +32,13 @@ type Client struct {
 	Client paho.Client
 }
 
-func MustNewClient(
+func _MustNewClient(
 	ctx context.Context,
 	name string,
 	key string,
 	secret string,
 	brokerConfig *config.BrokerConfig,
 ) *Client {
-	if brokerConfig == nil {
-		panic("pusher config or app config is not given")
-	}
 	p := &Client{
 		Name:         name,
 		Key:          key,
@@ -66,14 +62,14 @@ func MustNewClient(
 func MustNewPusher(
 	ctx context.Context,
 	appId int,
+	pusherConfig *model.MQTTConfig,
 	brokerConfig *config.BrokerConfig,
 ) *Client {
-	auth := local_storage.GetPusherAuthByAppId(appId, model.MQTTPusher).(*model.MQTTConfig)
-	return MustNewClient(
+	return _MustNewClient(
 		ctx,
 		util.GeneratePusherClientID(appId),
-		auth.PusherKey,
-		auth.PusherSecret,
+		pusherConfig.PusherKey,
+		pusherConfig.PusherSecret,
 		brokerConfig,
 	)
 }
@@ -91,7 +87,7 @@ func (p *Client) TryConnect() error {
 	return nil
 }
 
-func (p *Client) Handle(ctx context.Context, task *model.PushTask) error {
+func (p *Client) Handle(ctx context.Context, task model.PushTask) error {
 	if err := p.TryConnect(); err != nil {
 		return err
 	}
@@ -99,7 +95,7 @@ func (p *Client) Handle(ctx context.Context, task *model.PushTask) error {
 	util.GLog.Infof(ctx, "topic: %s", topic)
 
 	message := &message.Message{}
-	if err := copier.Copy(message, task.Message); err != nil {
+	if err := copier.Copy(message, task.GetMessage); err != nil {
 		return err
 	}
 	payload, err := proto.Marshal(message)
@@ -113,12 +109,12 @@ func (p *Client) Handle(ctx context.Context, task *model.PushTask) error {
 	return token.Error()
 }
 
-func _TopicOf(task *model.PushTask) string {
-	switch task.Type {
-	case model.PersonalPush:
-		return fmt.Sprintf("%s/%d/%s/%d", task.Type.Name(), task.App.ID, task.Device.ID, task.ID)
+func _TopicOf(task model.PushTask) string {
+	switch task.GetType() {
+	case model.DirectPush:
+		return fmt.Sprintf("%s/%d/%s/%d", task.GetType().TopicNamePrefix(), task.GetAppId(), model.AsDirectPush(task).Device.ID, task.GetID())
 	case model.BroadcastPush:
-		return fmt.Sprintf("%s/%d/%d", task.Type.Name(), task.App.ID, task.ID)
+		return fmt.Sprintf("%s/%d/%d", task.GetType().TopicNamePrefix(), task.GetAppId(), task.GetID())
 	default:
 		panic("unreachable")
 	}

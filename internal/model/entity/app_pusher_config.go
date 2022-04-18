@@ -10,7 +10,7 @@ import (
 
 // AppPusherConfig is the golang structure for table app_pusher_config.
 type AppPusherConfig struct {
-	Id       int         `json:"id"       ` // app id
+	AppId    int         `json:"appId"    ` // app id
 	PusherId int         `json:"pusherId" ` // pusher id
 	Config   *gjson.Json `json:"config"   ` // app pusher config
 }

@@ -9,24 +9,36 @@ import (
 )
 
 // To make the length of raw log shorter, we make each tag shorter
-type PushLogMeta struct {
+type LogMeta struct {
 	TaskId   int
 	AppId    int
 	DeviceId string
 }
 
-func (b *PushLogMeta) EntryKey() string {
+func (b *LogMeta) PushKey() string {
+	return fmt.Sprintf("%d:%s:%d", b.AppId, b.DeviceId, b.TaskId)
+}
+
+func (b *LogMeta) EntryKey() string {
 	return fmt.Sprintf("%d:%s", b.AppId, b.DeviceId)
 }
 
-func (b *PushLogMeta) StatusKey() string {
+func (b *LogMeta) TaskStatusKey() string {
 	return strconv.FormatInt(int64(b.TaskId), 10)
 }
 
 type LogBase struct {
-	Meta  *PushLogMeta `json:"-"`
-	T     int64        `json:"ts"`
-	Where string       `json:"w"`
+	Meta  *LogMeta `json:"-"`
+	T     int64    `json:"ts"`
+	Where string   `json:"w"`
+}
+
+func NewLogBase(meta *LogMeta, where string) *LogBase {
+	return &LogBase{
+		Meta:  meta,
+		T:     time.Now().UnixMilli(),
+		Where: where,
+	}
 }
 
 func (l *LogBase) Timestamp() int64 {
@@ -52,6 +64,10 @@ func (l *LogEntry) Encode() (string, error) {
 
 func (l *LogEntry) Readable() string {
 	return fmt.Sprintf("[%s] %s at %s", time.UnixMilli(l.T).Format(time.RFC3339), l.Hint, l.Where)
+}
+
+func (l *LogEntry) Status() string {
+	return fmt.Sprintf("%s at %s", l.Hint, l.Where)
 }
 
 // fyne notification does not provide onClick method

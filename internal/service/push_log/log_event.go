@@ -7,35 +7,36 @@ import (
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/model"
+	"github.com/L-LYR/pns/internal/util"
 )
 
-func LogEventConsumer(e event_queue.Event) error {
-	le, ok := e.(*model.LogEvent)
+func PushLogEventConsumer(e event_queue.Event) error {
+	le, ok := e.(*model.PushLogEvent)
 	if !ok {
 		return errors.New("not LogEvent")
 	}
-	return PutTaskLog(le.GetCtx(), le.GetEntry())
+	return PutPushLog(le.GetCtx(), le.GetEntry())
 }
 
-func PutLogEvent(
+func PutPushLogEvent(
 	ctx context.Context,
-	meta *model.PushLogMeta,
-	timestamp int64,
-	where string,
 	hint string,
-) error {
-	return event_queue.EventQueueManager.Put(
-		config.LogEventTopic(),
-		&model.LogEvent{
+	base *model.LogBase,
+) {
+	if err := event_queue.EventQueueManager.Put(
+		config.PushLogEventTopic(),
+		&model.PushLogEvent{
 			Ctx: ctx,
 			Entry: &model.LogEntry{
-				LogBase: &model.LogBase{
-					Meta:  meta,
-					T:     timestamp,
-					Where: where,
-				},
-				Hint: hint,
+				LogBase: base,
+				Hint:    hint,
 			},
 		},
-	)
+	); err != nil {
+		util.GLog.Errorf(
+			ctx,
+			"Fail to put log event, meta: %+v, timestamp: %d, where: %s, hint: %s",
+			base.Meta, base.T, base.Where, hint,
+		)
+	}
 }

@@ -17,7 +17,6 @@ type LogHandler func(fmt string, v ...interface{})
 
 type _PushSDK struct {
 	ctx context.Context
-	cfg *storage.Config
 
 	gLogHandler LogHandler
 	gHTTPClient *http.Client
@@ -32,9 +31,10 @@ func MustInitialize(cfg *storage.Config, fn LogHandler) {
 		fn = DefaultLogHandler()
 	}
 
+	storage.SetGlobalConfig(cfg)
+
 	PushSDK = &_PushSDK{
 		ctx:         ctx,
-		cfg:         cfg,
 		gLogHandler: fn,
 		gHTTPClient: gHTTPClient,
 	}
@@ -59,10 +59,6 @@ func DefaultLogHandler() LogHandler {
 	}
 }
 
-func (sdk *_PushSDK) GetConfig() *storage.Config {
-	return sdk.cfg
-}
-
 func (sdk *_PushSDK) ReportLog(payload http.Payload) {
 	_, err := sdk.gHTTPClient.POST("/log", payload)
 	if err != nil {
@@ -72,14 +68,14 @@ func (sdk *_PushSDK) ReportLog(payload http.Payload) {
 
 func (sdk *_PushSDK) UpdateTargetInfo() {
 	_, err := sdk.gHTTPClient.POST("/target", http.Payload{
-		"deviceId":           PushSDK.cfg.DeviceId,
+		"deviceId":           storage.GlobalConfig.DeviceId,
 		"os":                 "windows",
 		"brand":              "chrome",
 		"model":              "chrome",
 		"tzName":             "Asia/Shanghai",
-		"appId":              PushSDK.cfg.App.ID,
-		"appVersion":         PushSDK.cfg.App.Version,
-		"pushSDKVersion":     PushSDK.cfg.Sdk.Version,
+		"appId":              storage.GlobalConfig.App.ID,
+		"appVersion":         storage.GlobalConfig.App.Version,
+		"pushSDKVersion":     storage.GlobalConfig.Sdk.Version,
 		"language":           "cn",
 		"inAppPushStatus":    1,
 		"systemPushStatus":   1,
@@ -95,8 +91,8 @@ func (sdk *_PushSDK) UpdateTargetInfo() {
 
 func (sdk *_PushSDK) GetToken() {
 	payload, err := sdk.gHTTPClient.GET("/token", http.Payload{
-		"deviceId": sdk.cfg.DeviceId,
-		"appId":    sdk.cfg.App.ID,
+		"deviceId": storage.GlobalConfig.DeviceId,
+		"appId":    storage.GlobalConfig.App.ID,
 	})
 	if err != nil {
 		sdk.gLogHandler("Error: %s", err.Error())
@@ -107,7 +103,7 @@ func (sdk *_PushSDK) GetToken() {
 		sdk.gLogHandler("Error: no token")
 		return
 	}
-	PushSDK.cfg.Token["self"], ok = token.(string)
+	storage.GlobalConfig.Token["self"], ok = token.(string)
 	if !ok {
 		sdk.gLogHandler("Error: wrong token")
 		return
