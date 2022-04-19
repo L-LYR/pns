@@ -7,10 +7,10 @@
 root_path=$(realpath "$0" | xargs dirname | xargs dirname)
 if [ -z "$DEBUG" ]; then
     deploy_path="$root_path/.deploy"
-    pns_dockerfile="$deploy_path/dockerfile"
+    pns_dockerfile="$deploy_path/pns/dockerfile"
 else
     deploy_path="$root_path/.test_deploy"
-    pns_dockerfile="$deploy_path/debug.dockerfile"
+    pns_dockerfile="$deploy_path/pns/debug.dockerfile"
 fi
 deploy_config_path="$root_path/deploy"
 build_path="$root_path/build"
@@ -24,14 +24,13 @@ export build_path
 export pns_dockerfile
 export db_root_pass="pns_root"
 export pns_image_name="hammerli/pns:v1"
-export pns_log_volume="$deploy_path/pns_log"
-export pns_mongo_volume="$deploy_path/pns_mongo"
-export pns_mysql_volume="$deploy_path/pns_mysql"
-export pns_redis_volume="$deploy_path/pns_redis"
-export pns_prometheus_volume="$deploy_path/pns_prometheus"
-export pns_mosquitto_volume="$deploy_path/pns_mosquitto"
-export pns_grafana_volume="$deploy_path/pns_grafana"
-export pns_grafana_provisioning="$deploy_path/pns_grafana_provisioning"
+export pns_log_volume="$deploy_path/pns_log_volume"
+export pns_mongo_volume="$deploy_path/pns_mongo_volume"
+export pns_mysql_volume="$deploy_path/pns_mysql_volume"
+export pns_redis_volume="$deploy_path/pns_redis_volume"
+export pns_prometheus_volume="$deploy_path/pns_prometheus_volume"
+export pns_mosquitto_volume="$deploy_path/pns_mosquitto_volume"
+export pns_grafana_volume="$deploy_path/pns_grafana_volume"
 export TZ
 
 # print basic infomation
@@ -67,7 +66,6 @@ up() {
     mkdir -p "$pns_grafana_volume" || exit
     sudo chown -R 472:472 "$pns_grafana_volume" || exit
 
-    mkdir -p "$pns_grafana_provisioning" || exit
     printf "Bootstrap...\n"
     if [ -z "$(docker images -q $pns_image_name)" ]; then
         docker-compose build || exit

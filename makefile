@@ -13,9 +13,6 @@ frontend:
 test:
 	go test -v ./...
 
-update:
-	bash ./scripts/deploy.sh update
-
 gen:
 	gf gen dao -g mysql -n -s -l "mysql:root:pns_root@tcp(127.0.0.1:3306)/pns"
 

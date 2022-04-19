@@ -33,7 +33,7 @@ func (m *_EventQueueManager) MustStart(ctx context.Context) {
 		if err != nil {
 			panic(err)
 		}
-		if err := w.RunOn(ch); err != nil {
+		if err := w.RunOn(ctx, ch); err != nil {
 			panic(err)
 		}
 	}

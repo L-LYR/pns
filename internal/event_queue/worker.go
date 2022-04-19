@@ -1,6 +1,7 @@
 package event_queue
 
 import (
+	"context"
 	"errors"
 	"sync"
 
@@ -12,7 +13,7 @@ type Consumer func(Event) error
 
 type _Worker interface {
 	Topic() string
-	RunOn(<-chan Event) error
+	RunOn(context.Context, <-chan Event) error
 	Shutdown()
 }
 
@@ -22,25 +23,25 @@ var (
 
 func _MustNewWorker(cfg *config.ConsumerConfig, consumer Consumer) _Worker {
 	return &_RealWorker{
-		cfg:       cfg,
-		closeChan: make(chan struct{}),
-		fn:        consumer,
+		cfg: cfg,
+		fn:  consumer,
 	}
 }
 
 type _RealWorker struct {
+	cancellor context.CancelFunc
 	cfg       *config.ConsumerConfig
 	wg        sync.WaitGroup
-	closeChan chan struct{}
 	fn        Consumer
 }
 
 func (w *_RealWorker) Topic() string { return w.cfg.Topic }
 
-func (w *_RealWorker) RunOn(ch <-chan Event) error {
+func (w *_RealWorker) RunOn(ctx context.Context, ch <-chan Event) error {
 	if w.cfg == nil || !w.cfg.Check() || w.fn == nil {
 		return errors.New("worker is uninitialized")
 	}
+	ctx, w.cancellor = context.WithCancel(ctx)
 	for i := uint(0); i < w.cfg.Dispatch; i++ {
 		w.wg.Add(1)
 		go func() {
@@ -50,7 +51,7 @@ func (w *_RealWorker) RunOn(ch <-chan Event) error {
 					if err := w.fn(e); err != nil {
 						util.GLog.Errorf(e.GetCtx(), "%+v", err)
 					}
-				case <-w.closeChan:
+				case <-ctx.Done():
 					w.wg.Done()
 					return
 				}
@@ -61,6 +62,8 @@ func (w *_RealWorker) RunOn(ch <-chan Event) error {
 }
 
 func (w *_RealWorker) Shutdown() {
-	w.closeChan <- struct{}{}
-	w.wg.Wait()
+	if w.cancellor != nil {
+		w.cancellor()
+		w.wg.Wait()
+	}
 }

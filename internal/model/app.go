@@ -59,7 +59,7 @@ func NewEmptyPusherConfig(appId int, t PusherType) PusherConfig {
 }
 
 type MQTTConfig struct {
-	ID             int    `json:"appId"`
+	ID             int    `json:"-"`
 	PusherKey      string `json:"pusherKey" copier:"must,nopanic"`
 	PusherSecret   string `json:"pusherSecret" copier:"must,nopanic"`
 	ReceiverKey    string `json:"receiverKey" copier:"must,nopanic"`
@@ -70,7 +70,7 @@ func (c *MQTTConfig) AppId() int             { return c.ID }
 func (c *MQTTConfig) PusherType() PusherType { return MQTTPusher }
 
 type FCMConfig struct {
-	ID  int    `json:"appId"`
+	ID  int    `json:"-"`
 	Key string `json:"key" copier:"must,nopanic"`
 }
 
@@ -78,7 +78,7 @@ func (c *FCMConfig) AppId() int             { return c.ID }
 func (c *FCMConfig) PusherType() PusherType { return FCMPusher }
 
 type APNsConfig struct {
-	ID      int    `json:"appId"`
+	ID      int    `json:"-"`
 	AuthKey string `json:"authKey" copier:"must,nopanic"`
 	KeyID   string `json:"keyID" copier:"must,nopanic"`
 	TeamID  string `json:"teamID" copier:"must,nopanic"`
