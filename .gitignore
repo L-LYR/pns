@@ -9,3 +9,4 @@ build
 .deploy
 web/app.wasm
 *.apk
+tool
