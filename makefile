@@ -7,7 +7,7 @@ all: build_dir frontend
 build_dir:
 	mkdir -p ./build
 
-frontend:
+frontend: frontend_settings
 	GOARCH=wasm GOOS=js go build -v -o ./web/app.wasm ./cmd/pns_frontend/main.go && cp -R ./web ./build/web
 
 test:

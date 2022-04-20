@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"time"
 
 	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
 	"github.com/L-LYR/pns/internal/model"
@@ -46,13 +47,17 @@ func _BuildDirectPushTask(ctx context.Context, req *v1.DirectPushReq) (*model.Di
 	return &model.DirectPushTask{
 		ID:     util.GeneratePushTaskId(),
 		Pusher: model.MQTTPusher,
-		RetryCounter: &model.RetryCounter{
-			Counter: model.RetryTimes(req.Retry),
-		},
+
 		Target: target,
 		Message: &model.Message{
 			Title:   req.Title,
 			Content: req.Content,
+		},
+		PushTaskMeta: &model.PushTaskMeta{
+			RetryCounter: &model.RetryCounter{
+				Counter: model.RetryTimes(req.Retry),
+			},
+			CreationTime: time.Now(),
 		},
 	}, nil
 }
@@ -79,12 +84,15 @@ func _BuildBroadcastPushTask(ctx context.Context, req *v1.BroadcastPushReq) (*mo
 		ID:     util.GeneratePushTaskId(),
 		AppId:  req.AppId,
 		Pusher: model.MQTTPusher,
-		RetryCounter: &model.RetryCounter{
-			Counter: model.NeverRetry,
-		},
 		Message: &model.Message{
 			Title:   req.Title,
 			Content: req.Content,
+		},
+		PushTaskMeta: &model.PushTaskMeta{
+			RetryCounter: &model.RetryCounter{
+				Counter: model.NeverRetry,
+			},
+			CreationTime: time.Now(),
 		},
 	}, nil
 }

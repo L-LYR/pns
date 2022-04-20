@@ -7,7 +7,7 @@ android: mobile_settings
 	mkdir -p build && fyne package --os android --appID pns.mobile.demo --icon ./img/logo.png --name PNS-Mobile && mv *.apk ./build
 
 windows:
-	go build -o ./build/pns.exe .
+	go build -o ./build/pns.exe -ldflags -H=windowsgui .
 
 linux:
 	go build -o ./build/pns .
