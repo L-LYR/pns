@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -212,4 +213,31 @@ func (dao *_LogRedisDao) GetTaskEntryListByMeta(
 		return nil, err
 	}
 	return rawLog, nil
+}
+
+func (dao *_LogRedisDao) IncrTaskCounter(
+	ctx context.Context,
+	taskId int,
+	event string, // receive or show
+) error {
+	client := dao.LogRedisDao.Client(ctx)
+	key := fmt.Sprintf("%d:%s", taskId, event)
+	if _, err := client.Incr(ctx, key).Result(); err != nil {
+		return err
+	}
+	if _, err := client.
+		Expire(ctx, key, _InactiveDuration).
+		Result(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (dao *_LogRedisDao) GetTaskStatistics(
+	ctx context.Context,
+	taskId int,
+	event string,
+) (int64, error) {
+	key := fmt.Sprintf("%d:%s", taskId, event)
+	return dao.LogRedisDao.Client(ctx).Get(ctx, key).Int64()
 }
