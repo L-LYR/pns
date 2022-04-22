@@ -27,7 +27,7 @@ func (m *_EventQueueManager) Put(topic string, event Event) error {
 
 func (m *_EventQueueManager) MustStart(ctx context.Context) {
 	m.queue = _MustNewEventQueue(m.topics...)
-	m.queue.Start()
+	m.queue.Start(ctx)
 	for _, w := range m.workers {
 		ch, err := m.queue.Subscribe(w.Topic())
 		if err != nil {
@@ -40,7 +40,7 @@ func (m *_EventQueueManager) MustStart(ctx context.Context) {
 }
 
 func (m *_EventQueueManager) MustShutdown(ctx context.Context) {
-	m.queue.Shutdown()
+	m.queue.Shutdown(ctx)
 	for _, w := range m.workers {
 		w.Shutdown()
 	}

@@ -1,7 +1,11 @@
 package event_queue
 
 import (
+	"context"
 	"errors"
+	"time"
+
+	"github.com/L-LYR/pns/internal/monitor"
 )
 
 const (
@@ -9,8 +13,9 @@ const (
 )
 
 type _InMemoryEventQueue struct {
-	working bool
-	cs      map[string]chan Event
+	cancellor context.CancelFunc
+	working   bool
+	cs        map[string]chan Event
 }
 
 // TODO: add channel length monitor
@@ -25,8 +30,10 @@ func _MustNewInMemoryEventQueue(topics []string) *_InMemoryEventQueue {
 	return q
 }
 
-func (q *_InMemoryEventQueue) Start() {
+func (q *_InMemoryEventQueue) Start(ctx context.Context) {
 	q.working = true
+	ctx, q.cancellor = context.WithCancel(ctx)
+	go q.Monitor(ctx)
 }
 
 func (q *_InMemoryEventQueue) Put(topic string, e Event) error {
@@ -49,6 +56,19 @@ func (q *_InMemoryEventQueue) Subscribe(topic string) (<-chan Event, error) {
 	return ch, nil
 }
 
-func (q *_InMemoryEventQueue) Shutdown() {
+func (q *_InMemoryEventQueue) Shutdown(ctx context.Context) {
 	q.working = false
+}
+
+func (q *_InMemoryEventQueue) Monitor(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.Tick(time.Second * 5):
+			for topic, ch := range q.cs {
+				monitor.EventQueueLength.WithLabelValues(topic).Set(float64(len(ch)))
+			}
+		}
+	}
 }

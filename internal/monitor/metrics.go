@@ -39,11 +39,22 @@ var (
 	)
 )
 
+var (
+	EventQueueTags = []string{
+		"topic",
+	}
+	EventQueueLength = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{Name: "event_queue_len"},
+		EventQueueTags,
+	)
+)
+
 func MustRegisterMetrics(ctx context.Context) {
 	prometheus.MustRegister(
 		RequestGenericCounter,
 		RequestGenericDuration,
 		PushTaskCounter,
 		PushTaskDuration,
+		EventQueueLength,
 	)
 }
