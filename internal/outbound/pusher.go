@@ -106,7 +106,6 @@ func (p *_PusherManager) _ReputTask(ctx context.Context, task model.PushTask, pu
 	if err := PutPushTaskEvent(ctx, task); err != nil {
 		util.GLog.Warningf(ctx, "Task %d fail to reput task in event queue, retry", task.GetID())
 		return p._ReputTask(ctx, task, pusherType)
-
 	}
 	if err := log.PutTaskLog(ctx, meta, "retry", "success"); err != nil {
 		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
@@ -115,20 +114,27 @@ func (p *_PusherManager) _ReputTask(ctx context.Context, task model.PushTask, pu
 }
 
 func (p *_PusherManager) Handle(ctx context.Context, task model.PushTask) error {
-	if !task.GetMeta().IsRetry() {
-		task.GetMeta().SetHandleTime(time.Now())
+	taskMeta := task.GetMeta()
+	if taskMeta.OnHandle() {
+		taskMeta.SetHandleTime(time.Now())
 	}
-	meta := task.GetLogMeta()
+	logMeta := task.GetLogMeta()
 	pusher, ok := p._GetPusher(ctx, task.GetAppId())
 	if !ok {
 		util.GLog.Warningf(ctx, "No %s pusher for app %d", task.GetPusher().Name(), task.GetAppId())
 		return p._ReputTask(ctx, task, p.pusherType)
 	}
-	if err := log.PutTaskEntry(ctx, meta); err != nil {
-		util.GLog.Warningf(ctx, "Fail to add task list entry, meta:%+v", meta)
+	if err := log.PutTaskEntry(ctx, logMeta); err != nil {
+		util.GLog.Warningf(ctx, "Fail to add task list entry, meta:%+v", logMeta)
 	}
 	if err := pusher.Handle(ctx, task); err != nil {
-		return p._ReputTask(ctx, task, p.pusherType)
+		if err := p._ReputTask(ctx, task, p.pusherType); err != nil {
+			taskMeta.SetFailure()
+			return err
+		} else { // retrying
+			return nil
+		}
 	}
+	taskMeta.SetSuccess()
 	return nil
 }

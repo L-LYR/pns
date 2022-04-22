@@ -26,6 +26,8 @@ func PushTaskEventConsumer(e event_queue.Event) error {
 		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
 	}
 
+	task.GetMeta().SetOnHandle()
+
 	var err error
 	taskHint := "success"
 	switch pe.GetTask().GetPusher() {
@@ -35,13 +37,10 @@ func PushTaskEventConsumer(e event_queue.Event) error {
 		panic("unreachable")
 	}
 
-	taskMeta := task.GetMeta()
-
-	if err == nil && !taskMeta.IsRetry() {
-		return nil // this task will retry
+	if !task.GetMeta().IsDone() {
+		return nil
 	}
-
-	taskMeta.SetEndTime(time.Now())
+	task.GetMeta().SetEndTime(time.Now())
 
 	if err != nil {
 		taskHint = "failure"

@@ -45,6 +45,15 @@ func (t PushTaskType) Name() string {
 	}
 }
 
+type PushTaskStatusType int8
+
+const (
+	OnHandle PushTaskStatusType = 1
+	Retry    PushTaskStatusType = 2
+	Success  PushTaskStatusType = 3
+	Failure  PushTaskStatusType = 4
+)
+
 type PushTask interface {
 	GetID() int
 	GetType() PushTaskType
@@ -53,6 +62,7 @@ type PushTask interface {
 	GetMessage() *Message
 	GetLogMeta() *LogMeta
 	GetMeta() *PushTaskMeta
+	GetStatus() PushTaskStatusType
 
 	CanRetry() bool
 }
@@ -83,10 +93,10 @@ func (c *RetryCounter) CanRetry() bool {
 
 type PushTaskMeta struct {
 	*RetryCounter
-	Retry        bool      `json:"-"`
-	CreationTime time.Time `json:"creationTime"`
-	HandleTime   time.Time `json:"handleTime"`
-	EndTime      time.Time `json:"endTime"`
+	Status       PushTaskStatusType `json:"status"`
+	CreationTime time.Time          `json:"creationTime"`
+	HandleTime   time.Time          `json:"handleTime"`
+	EndTime      time.Time          `json:"endTime"`
 }
 
 func NewTaskMeta() *PushTaskMeta { return &PushTaskMeta{} }
@@ -96,10 +106,18 @@ func (m *PushTaskMeta) SetRetry() {
 		return
 	}
 	m.RetryCounter.Counter--
-	m.Retry = true
+	m.Status = Retry
 }
+func (m *PushTaskMeta) SetSuccess() { m.Status = Success }
+func (m *PushTaskMeta) SetFailure() { m.Status = Failure }
+func (m *PushTaskMeta) SetOnHandle() { m.Status = OnHandle }
 
-func (m *PushTaskMeta) IsRetry() bool { return m.Retry }
+func (m *PushTaskMeta) IsRetry() bool                 { return m.Status == Retry }
+func (m *PushTaskMeta) OnHandle() bool                { return m.Status == OnHandle }
+func (m *PushTaskMeta) IsDone() bool                  { return m.Success() || m.Failure() }
+func (m *PushTaskMeta) Success() bool                 { return m.Status == Success }
+func (m *PushTaskMeta) Failure() bool                 { return m.Status == Failure }
+func (m *PushTaskMeta) GetStatus() PushTaskStatusType { return m.Status }
 
 func (m *PushTaskMeta) SetCreationTime(t time.Time) { m.CreationTime = t }
 func (m *PushTaskMeta) GetCreationTime() time.Time  { return m.CreationTime }
