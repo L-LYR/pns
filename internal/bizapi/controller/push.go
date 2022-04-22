@@ -25,7 +25,10 @@ func (api *_PushAPI) DirectPush(ctx context.Context, req *v1.DirectPushReq) (*v1
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to build push task")
 	}
 
-	log.PutTaskLog(ctx, task.GetLogMeta(), "direct push task creation", "success")
+	err = log.PutTaskLog(ctx, task.GetLogMeta(), "direct push task creation", "success")
+	if err != nil {
+		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
+	}
 
 	if err := outbound.PutPushTaskEvent(ctx, task); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")
@@ -68,7 +71,10 @@ func (api *_PushAPI) BroadcastPush(ctx context.Context, req *v1.BroadcastPushReq
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to build push task")
 	}
 
-	log.PutTaskLog(ctx, task.GetLogMeta(), "broadcast push task creation", "success")
+	err = log.PutTaskLog(ctx, task.GetLogMeta(), "broadcast push task creation", "success")
+	if err != nil {
+		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
+	}
 
 	if err := outbound.PutPushTaskEvent(ctx, task); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")

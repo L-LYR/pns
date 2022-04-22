@@ -10,6 +10,7 @@ import (
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/monitor"
 	log "github.com/L-LYR/pns/internal/service/push_log"
+	"github.com/L-LYR/pns/internal/util"
 )
 
 func PushTaskEventConsumer(e event_queue.Event) error {
@@ -21,7 +22,9 @@ func PushTaskEventConsumer(e event_queue.Event) error {
 	ctx, task := pe.GetCtx(), pe.GetTask()
 	logMeta := task.GetLogMeta()
 
-	log.PutTaskLog(ctx, logMeta, "task handle", "success")
+	if err := log.PutTaskLog(ctx, logMeta, "task handle", "success"); err != nil {
+		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
+	}
 
 	var err error
 	taskHint := "success"
@@ -32,17 +35,21 @@ func PushTaskEventConsumer(e event_queue.Event) error {
 		panic("unreachable")
 	}
 
-	if err == nil && task.CanRetry() {
+	taskMeta := task.GetMeta()
+
+	if err == nil && !taskMeta.IsRetry() {
 		return nil // this task will retry
 	}
 
-	task.GetMeta().SetEndTime(time.Now())
+	taskMeta.SetEndTime(time.Now())
 
 	if err != nil {
 		taskHint = "failure"
 	}
 
-	log.PutTaskLog(ctx, logMeta, "task done", taskHint)
+	if err := log.PutTaskLog(ctx, logMeta, "task done", taskHint); err != nil {
+		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
+	}
 
 	taskTypeName := task.GetType().Name()
 	monitor.PushTaskCounter.
@@ -59,6 +66,8 @@ func PushTaskEventConsumer(e event_queue.Event) error {
 		WithLabelValues(taskTypeName, "handle", taskHint).Observe(
 		task.GetMeta().HandleDuration().Seconds(),
 	)
+
+	util.GLog.Infof(ctx, "Task %d %s", task.GetID(), taskHint)
 
 	return err
 }
