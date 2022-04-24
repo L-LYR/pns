@@ -15,7 +15,6 @@ import (
 
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/mobile/push_sdk/net/http"
-	"github.com/L-LYR/pns/mobile/push_sdk/util"
 	"github.com/L-LYR/pns/proto/pkg/message"
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"google.golang.org/protobuf/proto"
@@ -46,13 +45,14 @@ func ReportLog(payload http.Payload) {
 type MessageHandler func(*message.Message) error
 
 type Client struct {
-	c paho.Client
+	id int
+	c  paho.Client
 }
 
 func DefaultOptions(deviceId int) *paho.ClientOptions {
 	o := paho.NewClientOptions()
 	o.AddBroker("tcp://192.168.1.2:1883")
-	o.SetClientID(util.GenerateClientId("pns-target", strconv.FormatInt(int64(deviceId), 10), 12345))
+	o.SetClientID(fmt.Sprintf("pns-target:%d:12345", deviceId))
 	o.SetUsername("test_app_name")
 	o.SetPassword("test_app_name")
 	o.SetConnectTimeout(ConnectTimeout)
@@ -60,7 +60,7 @@ func DefaultOptions(deviceId int) *paho.ClientOptions {
 }
 
 func MustNewMQTTClient(deviceId int) *Client {
-	p := &Client{c: paho.NewClient(DefaultOptions(deviceId))}
+	p := &Client{id: deviceId, c: paho.NewClient(DefaultOptions(deviceId))}
 	if err := p.TryConnect(); err != nil {
 		log.Printf("Error: %s", err.Error())
 	}
@@ -102,6 +102,10 @@ func (c *Client) newEventLog(topic string, where string, err error) map[string]i
 		eventLog["appId"] = ss[1]
 		eventLog["deviceId"] = ss[2]
 		eventLog["taskId"] = ss[3]
+	case "BPush":
+		eventLog["appId"] = ss[1]
+		eventLog["deviceId"] = strconv.FormatInt(int64(c.id), 10)
+		eventLog["taskId"] = ss[2]
 	default:
 		panic("unreachable")
 	}
@@ -130,7 +134,7 @@ func (c *Client) subscribe(topic string, fn MessageHandler) {
 		log.Printf("Error: %s", err.Error())
 		return
 	}
-	token := c.c.Subscribe(topic, model.AtMostOnce, c.wrapHandler(fn))
+	token := c.c.Subscribe(topic, model.AtLeastOnce, c.wrapHandler(fn))
 	if ok := token.WaitTimeout(ConnectTimeout); !ok {
 		log.Printf("Error: subscribe timeout")
 		return
@@ -141,8 +145,12 @@ func (c *Client) subscribe(topic string, fn MessageHandler) {
 	log.Printf("Success to subscribe %s", topic)
 }
 
-func Topic(deviceId int) string {
+func DirectTopic(deviceId int) string {
 	return fmt.Sprintf("DPush/12345/%d/+", deviceId)
+}
+
+func BroadcastTopic() string {
+	return fmt.Sprintf("BPush/12345/#")
 }
 
 func main() {
@@ -154,12 +162,14 @@ func main() {
 
 	clients := make([]*Client, 0, MaxDeviceId)
 	initialize(ctx)
-	for id := 0; id < 10000; id++ {
+	for id := 0; id < 100; id++ {
 		c := MustNewMQTTClient(id)
-		c.subscribe(Topic(id), func(m *message.Message) error {
+		fn := func(m *message.Message) error {
 			log.Printf("receive: %s:%s", m.Title, m.Content)
 			return nil
-		})
+		}
+		c.subscribe(DirectTopic(id), fn)
+		c.subscribe(BroadcastTopic(), fn)
 		clients = append(clients, c)
 	}
 
