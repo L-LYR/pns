@@ -54,6 +54,27 @@ const (
 	Failure  PushTaskStatusType = 4
 )
 
+type Qos = byte
+
+const (
+	AtMostOnce  Qos = 0
+	AtLeastOnce Qos = 1
+	ExactlyOnce Qos = 2
+)
+
+func ParseQos(s string) (Qos, error) {
+	switch s {
+	case "atMostOnce":
+		return AtMostOnce, nil
+	case "atLeastOnce":
+		return AtLeastOnce, nil
+	case "exactlyOnce":
+		return ExactlyOnce, nil
+	default:
+		return 255, errors.New("unknown qos")
+	}
+}
+
 type PushTask interface {
 	GetID() int
 	GetType() PushTaskType
@@ -63,6 +84,7 @@ type PushTask interface {
 	GetLogMeta() *LogMeta
 	GetMeta() *PushTaskMeta
 	GetStatus() PushTaskStatusType
+	GetQos() Qos
 
 	CanRetry() bool
 }
@@ -108,8 +130,8 @@ func (m *PushTaskMeta) SetRetry() {
 	m.RetryCounter.Counter--
 	m.Status = Retry
 }
-func (m *PushTaskMeta) SetSuccess() { m.Status = Success }
-func (m *PushTaskMeta) SetFailure() { m.Status = Failure }
+func (m *PushTaskMeta) SetSuccess()  { m.Status = Success }
+func (m *PushTaskMeta) SetFailure()  { m.Status = Failure }
 func (m *PushTaskMeta) SetOnHandle() { m.Status = OnHandle }
 
 func (m *PushTaskMeta) IsRetry() bool                 { return m.Status == Retry }
@@ -138,6 +160,7 @@ func AsDirectPush(t PushTask) *DirectPushTask {
 type DirectPushTask struct {
 	ID     int        `json:"id"`
 	Pusher PusherType `json:"pusher"`
+	Qos    Qos        `json:"qos"`
 	*PushTaskMeta
 	*Target
 	*Message
@@ -149,6 +172,7 @@ func (t *DirectPushTask) GetAppId() int          { return t.App.ID }
 func (t *DirectPushTask) GetPusher() PusherType  { return t.Pusher }
 func (t *DirectPushTask) GetMessage() *Message   { return t.Message }
 func (t *DirectPushTask) GetMeta() *PushTaskMeta { return t.PushTaskMeta }
+func (t *DirectPushTask) GetQos() Qos            { return t.Qos }
 func (t *DirectPushTask) GetLogMeta() *LogMeta {
 	meta := &LogMeta{
 		TaskId:   t.ID,
@@ -167,6 +191,7 @@ type BroadcastTask struct {
 	ID     int        `json:"id"`
 	AppId  int        `json:"appId"`
 	Pusher PusherType `json:"pusher"`
+	Qos    Qos        `json:"qos"`
 	*PushTaskMeta
 	*Message
 	// FilterParams
@@ -178,6 +203,7 @@ func (t *BroadcastTask) GetAppId() int          { return t.AppId }
 func (t *BroadcastTask) GetPusher() PusherType  { return t.Pusher }
 func (t *BroadcastTask) GetMessage() *Message   { return t.Message }
 func (t *BroadcastTask) GetMeta() *PushTaskMeta { return t.PushTaskMeta }
+func (t *BroadcastTask) GetQos() Qos            { return t.Qos }
 func (t *BroadcastTask) GetLogMeta() *LogMeta {
 	meta := &LogMeta{
 		TaskId: t.ID,

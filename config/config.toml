@@ -44,3 +44,7 @@ dispatch = 5
 [module.event_queue.log_event_consumer]
 topic = "log_event"
 dispatch = 5
+
+
+[task]
+default_qos = "atLeastOnce"

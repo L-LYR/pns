@@ -17,7 +17,7 @@ var (
 		log.Append(fmt.Sprintf(s, v...))
 	}
 
-	bizHTTPClient = http.MustNewHTTPClient("http://192.168.137.1:10087")
+	bizHTTPClient = http.MustNewHTTPClient("http://192.168.1.2:10087")
 )
 
 func PushMyself(title string, content string) {

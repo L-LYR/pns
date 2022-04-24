@@ -10,3 +10,4 @@ build
 web/app.wasm
 *.apk
 tool
+result.json

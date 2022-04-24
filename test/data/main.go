@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/L-LYR/pns/mobile/push_sdk/net/http"
@@ -15,17 +16,19 @@ import (
 
 const (
 	MaxDeviceNum    = 5000000
-	DispatchN       = 50
+	DispatchN       = 8
 	ReqNumPerWorker = MaxDeviceNum / DispatchN
 )
 
 var (
-	client             = http.MustNewHTTPClient("http://192.168.1.2")
+	client             = http.MustNewHTTPClient("http://192.168.1.2:10086")
 	osList             = []string{"windows", "android", "macos", "linux"}
 	brandList          = []string{"chrome", "huawei", "vivo", "apple", "safari", "firefox", "windows"}
 	modelList          = []string{"xxxx", "yyyy", "zzzz"}
 	appVersionList     = []string{"0.0.1", "0.2.1", "0.2.2", "0.1.0", "0.1.1"}
 	pushSDKVersionList = []string{"0.0.1", "0.0.2", "0.0.3"}
+
+	counter = int64(0)
 )
 
 func getRandTarget(deviceId int) http.Payload {
@@ -55,17 +58,32 @@ func main() {
 	rand.Seed(time.Now().Unix())
 
 	var wg sync.WaitGroup
+
 	wg.Add(DispatchN)
 	for i := 0; i < DispatchN; i++ {
-		begin := i * ReqNumPerWorker
-		go func(begin int) {
+		go func(begin int, id int) {
+			log.Printf("%d worker\n", id)
 			for i := begin; i <= begin+ReqNumPerWorker; i++ {
 				if err := mockUpdateTarget(i); err != nil {
 					log.Printf("device %d, err=%+v", i, err)
 				}
+				atomic.AddInt64(&counter, 1)
 			}
 			wg.Done()
-		}(begin)
+		}(i*ReqNumPerWorker, i)
 	}
+
+	wg.Add(1)
+	go func() {
+		for range time.Tick(time.Second) {
+			c := atomic.LoadInt64(&counter)
+			log.Printf("%d/5000000\n", c)
+			if c >= MaxDeviceNum {
+				wg.Done()
+				return
+			}
+		}
+	}()
+
 	wg.Wait()
 }

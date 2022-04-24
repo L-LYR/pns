@@ -1,38 +1,25 @@
 import http from "k6/http";
-import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
-
+import { random_device } from "../common/random_device.js"
+import { random_push } from "../common/random_push.js"
 
 export const options = {
-  stages: [
-    { duration: "1m", target: 100 },
-    { duration: "1m", target: 100 },
-    { duration: "1m", target: 0 },
-  ],
-  thresholds: {
-    http_req_duration: ["p(99)<1500"],
+  scenarios: {
+    constant_request_rate: {
+      executor: 'constant-arrival-rate',
+      rate: 1000,
+      timeUnit: '1s',
+      duration: '3m',
+      preAllocatedVUs: 20,
+      maxVUs: 100,
+    },
   },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(95)', 'p(99)', 'p(99.99)', 'count'],
 };
 
-const url = "http://localhost:10086/target";
+const url = "http://192.168.1.2:10087/push/direct";
 
 export default function () {
-  const data = {
-    deviceId: uuidv4(),
-    os: "windows",
-    brand: "chrome",
-    model: "chrome",
-    tzName: "Asia/Shanghai",
-    appId: 12345,
-    appVersion: "3.3.3",
-    pushSDKVersion: "3.3.3",
-    language: "cn",
-    inAppPushStatus: 1,
-    systemPushStatus: 1,
-    privacyPushStatus: 1,
-    businessPushStatus: null,
-  };
-  let res = http.request("POST", url, JSON.stringify(data), {
+  http.request("POST", url, JSON.stringify(random_push(100)), {
     headers: { "Content-Type": "application/json" },
   });
-  // console.log(res.json());
 }

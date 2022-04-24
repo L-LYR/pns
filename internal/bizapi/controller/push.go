@@ -7,6 +7,7 @@ import (
 	"time"
 
 	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/outbound"
 	log "github.com/L-LYR/pns/internal/service/push_log"
@@ -50,7 +51,7 @@ func _BuildDirectPushTask(ctx context.Context, req *v1.DirectPushReq) (*model.Di
 	return &model.DirectPushTask{
 		ID:     util.GeneratePushTaskId(),
 		Pusher: model.MQTTPusher,
-
+		Qos:    config.GetDefaultTaskQos(),
 		Target: target,
 		Message: &model.Message{
 			Title:   req.Title,
@@ -90,6 +91,7 @@ func _BuildBroadcastPushTask(ctx context.Context, req *v1.BroadcastPushReq) (*mo
 		ID:     util.GeneratePushTaskId(),
 		AppId:  req.AppId,
 		Pusher: model.MQTTPusher,
+		Qos:    config.GetDefaultTaskQos(),
 		Message: &model.Message{
 			Title:   req.Title,
 			Content: req.Content,

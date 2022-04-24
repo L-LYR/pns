@@ -32,19 +32,18 @@ func (c *Config) GetDeviceId() string { return c.DeviceId }
 
 func (c *Config) GetAppId() int { return c.App.ID }
 
-func MustNewConfigFromString(s string) *Config {
+func MustNewConfigFromString(s string, deviceId string) *Config {
 	c := &Config{}
 	if err := jsoniter.UnmarshalFromString(s, c); err != nil {
 		panic(err)
 	}
-	c.DeviceId = util.GenerateDeviceId()
+	c.DeviceId = deviceId
 	c.ClientId = util.GenerateClientId("pns-target", c.DeviceId, c.App.ID)
 	c.Token = make(map[string]string)
 	return c
 }
 
-func DefaultConfig() *Config {
-	deviceId := util.GenerateDeviceId()
+func DefaultConfig(deviceId string) *Config {
 	appId := 12345
 	appName := "test_app_name"
 	return &Config{
@@ -61,13 +60,13 @@ func DefaultConfig() *Config {
 			Sdk: SDKSettings{
 				Version: "0.0.1",
 				MQTT: MQTTSettings{
-					Broker:         "192.168.137.1",
+					Broker:         "192.168.1.2",
 					Port:           "18830",
 					RetryInterval:  1000,
 					ConnectTimeout: 60,
 				},
 				Inbound: InboundSettings{
-					Base: "192.168.137.1:10086",
+					Base: "192.168.1.2:10086",
 				},
 			},
 		},

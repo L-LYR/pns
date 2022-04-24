@@ -21,6 +21,8 @@ const (
 )
 
 type TopicSet struct {
+	AppId          int
+	DeviceId       string
 	DirectTopic    string
 	BroadcastTopic string
 
@@ -28,11 +30,16 @@ type TopicSet struct {
 }
 
 func NewTopicSet(cfg *storage.Config) *TopicSet {
-	ts := &TopicSet{Handlers: make(map[string]paho.MessageHandler)}
-	if cfg != nil {
-		ts.DirectTopic = fmt.Sprintf("DPush/%d/%s/+", cfg.App.ID, cfg.DeviceId)
-		ts.BroadcastTopic = fmt.Sprintf("BPush/%d/+", cfg.App.ID)
+	if cfg == nil {
+		panic("config is nil")
 	}
+	ts := &TopicSet{
+		AppId:    cfg.App.ID,
+		DeviceId: cfg.DeviceId,
+		Handlers: make(map[string]paho.MessageHandler),
+	}
+	ts.DirectTopic = fmt.Sprintf("DPush/%d/%s/+", ts.AppId, ts.DeviceId)
+	ts.BroadcastTopic = fmt.Sprintf("BPush/%d/+", ts.AppId)
 	return ts
 }
 
@@ -40,7 +47,7 @@ type LogHandler func(fmt string, v ...interface{})
 
 type MessageHandler func(*message.Message) error
 
-func _NewEventLog(topic string, where string, err error) map[string]interface{} {
+func (c *Client) newEventLog(topic string, where string, err error) map[string]interface{} {
 	eventLog := make(map[string]interface{})
 	if err != nil {
 		eventLog["hint"] = fmt.Sprintf("failure: %s", err)
@@ -57,7 +64,7 @@ func _NewEventLog(topic string, where string, err error) map[string]interface{} 
 		eventLog["taskId"] = ss[3]
 	case "BPush":
 		eventLog["appId"] = ss[1]
-		eventLog["deviceId"] = storage.GlobalConfig.GetDeviceId()
+		eventLog["deviceId"] = c.options.topicSet.DeviceId
 		eventLog["taskId"] = ss[2]
 	default:
 		panic("unreachable")
@@ -154,7 +161,8 @@ func (c *Client) SetLogHandler(fn LogHandler) {
 
 func (c *Client) TryConnect() error {
 	if !c.c.IsConnected() {
-		if token := c.c.Connect(); token.WaitTimeout(c.options.ConnectTimeout) {
+		token := c.c.Connect()
+		if !token.WaitTimeout(c.options.ConnectTimeout) {
 			return errors.New("connection timeout")
 		} else if err := token.Error(); err != nil {
 			return err
@@ -171,16 +179,16 @@ func unmarshal(m paho.Message) (*message.Message, error) {
 	return message, nil
 }
 
-func (c *Client) _WrapHandler(fn MessageHandler) paho.MessageHandler {
+func (c *Client) wrapHandler(fn MessageHandler) paho.MessageHandler {
 	return func(_ paho.Client, m paho.Message) {
 		msg, err := unmarshal(m)
-		defer c.options.recvHandler(_NewEventLog(m.Topic(), "receive", err))
+		defer c.options.recvHandler(c.newEventLog(m.Topic(), "receive", err))
 		if err != nil {
 			c.options.logHandler("Error: %s", err.Error())
 			return
 		}
 		err = fn(msg)
-		defer c.options.showHandler(_NewEventLog(m.Topic(), "show", err))
+		defer c.options.showHandler(c.newEventLog(m.Topic(), "show", err))
 		if err != nil {
 			c.options.logHandler("Error: %s", err.Error())
 			return
@@ -189,11 +197,11 @@ func (c *Client) _WrapHandler(fn MessageHandler) paho.MessageHandler {
 }
 
 func (c *Client) SubscribePersonalPush(fn MessageHandler) {
-	c.subscribe(c.options.topicSet.DirectTopic, c._WrapHandler(fn))
+	c.subscribe(c.options.topicSet.DirectTopic, c.wrapHandler(fn))
 }
 
 func (c *Client) SubscribeBroadcastPush(fn MessageHandler) {
-	c.subscribe(c.options.topicSet.BroadcastTopic, c._WrapHandler(fn))
+	c.subscribe(c.options.topicSet.BroadcastTopic, c.wrapHandler(fn))
 }
 
 func (c *Client) subscribe(topic string, fn paho.MessageHandler) {
@@ -202,7 +210,8 @@ func (c *Client) subscribe(topic string, fn paho.MessageHandler) {
 		return
 	}
 	c.options.topicSet.Handlers[topic] = fn
-	if token := c.c.Subscribe(topic, AtMostOnce, fn); token.WaitTimeout(c.options.ConnectTimeout) {
+	token := c.c.Subscribe(topic, AtMostOnce, fn)
+	if !token.WaitTimeout(c.options.ConnectTimeout) {
 		c.options.logHandler("Error: subscribe timeout")
 		return
 	} else if err := token.Error(); err != nil {

@@ -20,6 +20,7 @@ func main() {
 	/* context & config */
 	ctx := GetStartContext()
 	config.LoadGlobalConfig()
+	config.MustLoadTaskDefaultConfig(ctx)
 	/* individual modules */
 	validator.MustRegisterRules(ctx)
 	monitor.MustRegisterMetrics(ctx)
