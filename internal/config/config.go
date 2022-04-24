@@ -5,12 +5,7 @@ import (
 
 	"github.com/gogf/gf/v2/container/gvar"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gcfg"
 )
-
-func LoadGlobalConfig() {
-	g.Cfg().GetAdapter().(*gcfg.AdapterFile).SetFileName("config.toml")
-}
 
 func MustLoadConfig(ctx context.Context, name string, pointer interface{}) {
 	if !g.Cfg().Available(ctx) {

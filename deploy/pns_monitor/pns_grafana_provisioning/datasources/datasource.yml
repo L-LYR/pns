@@ -5,6 +5,7 @@ deleteDatasources:
 datasources:
   - name: Prometheus
     type: prometheus
+    uid: ow25ynQ7z
     access: proxy
     url: http://prometheus:9090
     basicAuth: false

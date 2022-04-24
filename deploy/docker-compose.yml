@@ -74,6 +74,9 @@ services:
   prometheus:
     image: "prom/prometheus:v2.32.0"
     container_name: "pns_metrics"
+    depends_on:
+      - pns
+      - node-exporter
     ports:
       - 9090:9090
     volumes:
@@ -100,6 +103,8 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SECURITY_ALLOW_EMBEDDING=true
     user: "472"
+    depends_on:
+      - prometheus
     ports:
       - 3000:3000
     volumes:
@@ -112,8 +117,6 @@ services:
   mosquitto:
     image: "iegomez/mosquitto-go-auth:latest-mosquitto_2.0.14"
     container_name: "pns_mqtt_broker"
-    depends_on:
-      - mysql
     ports:
       - 18830:1883
     volumes:
@@ -123,6 +126,15 @@ services:
       - ${pns_mosquitto_volume}/log:/mosquitto/log
     restart: always
     entrypoint: [ "sh", "/mosquitto/init.sh" ]
+    networks:
+      - pns_net
+
+  node-exporter:
+    image: "bitnami/node-exporter:1.3.1"
+    container_name: "pns_node_exporter"
+    ports:
+      - 9100:9100
+    restart: always
     networks:
       - pns_net
 

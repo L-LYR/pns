@@ -5,4 +5,4 @@ until nc -z mysql 3306 >/dev/null 2>&1; do
     echo "Waiting......"
     sleep 5
 done
-./pns
+./pns --gf.gcfg.file=config.container.toml
