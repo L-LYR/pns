@@ -15,27 +15,27 @@ file = "{Y-m-d}.log"
 
 [database]
 [database.mysql]
-host = "localhost"
+host = "mysql"
 port = "3306"
 user = "root"
 pass = "pns_root"
 name = "pns"
 type = "mysql"
 [database.mongo]
-host = "localhost"
+host = "mongodb"
 port = "27017"
 user = "root"
 pass = "pns_root"
 name = "pns_target"
 type = "mongo"
 [database.redis]
-host = "localhost"
+host = "redis"
 port = "6379"
 pass = "pns_root"
 
 [module]
 [module.pusher.mqtt]
-broker = "localhost"
+broker = "mosquitto"
 port = "1883"
 timeout = 1
 [module.event_queue.push_event_consumer]
