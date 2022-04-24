@@ -8,9 +8,9 @@ RUN make all
 
 FROM alpine:3.15.0
 WORKDIR /pns
-COPY --from=builder /pns/build/pns /pns/pns
-COPY --from=builder /pns/config /pns/config
-COPY --from=builder /pns/web /pns/web
+COPY --from=builder /pns/build/pns /pns/build/pns
+COPY --from=builder /pns/config /pns/build/config
+COPY --from=builder /pns/web /pns/build/web
 EXPOSE 10086 10087 10088
-VOLUME [ "/pns/log" ]
-CMD [ "/pns/pns" ]
+VOLUME [ "/pns/build/log" ]
+CMD [ "/pns/build/pns" ]

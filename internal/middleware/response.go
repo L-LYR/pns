@@ -36,7 +36,7 @@ func CommonResponseHandler(r *ghttp.Request) {
 		code = gcode.CodeOK
 	}
 	if err != nil {
-		util.GLog.Errorf(ctx, "Final Error: %+v, Detail: %+v", err.Error(), code.Detail())
+		util.GLog.Errorf(ctx, "Final Error: %+v", err.Error())
 	}
 
 	if r.Response.BufferLength() > 0 {

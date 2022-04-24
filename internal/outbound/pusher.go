@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
@@ -95,31 +96,45 @@ func (p *_PusherManager) _TryAddPusher(ctx context.Context, appId int) (Pusher, 
 // Try to re-put task into queue, but if it is failed, task status will be set as dead
 func (p *_PusherManager) _ReputTask(ctx context.Context, task model.PushTask, pusherType model.PusherType) error {
 	meta := task.GetLogMeta()
-	if task.Retry() {
-		log.PutTaskLog(ctx, meta, "retry", "fail")
+	task.GetMeta().SetRetry()
+	if task.CanRetry() {
+		if err := log.PutTaskLog(ctx, meta, "retry", "failure"); err != nil {
+			util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
+		}
 		return errors.New("fail to retry")
 	}
 	if err := PutPushTaskEvent(ctx, task); err != nil {
-		util.GLog.Warning(ctx, "Task %d fail to retry", task.GetID())
+		util.GLog.Warningf(ctx, "Task %d fail to reput task in event queue, retry", task.GetID())
 		return p._ReputTask(ctx, task, pusherType)
-
 	}
-	log.PutTaskLog(ctx, meta, "retry", "success")
+	if err := log.PutTaskLog(ctx, meta, "retry", "success"); err != nil {
+		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
+	}
 	return nil
 }
 
 func (p *_PusherManager) Handle(ctx context.Context, task model.PushTask) error {
-	meta := task.GetLogMeta()
+	taskMeta := task.GetMeta()
+	if taskMeta.OnHandle() {
+		taskMeta.SetHandleTime(time.Now())
+	}
+	logMeta := task.GetLogMeta()
 	pusher, ok := p._GetPusher(ctx, task.GetAppId())
 	if !ok {
 		util.GLog.Warningf(ctx, "No %s pusher for app %d", task.GetPusher().Name(), task.GetAppId())
 		return p._ReputTask(ctx, task, p.pusherType)
 	}
-	if err := log.PutTaskEntry(ctx, meta); err != nil {
-		util.GLog.Warning(ctx, "Fail to add task list entry, meta:%+v", meta)
+	if err := log.PutTaskEntry(ctx, logMeta); err != nil {
+		util.GLog.Warningf(ctx, "Fail to add task list entry, meta:%+v", logMeta)
 	}
 	if err := pusher.Handle(ctx, task); err != nil {
-		return p._ReputTask(ctx, task, p.pusherType)
+		if err := p._ReputTask(ctx, task, p.pusherType); err != nil {
+			taskMeta.SetFailure()
+			return err
+		} else { // retrying
+			return nil
+		}
 	}
+	taskMeta.SetSuccess()
 	return nil
 }

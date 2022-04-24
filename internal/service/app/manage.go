@@ -15,13 +15,16 @@ func Authorization(ctx context.Context, key string, secret string, clientId stri
 		util.GLog.Errorf(ctx, "client id: %s, error: %+v", clientId, err)
 		return false, "unknown client"
 	}
-	config := &model.MQTTConfig{}
-	if v, err := dao.FindConfigByKey(ctx, appId, model.MQTTPusher); err != nil {
-		util.GLog.Errorf(ctx, "%+v", err)
-		return false, "internal error"
-	} else if err := v.Struct(config); err != nil {
-		util.GLog.Errorf(ctx, "%+v", err)
-		return false, "internal error"
+	// if v, err := dao.FindConfigByKey(ctx, appId, model.MQTTPusher); err != nil {
+	// 	util.GLog.Errorf(ctx, "%+v", err)
+	// 	return false, "internal error"
+	// } else if err := v.Struct(config); err != nil {
+	// 	util.GLog.Errorf(ctx, "%+v", err)
+	// 	return false, "internal error"
+	// }
+	config, ok := cache.Config.GetMQTTPusherConfigByAppId(appId)
+	if !ok {
+		return false, "cache miss"
 	}
 	if isPusher && config.PusherKey == key && config.PusherSecret == secret {
 		return true, ""

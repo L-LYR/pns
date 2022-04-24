@@ -15,9 +15,20 @@ func PushLogEventConsumer(e event_queue.Event) error {
 	if !ok {
 		return errors.New("not LogEvent")
 	}
-	return util.Retry(e.GetCtx(), "Put Push Log", 3, func() error {
-		return PutPushLog(le.GetCtx(), le.GetEntry())
-	})
+	if err := util.Retry(
+		e.GetCtx(), "Put Push Log", 3,
+		func() error {
+			return PutPushLog(le.GetCtx(), le.GetEntry())
+		},
+	); err != nil {
+		return nil
+	}
+	return util.Retry(
+		e.GetCtx(), "Incr Push Task Counter", 3,
+		func() error {
+			return IncrTaskCounter(le.GetCtx(), le.GetEntry())
+		},
+	)
 }
 
 func PutPushLogEvent(

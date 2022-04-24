@@ -16,10 +16,10 @@ var (
 )
 
 type EventQueue interface {
-	Start()
+	Start(context.Context)
 	Put(string, Event) error
 	Subscribe(string) (<-chan Event, error)
-	Shutdown()
+	Shutdown(context.Context)
 }
 
 var (

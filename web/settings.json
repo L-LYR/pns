@@ -11,3 +11,6 @@
     }
   }
 }
+// If you want to make monitor deploy on another machine,
+// I have not found a way to embed monitor in background by using iframe.
+// Maybe it is because of CORS.

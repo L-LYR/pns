@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"time"
 
 	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/outbound"
 	log "github.com/L-LYR/pns/internal/service/push_log"
@@ -24,7 +26,10 @@ func (api *_PushAPI) DirectPush(ctx context.Context, req *v1.DirectPushReq) (*v1
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to build push task")
 	}
 
-	log.PutTaskLog(ctx, task.GetLogMeta(), "direct push task creation", "success")
+	err = log.PutTaskLog(ctx, task.GetLogMeta(), "direct push task creation", "success")
+	if err != nil {
+		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
+	}
 
 	if err := outbound.PutPushTaskEvent(ctx, task); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")
@@ -46,13 +51,17 @@ func _BuildDirectPushTask(ctx context.Context, req *v1.DirectPushReq) (*model.Di
 	return &model.DirectPushTask{
 		ID:     util.GeneratePushTaskId(),
 		Pusher: model.MQTTPusher,
-		RetryCounter: &model.RetryCounter{
-			Counter: model.RetryTimes(req.Retry),
-		},
+		Qos:    config.GetDefaultTaskQos(),
 		Target: target,
 		Message: &model.Message{
 			Title:   req.Title,
 			Content: req.Content,
+		},
+		PushTaskMeta: &model.PushTaskMeta{
+			RetryCounter: &model.RetryCounter{
+				Counter: model.RetryTimes(req.Retry),
+			},
+			CreationTime: time.Now(),
 		},
 	}, nil
 }
@@ -63,7 +72,10 @@ func (api *_PushAPI) BroadcastPush(ctx context.Context, req *v1.BroadcastPushReq
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to build push task")
 	}
 
-	log.PutTaskLog(ctx, task.GetLogMeta(), "broadcast push task creation", "success")
+	err = log.PutTaskLog(ctx, task.GetLogMeta(), "broadcast push task creation", "success")
+	if err != nil {
+		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
+	}
 
 	if err := outbound.PutPushTaskEvent(ctx, task); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")
@@ -79,12 +91,16 @@ func _BuildBroadcastPushTask(ctx context.Context, req *v1.BroadcastPushReq) (*mo
 		ID:     util.GeneratePushTaskId(),
 		AppId:  req.AppId,
 		Pusher: model.MQTTPusher,
-		RetryCounter: &model.RetryCounter{
-			Counter: model.NeverRetry,
-		},
+		Qos:    config.GetDefaultTaskQos(),
 		Message: &model.Message{
 			Title:   req.Title,
 			Content: req.Content,
+		},
+		PushTaskMeta: &model.PushTaskMeta{
+			RetryCounter: &model.RetryCounter{
+				Counter: model.NeverRetry,
+			},
+			CreationTime: time.Now(),
 		},
 	}, nil
 }

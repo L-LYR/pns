@@ -14,14 +14,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type Qos = byte
-
-const (
-	AtMostOnce  Qos = 0
-	AtLeastOnce Qos = 1
-	ExactlyOnce Qos = 2
-)
-
 type Client struct {
 	Name         string
 	Key          string
@@ -95,14 +87,14 @@ func (p *Client) Handle(ctx context.Context, task model.PushTask) error {
 	util.GLog.Infof(ctx, "topic: %s", topic)
 
 	message := &message.Message{}
-	if err := copier.Copy(message, task.GetMessage); err != nil {
+	if err := copier.Copy(message, task.GetMessage()); err != nil {
 		return err
 	}
 	payload, err := proto.Marshal(message)
 	if err != nil {
 		return err
 	}
-	token := p.Client.Publish(topic, AtMostOnce, false, payload)
+	token := p.Client.Publish(topic, task.GetQos(), false, payload)
 	if ok := token.WaitTimeout(p.BrokerConfig.WaitTimeout()); !ok {
 		return errors.New("message publish timeout")
 	}

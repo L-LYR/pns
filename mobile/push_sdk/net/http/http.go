@@ -19,7 +19,12 @@ type Payload map[string]interface{}
 func MustNewHTTPClient(base string) *Client {
 	return &Client{
 		base: base,
-		c:    &http.Client{},
+		c: &http.Client{
+			Transport: &http.Transport{
+				MaxIdleConns:        100,
+				MaxIdleConnsPerHost: 100,
+			},
+		},
 	}
 }
 

@@ -7,7 +7,10 @@ import (
 
 func main() {
 	push_sdk.MustInitialize(
-		push_sdk.MustNewConfigFromString(_RawSettings),
+		push_sdk.MustNewConfigFromString(
+			_RawSettings,
+			push_sdk.GenerateUUIDAsDeviceId(),
+		),
 		ui.LogHandler,
 	)
 	ui.Run()

@@ -2,6 +2,7 @@ package log
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/L-LYR/pns/internal/model"
@@ -50,4 +51,18 @@ func GetPushLogByMeta(ctx context.Context, meta *model.LogMeta) ([]*model.LogEnt
 
 func GetTaskEntryListByMeta(ctx context.Context, meta *model.LogMeta) ([]string, error) {
 	return dao.LogRedisDao.GetTaskEntryListByMeta(ctx, meta)
+}
+
+func GetTaskStatisticsByID(ctx context.Context, id int) (string, error) {
+	if nRecv, err := dao.LogRedisDao.GetTaskStatistics(ctx, id, "receive"); err != nil {
+		return "", err
+	} else if nShow, err := dao.LogRedisDao.GetTaskStatistics(ctx, id, "show"); err != nil {
+		return "", err
+	} else {
+		return fmt.Sprintf("%d received, %d showed", nRecv, nShow), nil
+	}
+}
+
+func IncrTaskCounter(ctx context.Context, l *model.LogEntry) error {
+	return dao.LogRedisDao.IncrTaskCounter(ctx, l.Meta.TaskId, l.Where)
 }

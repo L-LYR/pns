@@ -7,8 +7,8 @@ import (
 
 func Retry(ctx context.Context, name string, n int, fn func() error) error {
 	for i := 1; i <= n; i++ {
-		if fn() != nil {
-			GLog.Warning(ctx, "retry %s failed at %d", name, i)
+		if err := fn(); err != nil {
+			GLog.Warningf(ctx, "retry %s failed at %d, because %s", name, i, err.Error())
 		} else {
 			return nil
 		}

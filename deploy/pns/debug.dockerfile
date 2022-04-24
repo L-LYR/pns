@@ -5,7 +5,7 @@ COPY . .
 RUN apk add make
 RUN go mod tidy
 RUN make all
-RUN mv /pns/build/pns /pns/pns
+WORKDIR /pns/build
 EXPOSE 10086 10087 10088
-VOLUME [ "/pns/log" ]
+VOLUME [ "/pns/build/log" ]
 CMD [ "./pns" ]
