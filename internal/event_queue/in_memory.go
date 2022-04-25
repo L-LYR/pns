@@ -18,7 +18,6 @@ type _InMemoryEventQueue struct {
 	cs        map[string]chan Event
 }
 
-// TODO: add channel length monitor
 func _MustNewInMemoryEventQueue(topics []string) *_InMemoryEventQueue {
 	q := &_InMemoryEventQueue{
 		working: false,
@@ -61,11 +60,12 @@ func (q *_InMemoryEventQueue) Shutdown(ctx context.Context) {
 }
 
 func (q *_InMemoryEventQueue) Monitor(ctx context.Context) {
+	ticker := time.NewTicker(time.Second * 5)
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.Tick(time.Second * 5):
+		case <-ticker.C:
 			for topic, ch := range q.cs {
 				monitor.EventQueueLength.WithLabelValues(topic).Set(float64(len(ch)))
 			}

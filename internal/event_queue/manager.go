@@ -16,7 +16,7 @@ var (
 	EventQueueManager = &_EventQueueManager{}
 )
 
-func (m *_EventQueueManager) MustRegister(cfg *config.ConsumerConfig, consumer Consumer) {
+func (m *_EventQueueManager) MustRegister(cfg *config.EventConsumerConfig, consumer Consumer) {
 	m.topics = append(m.topics, cfg.Topic)
 	m.workers = append(m.workers, _MustNewWorker(cfg, consumer))
 }

@@ -73,7 +73,7 @@ func PushTaskEventConsumer(e event_queue.Event) error {
 
 func PutPushTaskEvent(ctx context.Context, task model.PushTask) error {
 	return event_queue.EventQueueManager.Put(
-		config.PushEventTopic(),
+		config.PushTaskEventTopic(),
 		&model.PushTaskEvent{
 			Ctx:  ctx,
 			Task: task,

@@ -4,20 +4,23 @@ import (
 	"context"
 
 	"github.com/L-LYR/pns/internal/bizapi/controller"
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/middleware"
+	"github.com/L-LYR/pns/internal/util"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/protocol/goai"
 )
 
 const (
-	_ServerName       = "bizapi"
-	_ServerConfigName = "server.bizapi"
+	_ServerName = "bizapi"
 )
 
 func MustRegisterRouters(ctx context.Context) *ghttp.Server {
 	s := g.Server(_ServerName)
-	s.SetConfigWithMap(g.Cfg().MustGet(ctx, _ServerConfigName).Map())
+	if err := s.SetConfig(*config.BizapiServerConfig()); err != nil {
+		util.GLog.Panicf(ctx, "Fail to initialize bizapi server, because %s", err.Error())
+	}
 	// Bind all controller objects
 	s.Group("/", func(group *ghttp.RouterGroup) {
 		group.Middleware(

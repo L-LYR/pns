@@ -7,18 +7,13 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-const (
-	_RedisDaoConfigName = "redis"
-)
-
 type LogRedisDao struct {
 	client *redis.Client
 }
 
 func NewLogRedisDao(ctx context.Context) (*LogRedisDao, error) {
-	cfg := config.MustLoadRedisDaoConfig(ctx, _RedisDaoConfigName)
 	return &LogRedisDao{
-		client: redis.NewClient(cfg.Options()),
+		client: redis.NewClient(config.RedisConfig().Options()),
 	}, nil
 }
 

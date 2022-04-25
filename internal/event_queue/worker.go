@@ -21,7 +21,7 @@ var (
 	_ _Worker = (*_RealWorker)(nil)
 )
 
-func _MustNewWorker(cfg *config.ConsumerConfig, consumer Consumer) _Worker {
+func _MustNewWorker(cfg *config.EventConsumerConfig, consumer Consumer) _Worker {
 	return &_RealWorker{
 		cfg: cfg,
 		fn:  consumer,
@@ -30,7 +30,7 @@ func _MustNewWorker(cfg *config.ConsumerConfig, consumer Consumer) _Worker {
 
 type _RealWorker struct {
 	cancellor context.CancelFunc
-	cfg       *config.ConsumerConfig
+	cfg       *config.EventConsumerConfig
 	wg        sync.WaitGroup
 	fn        Consumer
 }

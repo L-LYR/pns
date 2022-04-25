@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # TODO: check dependencies
-# TODO: run as superdoer
+# NOTICE: run as superdoer
 
 # initialize basic global variables
 root_path=$(realpath "$0" | xargs dirname | xargs dirname)
@@ -72,8 +72,7 @@ up() {
     fi
     docker-compose up -d || exit
     printf "Serving...\n"
-    printf "Monitor: localhost:3000\n"
-    # TODO: add other urls
+    printf "Monitor: localhost:10088\n"
 }
 
 down() {

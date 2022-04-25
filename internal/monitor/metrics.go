@@ -6,7 +6,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// TODO: add a metric manager
 var (
 	RequestGenericTags = []string{
 		"uri",     // uri
