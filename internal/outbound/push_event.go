@@ -72,11 +72,16 @@ func PushTaskEventConsumer(e event_queue.Event) error {
 }
 
 func PutPushTaskEvent(ctx context.Context, task model.PushTask) error {
-	return event_queue.EventQueueManager.Put(
-		config.PushTaskEventTopic(),
-		&model.PushTaskEvent{
-			Ctx:  ctx,
-			Task: task,
-		},
-	)
+	e := &model.PushTaskEvent{
+		Ctx:  ctx,
+		Task: task,
+	}
+	switch task.GetType() {
+	case model.BroadcastPush:
+		return event_queue.EventQueueManager.Put(config.BroadcastPushTaskEventTopic(), e)
+	case model.DirectPush:
+		return event_queue.EventQueueManager.Put(config.DirectPushTaskEventTopic(), e)
+	default:
+		return errors.New("unknown task type")
+	}
 }

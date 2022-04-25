@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-const _SourceBytes = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const (
+	_SourceBytes   = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	_SourceIdxBits = 6
 	_Mask          = 1<<_SourceIdxBits - 1
 	_SourceIdxMax  = 63 / _SourceIdxBits

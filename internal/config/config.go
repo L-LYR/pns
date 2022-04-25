@@ -22,8 +22,9 @@ type Config struct {
 	}
 	Broker     *BrokerConfig
 	EventQueue struct {
-		PushTaskEventConsumer *EventConsumerConfig
-		PushLogEventConsumer  *EventConsumerConfig
+		DirectPushTaskEventQueue    *EventQueueConfig
+		BroadcastPushTaskEventQueue *EventQueueConfig
+		PushLogEventqueue           *EventQueueConfig
 	}
 	Misc struct {
 		Qos              string
@@ -98,11 +99,12 @@ func (c *BrokerConfig) WaitTimeout() time.Duration {
 	return time.Duration(c.Timeout) * time.Second
 }
 
-type EventConsumerConfig struct {
+type EventQueueConfig struct {
 	Topic    string
-	Dispatch uint
+	Dispatch int
+	Length   int
 }
 
-func (c *EventConsumerConfig) Check() bool {
+func (c *EventQueueConfig) Check() bool {
 	return c.Topic != "" && c.Dispatch > 0
 }

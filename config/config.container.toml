@@ -42,12 +42,18 @@ port = "1883"
 timeout = 1
 
 [event_quque]
-[event_queue.push_task_event_consumer]
-topic = "push_task_event"
-dispatch = 5
-[event_queue.push_log_event_consumer]
+[event_queue.direct_push_task_event_queue]
+topic = "direct_push_task_event"
+dispatch = 3
+length = 10000
+[event_queue.broadcast_push_task_event_queue]
+topic = "broadcast_push_task_event"
+dispatch = 1
+length = 10
+[event_queue.push_log_event_queue]
 topic = "push_log_event"
-dispatch = 5
+dispatch = 3
+length = 10000
 
 [misc]
 qos = "atLeastOnce"

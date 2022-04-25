@@ -24,7 +24,7 @@ func MustLoad(ctx context.Context) {
 	} else if err := v.Struct(_Config); err != nil {
 		util.GLog.Warningf(ctx, "Fail to load config, use default")
 	} else {
-		util.GLog.Info(ctx, "Success to load config")
+		util.GLog.Info(ctx, "Success to load config:\n%s", util.Readable(_Config))
 		return
 	}
 
@@ -35,12 +35,16 @@ func CommonTaskQos() model.Qos {
 	return model.ParseQos(_Config.Misc.Qos)
 }
 
-func PushTaskEventConsumerConfig() *EventConsumerConfig {
-	return _Config.EventQueue.PushTaskEventConsumer
+func DirectPushTaskEventConsumerConfig() *EventQueueConfig {
+	return _Config.EventQueue.DirectPushTaskEventQueue
 }
 
-func PushLogEventConsumerConfig() *EventConsumerConfig {
-	return _Config.EventQueue.PushLogEventConsumer
+func BroadcastPushTaskEventConsumerConfig() *EventQueueConfig {
+	return _Config.EventQueue.BroadcastPushTaskEventQueue
+}
+
+func PushLogEventConsumerConfig() *EventQueueConfig {
+	return _Config.EventQueue.PushLogEventqueue
 }
 
 func InboundServerConfig() *ghttp.ServerConfig {
@@ -53,11 +57,16 @@ func AdminServerConfig() *ghttp.ServerConfig {
 	return _Config.Servers.Admin.Convert()
 }
 
-func PushTaskEventTopic() string {
-	return _Config.EventQueue.PushTaskEventConsumer.Topic
+func DirectPushTaskEventTopic() string {
+	return _Config.EventQueue.DirectPushTaskEventQueue.Topic
 }
+
+func BroadcastPushTaskEventTopic() string {
+	return _Config.EventQueue.BroadcastPushTaskEventQueue.Topic
+}
+
 func PushLogEventTopic() string {
-	return _Config.EventQueue.PushLogEventConsumer.Topic
+	return _Config.EventQueue.PushLogEventqueue.Topic
 }
 
 func MQTTBrokerConfig() *BrokerConfig {
