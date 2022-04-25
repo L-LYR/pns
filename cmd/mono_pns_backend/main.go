@@ -12,8 +12,10 @@ import (
 	"github.com/L-LYR/pns/internal/outbound"
 	"github.com/L-LYR/pns/internal/service"
 	log "github.com/L-LYR/pns/internal/service/push_log"
+	"github.com/L-LYR/pns/internal/util"
 	"github.com/L-LYR/pns/internal/validator"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 func main() {
@@ -43,6 +45,9 @@ func main() {
 	inbound.MustRegisterRouters(ctx).Start()
 	bizapi.MustRegisterRouters(ctx).Start()
 	admin.MustRegisterRouters(ctx).Start()
+	/* debug pprof server */
+	StartPProf()
+	/* block */
 	g.Wait()
 	/* clean up */
 	event_queue.EventQueueManager.MustShutdown(ctx)
@@ -51,4 +56,10 @@ func main() {
 
 func GetStartContext() context.Context {
 	return context.Background()
+}
+
+func StartPProf() {
+	if util.DebugOn() {
+		go ghttp.StartPProfServer(10085)
+	}
 }

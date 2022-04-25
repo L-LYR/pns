@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/L-LYR/pns/internal/monitor"
-	"github.com/L-LYR/pns/internal/util"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
@@ -13,9 +12,7 @@ import (
 func LoggingHandler(r *ghttp.Request) {
 	start := time.Now()
 
-	uri := r.RequestURI
-
-	method := r.Method
+	req := r.Method + " " + r.RequestURI
 
 	r.Middleware.Next()
 
@@ -24,15 +21,13 @@ func LoggingHandler(r *ghttp.Request) {
 	if err := r.GetError(); err != nil {
 		errCode := strconv.FormatInt(int64(gerror.Code(err).Code()), 10)
 		monitor.RequestGenericDuration.
-			WithLabelValues(uri, "failure", errCode).Observe(duration.Seconds())
+			WithLabelValues(req, "failure", errCode).Observe(duration.Seconds())
 		monitor.RequestGenericCounter.
-			WithLabelValues(uri, "failure", errCode).Inc()
+			WithLabelValues(req, "failure", errCode).Inc()
 	} else {
 		monitor.RequestGenericDuration.
-			WithLabelValues(uri, "success", "0").Observe(duration.Seconds())
+			WithLabelValues(req, "success", "0").Observe(duration.Seconds())
 		monitor.RequestGenericCounter.
-			WithLabelValues(uri, "success", "0").Inc()
+			WithLabelValues(req, "success", "0").Inc()
 	}
-
-	util.GLog.Infof(r.GetCtx(), "%s %s duration: %s", method, uri, duration.String())
 }

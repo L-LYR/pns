@@ -120,7 +120,7 @@ func _OnConnect(ctx context.Context, name string) paho.OnConnectHandler {
 
 func _OnConnectLost(ctx context.Context, name string) paho.ConnectionLostHandler {
 	return func(client paho.Client, err error) {
-		util.GLog.Noticef(ctx, "Client %s lost connection with broker, because:%+v", err, name)
+		util.GLog.Noticef(ctx, "Client %s lost connection with broker, because:%+v", name, err)
 	}
 }
 

@@ -134,7 +134,7 @@ func (c *Client) subscribe(topic string, fn MessageHandler) {
 		log.Printf("Error: %s", err.Error())
 		return
 	}
-	token := c.c.Subscribe(topic, model.AtLeastOnce, c.wrapHandler(fn))
+	token := c.c.Subscribe(topic, model.AtMostOnce, c.wrapHandler(fn))
 	if ok := token.WaitTimeout(ConnectTimeout); !ok {
 		log.Printf("Error: subscribe timeout")
 		return
@@ -150,7 +150,7 @@ func DirectTopic(deviceId int) string {
 }
 
 func BroadcastTopic() string {
-	return fmt.Sprintf("BPush/12345/#")
+	return "BPush/12345/#"
 }
 
 func main() {
