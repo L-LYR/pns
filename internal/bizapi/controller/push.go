@@ -51,7 +51,7 @@ func _BuildDirectPushTask(ctx context.Context, req *v1.DirectPushReq) (*model.Di
 	return &model.DirectPushTask{
 		ID:     util.GeneratePushTaskId(),
 		Pusher: model.MQTTPusher,
-		Qos:    config.GetDefaultTaskQos(),
+		Qos:    config.CommonTaskQos(),
 		Target: target,
 		Message: &model.Message{
 			Title:   req.Title,
@@ -91,7 +91,7 @@ func _BuildBroadcastPushTask(ctx context.Context, req *v1.BroadcastPushReq) (*mo
 		ID:     util.GeneratePushTaskId(),
 		AppId:  req.AppId,
 		Pusher: model.MQTTPusher,
-		Qos:    config.GetDefaultTaskQos(),
+		Qos:    config.CommonTaskQos(),
 		Message: &model.Message{
 			Title:   req.Title,
 			Content: req.Content,

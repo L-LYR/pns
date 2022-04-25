@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao/internal"
 	"github.com/go-redis/redis/v8"
@@ -51,11 +52,6 @@ App ID : Device ID : Task ID -> Client Log List
 2) App ID -> Broadcast Task ID 1 / ......
 */
 
-// TODO: make this configurable
-const (
-	_InactiveDuration = 3 * 24 * 3600 * time.Second
-)
-
 func (dao *_LogRedisDao) _AppendLog(
 	ctx context.Context,
 	key string,
@@ -70,11 +66,11 @@ func (dao *_LogRedisDao) _AppendLog(
 		return err
 	}
 	if _, err := client.
-		Expire(ctx, key, _InactiveDuration).
+		Expire(ctx, key, config.LogExpireTime()).
 		Result(); err != nil {
 		return err
 	}
-	upperBound := time.Now().Add(-_InactiveDuration).Unix()
+	upperBound := time.Now().Add(-config.LogExpireTime()).Unix()
 	if _, err := client.ZRemRangeByScore(
 		ctx, key, "-inf",
 		strconv.FormatInt(upperBound, 10),
@@ -226,7 +222,7 @@ func (dao *_LogRedisDao) IncrTaskCounter(
 		return err
 	}
 	if _, err := client.
-		Expire(ctx, key, _InactiveDuration).
+		Expire(ctx, key, config.LogExpireTime()).
 		Result(); err != nil {
 		return err
 	}

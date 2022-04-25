@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/L-LYR/pns/internal/config"
 	v1 "github.com/L-LYR/pns/internal/inbound/api/v1"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/target"
@@ -61,13 +62,8 @@ func (api *_TargetAPI) QueryTarget(
 	return &v1.QueryTargetRes{Target: target}, nil
 }
 
-// TODO: make token expire time into config
-const (
-	_TokenExpireTime = 7 * 24 * 3600 * time.Second
-)
-
 func _CheckTokenExpire(last time.Time) bool {
-	return last.Add(_TokenExpireTime).Before(time.Now())
+	return last.Add(config.TokenExpireTime()).Before(time.Now())
 }
 
 func (api *_TargetAPI) GetToken(

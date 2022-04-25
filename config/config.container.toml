@@ -1,12 +1,15 @@
 [owner]
 name = "HammerLi"
 
-[server]
-[server.inbound]
+[servers]
+[servers.inbound]
+name = "inbound"
 address = ":10086"
-[server.bizapi]
+[servers.bizapi]
+name = "bizapi"
 address = ":10087"
-[server.admin]
+[servers.admin]
+name = "admin"
 address = ":10088"
 
 [logger]
@@ -33,18 +36,22 @@ host = "redis"
 port = "6379"
 pass = "pns_root"
 
-[module]
-[module.pusher.mqtt]
+[broker]
 broker = "mosquitto"
 port = "1883"
 timeout = 1
-[module.event_queue.push_event_consumer]
-topic = "push_event"
+
+[event_quque]
+[event_queue.push_task_event_consumer]
+topic = "push_task_event"
 dispatch = 5
-[module.event_queue.log_event_consumer]
-topic = "log_event"
+[event_queue.push_log_event_consumer]
+topic = "push_log_event"
 dispatch = 5
 
-
-[task]
-default_qos = "atLeastOnce"
+[misc]
+qos = "atLeastOnce"
+auth_key_length = 16
+auth_secret_length = 32
+log_expire_time = 259200   # 3 * 24 * 3600 seconds
+token_expire_time = 604800 # 7 * 24 * 3600 seconds

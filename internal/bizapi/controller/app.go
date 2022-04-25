@@ -4,6 +4,7 @@ import (
 	"context"
 
 	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/app"
 	"github.com/L-LYR/pns/internal/util"
@@ -79,11 +80,10 @@ func (api *_AppAPI) QueryConfig(ctx context.Context, req *v1.QueryAppConfigReq) 
 
 func _GenerateRandMQTTConfig(appId int) *model.MQTTConfig {
 	return &model.MQTTConfig{
-		// TODO: make the length of key and secret configurable
 		ID:             appId,
-		PusherKey:      util.RandString(32),
-		PusherSecret:   util.RandString(32),
-		ReceiverKey:    util.RandString(32),
-		ReceiverSecret: util.RandString(32),
+		PusherKey:      util.RandString(config.AuthKeyLength()),
+		PusherSecret:   util.RandString(config.AuthSecretLength()),
+		ReceiverKey:    util.RandString(config.AuthKeyLength()),
+		ReceiverSecret: util.RandString(config.AuthSecretLength()),
 	}
 }

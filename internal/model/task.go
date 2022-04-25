@@ -62,16 +62,16 @@ const (
 	ExactlyOnce Qos = 2
 )
 
-func ParseQos(s string) (Qos, error) {
+func ParseQos(s string) Qos {
 	switch s {
 	case "atMostOnce":
-		return AtMostOnce, nil
+		return AtMostOnce
 	case "atLeastOnce":
-		return AtLeastOnce, nil
+		return AtLeastOnce
 	case "exactlyOnce":
-		return ExactlyOnce, nil
+		return ExactlyOnce
 	default:
-		return 255, errors.New("unknown qos")
+		return AtLeastOnce
 	}
 }
 

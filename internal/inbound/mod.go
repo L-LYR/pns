@@ -3,8 +3,10 @@ package inbound
 import (
 	"context"
 
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/inbound/controller"
 	"github.com/L-LYR/pns/internal/middleware"
+	"github.com/L-LYR/pns/internal/util"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/protocol/goai"
@@ -12,13 +14,14 @@ import (
 )
 
 const (
-	_ServerName       = "inbound"
-	_ServerConfigName = "server.inbound"
+	_ServerName = "inbound"
 )
 
 func MustRegisterRouters(ctx context.Context) *ghttp.Server {
 	s := g.Server(_ServerName)
-	s.SetConfigWithMap(g.Cfg().MustGet(ctx, _ServerConfigName).Map())
+	if err := s.SetConfig(*config.InboundServerConfig()); err != nil {
+		util.GLog.Panicf(ctx, "Fail to initialize inbound server, because %s", err.Error())
+	}
 	s.Group("/", func(group *ghttp.RouterGroup) {
 		group.Middleware(
 			middleware.DebugHandler,

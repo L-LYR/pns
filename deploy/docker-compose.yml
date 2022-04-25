@@ -21,7 +21,7 @@ services:
       - 10088:10088
     volumes:
       - ./pns/pns_entrypoint.sh:/pns/entrypoint.sh
-      - ${pns_log_volume}:/pns/log
+      - ${pns_log_volume}:/pns/build/log
     restart: always
     entrypoint: [ "sh", "/pns/entrypoint.sh" ]
     networks:

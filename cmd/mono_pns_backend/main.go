@@ -19,7 +19,7 @@ import (
 func main() {
 	/* context & config */
 	ctx := GetStartContext()
-	config.MustLoadTaskDefaultConfig(ctx)
+	config.MustLoad(ctx)
 	/* individual modules */
 	validator.MustRegisterRules(ctx)
 	monitor.MustRegisterMetrics(ctx)
@@ -27,11 +27,11 @@ func main() {
 	outbound.MustInitialize(ctx)
 	/* event queue */
 	event_queue.EventQueueManager.MustRegister(
-		config.MustLoadConsumerConfig(ctx, "push_event_consumer"),
+		config.PushTaskEventConsumerConfig(),
 		outbound.PushTaskEventConsumer,
 	)
 	event_queue.EventQueueManager.MustRegister(
-		config.MustLoadConsumerConfig(ctx, "log_event_consumer"),
+		config.PushLogEventConsumerConfig(),
 		log.PushLogEventConsumer,
 	)
 	event_queue.EventQueueManager.MustStart(ctx)

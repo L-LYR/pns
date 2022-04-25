@@ -32,7 +32,7 @@ func _MustNewPusher(
 			ctx,
 			appId,
 			pusherConfig.(*model.MQTTConfig),
-			config.MustLoadMQTTBrokerConfig(ctx),
+			config.MQTTBrokerConfig(),
 		)
 	default:
 		panic("unreachable")

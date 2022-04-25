@@ -8,18 +8,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const (
-	_MongoDaoConfigName = "mongo"
-)
-
 type TargetMongoDao struct {
 	dbName string
 	client mongo.Client
 }
 
 func NewTargetMongoDao(ctx context.Context) (*TargetMongoDao, error) {
-	cfg := config.MustLoadMongoDaoConfig(ctx, _MongoDaoConfigName)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.URI()))
+	cfg := config.MongoConfig()
+	client, err := mongo.Connect(ctx,
+		options.Client().ApplyURI(cfg.URI()),
+	)
 	if err != nil {
 		return nil, err
 	}
