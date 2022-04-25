@@ -7,18 +7,21 @@ import (
 )
 
 type _EventQueueManager struct {
-	topics  []string
 	queue   EventQueue
-	workers []_Worker
+	configs map[string]*config.EventQueueConfig
+	workers map[string]_Worker
 }
 
 var (
-	EventQueueManager = &_EventQueueManager{}
+	EventQueueManager = &_EventQueueManager{
+		configs: make(map[string]*config.EventQueueConfig),
+		workers: make(map[string]_Worker),
+	}
 )
 
-func (m *_EventQueueManager) MustRegister(cfg *config.EventConsumerConfig, consumer Consumer) {
-	m.topics = append(m.topics, cfg.Topic)
-	m.workers = append(m.workers, _MustNewWorker(cfg, consumer))
+func (m *_EventQueueManager) MustRegister(cfg *config.EventQueueConfig, consumer Consumer) {
+	m.configs[cfg.Topic] = cfg
+	m.workers[cfg.Topic] = _MustNewWorker(cfg, consumer)
 }
 
 func (m *_EventQueueManager) Put(topic string, event Event) error {
@@ -26,7 +29,8 @@ func (m *_EventQueueManager) Put(topic string, event Event) error {
 }
 
 func (m *_EventQueueManager) MustStart(ctx context.Context) {
-	m.queue = _MustNewEventQueue(m.topics...)
+	m.queue = _MustNewEventQueue(m.configs)
+
 	m.queue.Start(ctx)
 	for _, w := range m.workers {
 		ch, err := m.queue.Subscribe(w.Topic())

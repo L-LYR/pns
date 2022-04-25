@@ -21,7 +21,7 @@ var (
 	_ _Worker = (*_RealWorker)(nil)
 )
 
-func _MustNewWorker(cfg *config.EventConsumerConfig, consumer Consumer) _Worker {
+func _MustNewWorker(cfg *config.EventQueueConfig, consumer Consumer) _Worker {
 	return &_RealWorker{
 		cfg: cfg,
 		fn:  consumer,
@@ -30,7 +30,7 @@ func _MustNewWorker(cfg *config.EventConsumerConfig, consumer Consumer) _Worker 
 
 type _RealWorker struct {
 	cancellor context.CancelFunc
-	cfg       *config.EventConsumerConfig
+	cfg       *config.EventQueueConfig
 	wg        sync.WaitGroup
 	fn        Consumer
 }
@@ -42,7 +42,7 @@ func (w *_RealWorker) RunOn(ctx context.Context, ch <-chan Event) error {
 		return errors.New("worker is uninitialized")
 	}
 	ctx, w.cancellor = context.WithCancel(ctx)
-	for i := uint(0); i < w.cfg.Dispatch; i++ {
+	for i := 0; i < w.cfg.Dispatch; i++ {
 		w.wg.Add(1)
 		go func() {
 			for {

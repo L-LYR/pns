@@ -5,11 +5,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/monitor"
-)
-
-const (
-	_DefaultInMemoryChannelLength = 1000
 )
 
 type _InMemoryEventQueue struct {
@@ -18,15 +15,23 @@ type _InMemoryEventQueue struct {
 	cs        map[string]chan Event
 }
 
-func _MustNewInMemoryEventQueue(topics []string) *_InMemoryEventQueue {
+func _MustNewInMemoryEventQueue(configs map[string]*config.EventQueueConfig) *_InMemoryEventQueue {
 	q := &_InMemoryEventQueue{
 		working: false,
 		cs:      make(map[string]chan Event),
 	}
-	for _, topic := range topics {
-		q.cs[topic] = make(chan Event, _DefaultInMemoryChannelLength)
+	for _, cfg := range configs {
+		q.addChannel(cfg)
 	}
 	return q
+}
+
+func (q *_InMemoryEventQueue) addChannel(c *config.EventQueueConfig) error {
+	if _, ok := q.cs[c.Topic]; ok {
+		return errors.New("duplicate queue")
+	}
+	q.cs[c.Topic] = make(chan Event, c.Length)
+	return nil
 }
 
 func (q *_InMemoryEventQueue) Start(ctx context.Context) {

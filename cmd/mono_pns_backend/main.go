@@ -27,7 +27,11 @@ func main() {
 	outbound.MustInitialize(ctx)
 	/* event queue */
 	event_queue.EventQueueManager.MustRegister(
-		config.PushTaskEventConsumerConfig(),
+		config.DirectPushTaskEventConsumerConfig(),
+		outbound.PushTaskEventConsumer,
+	)
+	event_queue.EventQueueManager.MustRegister(
+		config.BroadcastPushTaskEventConsumerConfig(),
 		outbound.PushTaskEventConsumer,
 	)
 	event_queue.EventQueueManager.MustRegister(

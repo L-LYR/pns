@@ -3,6 +3,7 @@ package event_queue
 import (
 	"context"
 
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
 )
 
@@ -26,6 +27,7 @@ var (
 	_ EventQueue = (*_InMemoryEventQueue)(nil)
 )
 
-func _MustNewEventQueue(topics ...string) EventQueue {
-	return _MustNewInMemoryEventQueue(topics)
+// TODO: support more queues
+func _MustNewEventQueue(config map[string]*config.EventQueueConfig) EventQueue {
+	return _MustNewInMemoryEventQueue(config)
 }
