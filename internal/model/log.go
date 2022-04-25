@@ -10,7 +10,7 @@ import (
 
 // To make the length of raw log shorter, we make each tag shorter
 type LogMeta struct {
-	TaskId   int
+	TaskId   int64
 	AppId    int
 	DeviceId string
 }

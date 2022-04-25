@@ -128,7 +128,7 @@ func (dao *_LogRedisDao) CheckAndAppendTaskEntry(
 
 func (dao *_LogRedisDao) GetTaskLogByID(
 	ctx context.Context,
-	id int,
+	id int64,
 ) ([]*model.LogEntry, error) {
 	client := dao.LogRedisDao.Client(ctx)
 	key := strconv.FormatInt(int64(id), 10)
@@ -153,7 +153,7 @@ func (dao *_LogRedisDao) GetTaskLogByID(
 
 func (dao *_LogRedisDao) GetTaskLastLogByID(
 	ctx context.Context,
-	id int,
+	id int64,
 ) (*model.LogEntry, error) {
 	client := dao.LogRedisDao.Client(ctx)
 	key := strconv.FormatInt(int64(id), 10)
@@ -212,7 +212,7 @@ func (dao *_LogRedisDao) GetTaskEntryListByMeta(
 
 func (dao *_LogRedisDao) IncrTaskCounter(
 	ctx context.Context,
-	taskId int,
+	taskId int64,
 	event string, // receive or show
 ) error {
 	client := dao.LogRedisDao.Client(ctx)
@@ -230,7 +230,7 @@ func (dao *_LogRedisDao) IncrTaskCounter(
 
 func (dao *_LogRedisDao) GetTaskStatistics(
 	ctx context.Context,
-	taskId int,
+	taskId int64,
 	event string,
 ) (int64, error) {
 	key := fmt.Sprintf("%d:%s", taskId, event)

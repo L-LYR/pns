@@ -87,10 +87,10 @@ func unmarshal(m paho.Message) (*message.Message, error) {
 	return message, nil
 }
 
-func (c *Client) newEventLog(topic string, where string, err error) map[string]interface{} {
+func (c *Client) newEventLog(topic string, where string, message *message.Message, err error) map[string]interface{} {
 	eventLog := make(map[string]interface{})
 	if err != nil {
-		eventLog["hint"] = fmt.Sprintf("failure: %s", err)
+		eventLog["hint"] = fmt.Sprintf("failed, because %s", err.Error())
 	} else {
 		eventLog["hint"] = "success"
 	}
@@ -98,10 +98,9 @@ func (c *Client) newEventLog(topic string, where string, err error) map[string]i
 	eventLog["timestamp"] = time.Now().UnixMilli()
 	ss := strings.Split(topic, "/")
 	switch ss[0] {
-	case "DPush": // ss[1]: app id, ss[2]: device id, ss[3]: task id
+	case "DPush": // ss[1]: app id, ss[2]: device id
 		eventLog["appId"] = ss[1]
 		eventLog["deviceId"] = ss[2]
-		eventLog["taskId"] = ss[3]
 	case "BPush":
 		eventLog["appId"] = ss[1]
 		eventLog["deviceId"] = strconv.FormatInt(int64(c.id), 10)
@@ -109,26 +108,26 @@ func (c *Client) newEventLog(topic string, where string, err error) map[string]i
 	default:
 		panic("unreachable")
 	}
+	eventLog["taskId"] = message.ID
 	return eventLog
 }
 
 func (c *Client) wrapHandler(fn MessageHandler) paho.MessageHandler {
 	return func(_ paho.Client, m paho.Message) {
 		msg, err := unmarshal(m)
-		ReportLog(c.newEventLog(m.Topic(), "receive", err))
+		defer ReportLog(c.newEventLog(m.Topic(), "receive", msg, err))
 		if err != nil {
 			log.Printf("Error: %s", err.Error())
 			return
 		}
 		err = fn(msg)
-		ReportLog(c.newEventLog(m.Topic(), "show", err))
+		defer ReportLog(c.newEventLog(m.Topic(), "show", msg, err))
 		if err != nil {
 			log.Printf("Error: %s", err.Error())
 			return
 		}
 	}
 }
-
 func (c *Client) subscribe(topic string, fn MessageHandler) {
 	if err := c.TryConnect(); err != nil {
 		log.Printf("Error: %s", err.Error())

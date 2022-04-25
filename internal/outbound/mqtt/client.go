@@ -86,7 +86,9 @@ func (p *Client) Handle(ctx context.Context, task model.PushTask) error {
 	topic := _TopicOf(task)
 	util.GLog.Infof(ctx, "topic: %s", topic)
 
-	message := &message.Message{}
+	message := &message.Message{
+		ID: int64(task.GetID()),
+	}
 	if err := copier.Copy(message, task.GetMessage()); err != nil {
 		return err
 	}
@@ -104,9 +106,18 @@ func (p *Client) Handle(ctx context.Context, task model.PushTask) error {
 func _TopicOf(task model.PushTask) string {
 	switch task.GetType() {
 	case model.DirectPush:
-		return fmt.Sprintf("%s/%d/%s/%d", task.GetType().TopicNamePrefix(), task.GetAppId(), model.AsDirectPush(task).Device.ID, task.GetID())
+		return fmt.Sprintf(
+			"%s/%d/%s",
+			task.GetType().TopicNamePrefix(),
+			task.GetAppId(),
+			model.AsDirectPush(task).Device.ID,
+		)
 	case model.BroadcastPush:
-		return fmt.Sprintf("%s/%d/%d", task.GetType().TopicNamePrefix(), task.GetAppId(), task.GetID())
+		return fmt.Sprintf(
+			"%s/%d",
+			task.GetType().TopicNamePrefix(),
+			task.GetAppId(),
+		)
 	default:
 		panic("unreachable")
 	}
