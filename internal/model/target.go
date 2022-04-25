@@ -49,7 +49,8 @@ func (l *Device) Equal(r *Device) bool {
 
 type TokenSet struct {
 	Self string `json:"self" bson:"self"`
-	// TODO: other tokens
+	Apns string `json:"apns" bson:"apns"`
+	Fcm  string `json:"fcm" bson:"fcm"`
 }
 
 func (l *TokenSet) Equal(r *TokenSet) bool {

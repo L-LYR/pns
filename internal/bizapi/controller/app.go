@@ -23,7 +23,6 @@ func (api *_AppAPI) CreateApp(ctx context.Context, req *v1.CreateAppReq) (*v1.Cr
 }
 
 func (api *_AppAPI) CreateConfig(ctx context.Context, req *v1.CreateAppConfigReq) (*v1.CreateAppConfigRes, error) {
-	//TODO: check app created
 	t, err := model.ParsePusherType(req.ConfigName)
 	if err != nil {
 		return nil, util.FinalError(gcode.CodeValidationFailed, err, "Fail to parse pusher type")
@@ -54,7 +53,6 @@ func (api *_AppAPI) CreateConfig(ctx context.Context, req *v1.CreateAppConfigReq
 }
 
 func (api *_AppAPI) OpenMQTT(ctx context.Context, req *v1.OpenMQTTReq) (*v1.OpenMQTTRes, error) {
-	//TODO: check app created
 	config := _GenerateRandMQTTConfig(req.AppId)
 	res := &v1.OpenMQTTRes{MQTTConfig: &v1.MQTTConfig{}}
 	if err := copier.Copy(res.MQTTConfig, config); err != nil {
@@ -66,7 +64,7 @@ func (api *_AppAPI) OpenMQTT(ctx context.Context, req *v1.OpenMQTTReq) (*v1.Open
 	return res, nil
 }
 
-// TODO: this function will return the whole config content,
+// NOTICE: this function will return the whole config content,
 func (api *_AppAPI) QueryConfig(ctx context.Context, req *v1.QueryAppConfigReq) (*v1.QueryAppConfigRes, error) {
 	t, err := model.ParsePusherType(req.ConfigName)
 	if err != nil {

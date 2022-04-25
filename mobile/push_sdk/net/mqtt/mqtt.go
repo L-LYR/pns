@@ -127,7 +127,6 @@ func MustNewMQTTClient(options *Options) *Client {
 	options.ClientOptions.SetOnConnectHandler(
 		func(c paho.Client) {
 			options.logHandler("Info: connected")
-			// NOTICE: in first connection, the handlers is empty
 			for topic, handler := range options.topicSet.Handlers {
 				p.subscribe(topic, handler)
 			}
