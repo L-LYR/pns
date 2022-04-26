@@ -53,6 +53,7 @@ const (
 	Retry    PushTaskStatusType = 2
 	Success  PushTaskStatusType = 3
 	Failure  PushTaskStatusType = 4
+	Filtered PushTaskStatusType = 5
 )
 
 type Qos = byte
@@ -121,6 +122,8 @@ type PushTaskMeta struct {
 	ValidationTime time.Time          `json:"validationTime"`
 	HandleTime     time.Time          `json:"handleTime"`
 	EndTime        time.Time          `json:"endTime"`
+
+	IgnoreFreqCtrl bool `json:"freqCtrl"`
 }
 
 func NewTaskMeta() *PushTaskMeta { return &PushTaskMeta{} }
@@ -136,7 +139,9 @@ func (m *PushTaskMeta) SetSuccess()  { m.Status = Success }
 func (m *PushTaskMeta) SetFailure()  { m.Status = Failure }
 func (m *PushTaskMeta) SetOnHandle() { m.Status = OnHandle }
 func (m *PushTaskMeta) SetPending()  { m.Status = Pending }
+func (m *PushTaskMeta) SetFiltered() { m.Status = Filtered }
 
+func (m *PushTaskMeta) UnderFreqCtrl() bool           { return !m.IgnoreFreqCtrl }
 func (m *PushTaskMeta) IsRetry() bool                 { return m.Status == Retry }
 func (m *PushTaskMeta) OnHandle() bool                { return m.Status == OnHandle }
 func (m *PushTaskMeta) IsDone() bool                  { return m.Success() || m.Failure() }
@@ -154,7 +159,7 @@ func (m *PushTaskMeta) SetEndTime(t time.Time)        { m.EndTime = t }
 func (m *PushTaskMeta) GetEndTime() time.Time         { return m.EndTime }
 
 // check type before use this
-func AsDirectPush(t PushTask) *DirectPushTask {
+func AsDirectPushTask(t PushTask) *DirectPushTask {
 	return t.(*DirectPushTask)
 }
 

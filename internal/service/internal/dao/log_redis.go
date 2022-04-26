@@ -10,6 +10,7 @@ import (
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao/internal"
+	"github.com/L-LYR/pns/internal/util"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -18,20 +19,16 @@ type _LogRedisDao struct {
 }
 
 var (
-	LogRedisDao _LogRedisDao
+	LogRedisDao *_LogRedisDao
 )
 
 func MustInitLogRedisDao(ctx context.Context) {
-	if dao, err := internal.NewLogRedisDao(ctx); err != nil {
-		panic(err)
-	} else {
-		LogRedisDao = _LogRedisDao{dao}
-	}
+	LogRedisDao = &_LogRedisDao{internal.NewLogRedisDao()}
 }
 
 func MustShutdownLogRedisDao(ctx context.Context) {
 	if err := LogRedisDao.Shutdown(ctx); err != nil {
-		panic(err)
+		util.GLog.Panicf(ctx, "Fail to shutdown log redis dao, because %s", err.Error())
 	}
 }
 
@@ -229,10 +226,14 @@ func (dao *_LogRedisDao) IncrTaskCounter(
 }
 
 func (dao *_LogRedisDao) GetTaskStatistics(
-	ctx context.Context,
-	taskId int64,
-	event string,
+	ctx context.Context, taskId int64, event string,
 ) (int64, error) {
 	key := fmt.Sprintf("%d:%s", taskId, event)
 	return dao.LogRedisDao.Client(ctx).Get(ctx, key).Int64()
+}
+
+func (dao *_LogRedisDao) CountLogEntry(
+	ctx context.Context, key string, begin string, end string,
+) (int64, error) {
+	return dao.LogRedisDao.Client(ctx).ZCount(ctx, key, begin, end).Result()
 }

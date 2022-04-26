@@ -11,6 +11,7 @@ import (
 	"github.com/L-LYR/pns/internal/monitor"
 	"github.com/L-LYR/pns/internal/outbound"
 	log "github.com/L-LYR/pns/internal/service/push_log"
+	"github.com/L-LYR/pns/internal/util"
 )
 
 func TaskValidationEventConsumer(e event_queue.Event) error {
@@ -30,8 +31,8 @@ func TaskValidationEventConsumer(e event_queue.Event) error {
 	taskMeta.SetValidationTime(time.Now())
 
 	taskHint := "success"
-	err := _Validate(ctx, task)
-	if err != nil {
+	result, err := _Validate(ctx, task)
+	if err != nil || !result {
 		taskHint = "failure"
 	}
 
@@ -48,19 +49,20 @@ func TaskValidationEventConsumer(e event_queue.Event) error {
 	return err
 }
 
-func _Validate(ctx context.Context, task model.PushTask) error {
-	if err := Execute(
-		map[string]interface{}{
-			"ctx":  ctx,
-			"task": task,
-		},
-	); err != nil {
-		return err
+func _Validate(ctx context.Context, task model.PushTask) (bool, error) {
+	if err := Execute(ctx, task); err != nil {
+		return false, err
 	}
+
+	if task.GetMeta().GetStatus() == model.Filtered {
+		util.GLog.Warningf(ctx, "Task %d is filtered", task.GetID())
+		return false, nil
+	}
+
 	if err := outbound.PutPushTaskEvent(ctx, task); err != nil {
-		return err
+		return false, err
 	}
-	return nil
+	return true, nil
 }
 
 func PutTaskValidationEvent(ctx context.Context, task model.PushTask) error {

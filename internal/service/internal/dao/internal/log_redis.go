@@ -11,10 +11,10 @@ type LogRedisDao struct {
 	client *redis.Client
 }
 
-func NewLogRedisDao(ctx context.Context) (*LogRedisDao, error) {
+func NewLogRedisDao() *LogRedisDao {
 	return &LogRedisDao{
 		client: redis.NewClient(config.RedisConfig().Options()),
-	}, nil
+	}
 }
 
 // provide a continues single connection

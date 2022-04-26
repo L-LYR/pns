@@ -110,7 +110,7 @@ func _TopicOf(task model.PushTask) string {
 			"%s/%d/%s",
 			task.GetType().TopicNamePrefix(),
 			task.GetAppId(),
-			model.AsDirectPush(task).Device.ID,
+			model.AsDirectPushTask(task).Device.ID,
 		)
 	case model.BroadcastPush:
 		return fmt.Sprintf(
