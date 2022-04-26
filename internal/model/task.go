@@ -76,7 +76,7 @@ func ParseQos(s string) Qos {
 }
 
 type PushTask interface {
-	GetID() int
+	GetID() int64
 	GetType() PushTaskType
 	GetAppId() int
 	GetPusher() PusherType
@@ -158,7 +158,7 @@ func AsDirectPush(t PushTask) *DirectPushTask {
 }
 
 type DirectPushTask struct {
-	ID     int        `json:"id"`
+	ID     int64        `json:"id"`
 	Pusher PusherType `json:"pusher"`
 	Qos    Qos        `json:"qos"`
 	*PushTaskMeta
@@ -166,7 +166,7 @@ type DirectPushTask struct {
 	*Message
 }
 
-func (t *DirectPushTask) GetID() int             { return t.ID }
+func (t *DirectPushTask) GetID() int64             { return t.ID }
 func (t *DirectPushTask) GetType() PushTaskType  { return DirectPush }
 func (t *DirectPushTask) GetAppId() int          { return t.App.ID }
 func (t *DirectPushTask) GetPusher() PusherType  { return t.Pusher }
@@ -188,7 +188,7 @@ func AsBroadcastTask(t PushTask) *BroadcastTask {
 }
 
 type BroadcastTask struct {
-	ID     int        `json:"id"`
+	ID     int64        `json:"id"`
 	AppId  int        `json:"appId"`
 	Pusher PusherType `json:"pusher"`
 	Qos    Qos        `json:"qos"`
@@ -197,7 +197,7 @@ type BroadcastTask struct {
 	// FilterParams
 }
 
-func (t *BroadcastTask) GetID() int             { return t.ID }
+func (t *BroadcastTask) GetID() int64             { return t.ID }
 func (t *BroadcastTask) GetType() PushTaskType  { return BroadcastPush }
 func (t *BroadcastTask) GetAppId() int          { return t.AppId }
 func (t *BroadcastTask) GetPusher() PusherType  { return t.Pusher }

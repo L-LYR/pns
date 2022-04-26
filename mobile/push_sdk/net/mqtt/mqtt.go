@@ -38,8 +38,8 @@ func NewTopicSet(cfg *storage.Config) *TopicSet {
 		DeviceId: cfg.DeviceId,
 		Handlers: make(map[string]paho.MessageHandler),
 	}
-	ts.DirectTopic = fmt.Sprintf("DPush/%d/%s/+", ts.AppId, ts.DeviceId)
-	ts.BroadcastTopic = fmt.Sprintf("BPush/%d/+", ts.AppId)
+	ts.DirectTopic = fmt.Sprintf("DPush/%d/%s", ts.AppId, ts.DeviceId)
+	ts.BroadcastTopic = fmt.Sprintf("BPush/%d", ts.AppId)
 	return ts
 }
 
@@ -47,10 +47,10 @@ type LogHandler func(fmt string, v ...interface{})
 
 type MessageHandler func(*message.Message) error
 
-func (c *Client) newEventLog(topic string, where string, err error) map[string]interface{} {
+func (c *Client) newEventLog(topic string, where string, message *message.Message, err error) map[string]interface{} {
 	eventLog := make(map[string]interface{})
 	if err != nil {
-		eventLog["hint"] = fmt.Sprintf("failure: %s", err)
+		eventLog["hint"] = fmt.Sprintf("failed, because %s", err.Error())
 	} else {
 		eventLog["hint"] = "success"
 	}
@@ -58,17 +58,16 @@ func (c *Client) newEventLog(topic string, where string, err error) map[string]i
 	eventLog["timestamp"] = time.Now().UnixMilli()
 	ss := strings.Split(topic, "/")
 	switch ss[0] {
-	case "DPush": // ss[1]: app id, ss[2]: device id, ss[3]: task id
+	case "DPush": // ss[1]: app id, ss[2]: device id
 		eventLog["appId"] = ss[1]
 		eventLog["deviceId"] = ss[2]
-		eventLog["taskId"] = ss[3]
 	case "BPush":
 		eventLog["appId"] = ss[1]
 		eventLog["deviceId"] = c.options.topicSet.DeviceId
-		eventLog["taskId"] = ss[2]
 	default:
 		panic("unreachable")
 	}
+	eventLog["taskId"] = message.ID
 	return eventLog
 }
 
@@ -181,13 +180,13 @@ func unmarshal(m paho.Message) (*message.Message, error) {
 func (c *Client) wrapHandler(fn MessageHandler) paho.MessageHandler {
 	return func(_ paho.Client, m paho.Message) {
 		msg, err := unmarshal(m)
-		defer c.options.recvHandler(c.newEventLog(m.Topic(), "receive", err))
+		defer c.options.recvHandler(c.newEventLog(m.Topic(), "receive", msg, err))
 		if err != nil {
 			c.options.logHandler("Error: %s", err.Error())
 			return
 		}
 		err = fn(msg)
-		defer c.options.showHandler(c.newEventLog(m.Topic(), "show", err))
+		defer c.options.showHandler(c.newEventLog(m.Topic(), "show", msg, err))
 		if err != nil {
 			c.options.logHandler("Error: %s", err.Error())
 			return

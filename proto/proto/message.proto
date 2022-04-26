@@ -5,4 +5,5 @@ option go_package = "./message";
 message Message {
     string Title = 1;
     string Content = 2;
+    int64 ID = 3;
 }

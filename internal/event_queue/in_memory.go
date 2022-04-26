@@ -65,7 +65,7 @@ func (q *_InMemoryEventQueue) Shutdown(ctx context.Context) {
 }
 
 func (q *_InMemoryEventQueue) Monitor(ctx context.Context) {
-	ticker := time.NewTicker(time.Second * 5)
+	ticker := time.NewTicker(time.Second * 1)
 	for {
 		select {
 		case <-ctx.Done():

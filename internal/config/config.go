@@ -82,6 +82,7 @@ func (c *RedisDaoConfig) Options() *redis.Options {
 	return &redis.Options{
 		Addr:     c.Host + ":" + c.Port,
 		Password: c.Pass,
+		PoolFIFO: true,
 	}
 }
 

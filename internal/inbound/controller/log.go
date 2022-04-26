@@ -29,7 +29,7 @@ func (api *_LogAPI) Log(ctx context.Context, req *v1.LogReq) (*v1.LogRes, error)
 	log.PutPushLogEvent(
 		ctx, req.Hint, &model.LogBase{
 			Meta: &model.LogMeta{
-				TaskId:   int(taskId),
+				TaskId:   taskId,
 				AppId:    req.AppId,
 				DeviceId: req.DeviceId,
 			},
