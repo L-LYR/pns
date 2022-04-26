@@ -16,7 +16,7 @@ var (
 
 func MustLoad(ctx context.Context) {
 	if !g.Cfg().Available(ctx) {
-		panic("global config is not available")
+		util.GLog.Panicf(ctx, "Global config is not available")
 	}
 
 	if v, err := g.Cfg().Get(ctx, "."); err != nil {
@@ -24,11 +24,11 @@ func MustLoad(ctx context.Context) {
 	} else if err := v.Struct(_Config); err != nil {
 		util.GLog.Warningf(ctx, "Fail to load config, use default")
 	} else {
-		util.GLog.Info(ctx, "Success to load config:\n%s", util.Readable(_Config))
+		util.GLog.Infof(ctx, "Success to load config:\n%s", util.Readable(_Config))
 		return
 	}
 
-	_Config = DefaultConfig()
+	_Config = DefaultConfig(ctx)
 }
 
 func CommonTaskQos() model.Qos {
@@ -107,4 +107,20 @@ func LogExpireTime() time.Duration {
 
 func TokenExpireTime() time.Duration {
 	return time.Second * time.Duration(_Config.Misc.TokenExpireTime)
+}
+
+func GetEnginePoolMinLen() int64 {
+	return _Config.EnginePool.MinLen
+}
+
+func GetEnginePoolMaxLen() int64 {
+	return _Config.EnginePool.MaxLen
+}
+
+func GetAppLevelFreqCtrlConfig() *FreqCtrlConfig {
+	return _Config.FrequencyControl.AppLevel
+}
+
+func GetTargetLevelFreqCtrlConfig() *FreqCtrlConfig {
+	return _Config.FrequencyControl.TargetLevel
 }

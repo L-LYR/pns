@@ -1,11 +1,16 @@
 package config
 
-import jsoniter "github.com/json-iterator/go"
+import (
+	"context"
 
-func DefaultConfig() *Config {
+	"github.com/L-LYR/pns/internal/util"
+	jsoniter "github.com/json-iterator/go"
+)
+
+func DefaultConfig(ctx context.Context) *Config {
 	c := &Config{}
 	if err := jsoniter.UnmarshalFromString(_RawDefaultConfig, c); err != nil {
-		panic("default config is invalid")
+		util.GLog.Panicf(ctx, "Default config is invalid, because %s", err.Error())
 	}
 	return c
 }

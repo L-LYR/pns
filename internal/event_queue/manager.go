@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/L-LYR/pns/internal/config"
+	"github.com/L-LYR/pns/internal/util"
 )
 
 type _EventQueueManager struct {
@@ -32,13 +33,13 @@ func (m *_EventQueueManager) MustStart(ctx context.Context) {
 	m.queue = _MustNewEventQueue(m.configs)
 
 	m.queue.Start(ctx)
-	for _, w := range m.workers {
+	for t, w := range m.workers {
 		ch, err := m.queue.Subscribe(w.Topic())
 		if err != nil {
-			panic(err)
+			util.GLog.Panicf(ctx, "Fail to subscribe topic %s, because %s", t, err.Error())
 		}
 		if err := w.RunOn(ctx, ch); err != nil {
-			panic(err)
+			util.GLog.Panicf(ctx, "Worker fail to run on topic %s, because %s", t, err.Error())
 		}
 	}
 }

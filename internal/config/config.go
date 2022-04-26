@@ -27,12 +27,17 @@ type Config struct {
 		BroadcastPushTaskEventQueue *EventQueueConfig
 		PushLogEventqueue           *EventQueueConfig
 	}
-	Misc struct {
+	EnginePool *EnginePoolConfig
+	Misc       struct {
 		Qos              string
 		AuthKeyLength    int
 		AuthSecretLength int
 		LogExpireTime    int
 		TokenExpireTime  int
+	}
+	FrequencyControl struct {
+		AppLevel    *FreqCtrlConfig
+		TargetLevel *FreqCtrlConfig
 	}
 }
 
@@ -109,4 +114,14 @@ type EventQueueConfig struct {
 
 func (c *EventQueueConfig) Check() bool {
 	return c.Topic != "" && c.Dispatch > 0
+}
+
+type EnginePoolConfig struct {
+	MinLen int64
+	MaxLen int64
+}
+
+type FreqCtrlConfig struct {
+	Interval time.Duration
+	Limit    int64
 }

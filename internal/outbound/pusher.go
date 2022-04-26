@@ -48,7 +48,7 @@ type _PusherManager struct {
 // This function is used in initialization stage which is not concurrent-safe.
 func (p *_PusherManager) MustRegisterPushers(ctx context.Context, pusherType model.PusherType) {
 	if p.pusherType != pusherType {
-		panic("unmatched pusher type")
+		util.GLog.Panicf(ctx, "Unmatched pusher type")
 	}
 	cache.Config.RangePusherConfig(
 		pusherType,

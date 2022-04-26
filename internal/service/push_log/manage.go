@@ -3,6 +3,8 @@ package log
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao"
@@ -50,4 +52,11 @@ func GetTaskStatisticsByID(ctx context.Context, id int64) (string, error) {
 	} else {
 		return fmt.Sprintf("%d received, %d showed", nRecv, nShow), nil
 	}
+}
+
+func CountLogEntry(ctx context.Context, meta *model.LogMeta, duration time.Duration) (int64, error) {
+	now := time.Now()
+	end := strconv.FormatInt(now.UnixMilli(), 10)
+	begin := strconv.FormatInt(now.Add(-duration).UnixMilli(), 10)
+	return dao.LogRedisDao.CountLogEntry(ctx, meta.EntryKey(), begin, end)
 }

@@ -3,6 +3,8 @@ package bizcore
 import (
 	"context"
 
+	"github.com/L-LYR/pns/internal/bizcore/internal"
+	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/util"
 	"github.com/bilibili/gengine/engine"
@@ -25,7 +27,13 @@ const (
 func MustInitialize(ctx context.Context) {
 	var err error
 	// TODO: configurable
-	_EnginePool, err = engine.NewGenginePool(10, 20, int(Sorted), _DefaultRule, _ApiOuter)
+	_EnginePool, err = engine.NewGenginePool(
+		config.GetEnginePoolMinLen(),
+		config.GetEnginePoolMaxLen(),
+		int(Sorted),
+		internal.PredefinedRules(),
+		internal.OuterApis(),
+	)
 	if err != nil {
 		util.GLog.Panicf(ctx, "Fail to initialize engine pool, because %s", err.Error())
 	}
@@ -40,10 +48,15 @@ func RemoveRule(ctx context.Context, ruleName string) error {
 }
 
 // NOTICE: I don't want to handle the return value...
-func Execute(data map[string]interface{}) error {
+func Execute(ctx context.Context, task model.PushTask) error {
 	stag := &engine.Stag{}
-	data["stag"] = stag
-	err, _ := _EnginePool.ExecuteWithStopTagDirect(data, false, stag)
+	err, _ := _EnginePool.ExecuteWithStopTagDirect(
+		map[string]interface{}{
+			"stag": stag,
+			"ctx":  ctx,
+			"task": task,
+		},
+		false, stag)
 	if err != nil {
 		return err
 	}

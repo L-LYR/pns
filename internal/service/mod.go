@@ -8,7 +8,7 @@ import (
 )
 
 func MustInitialize(ctx context.Context) {
-	dao.MustInitTargetMongoDao(ctx)
+	dao.MustInitializeTargetMongoDao(ctx)
 	dao.MustInitLogRedisDao(ctx)
 	cache.Config.MustLoad(ctx)
 }

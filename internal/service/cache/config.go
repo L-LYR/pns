@@ -7,6 +7,7 @@ import (
 
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao"
+	"github.com/L-LYR/pns/internal/util"
 )
 
 /*
@@ -112,14 +113,14 @@ func (c *_ConfigCache) RangePusherConfig(t model.PusherType, fn func(appId int, 
 func (c *_ConfigCache) MustLoad(ctx context.Context) {
 	appConfigs, err := dao.LoadAllAppConfig(ctx)
 	if err != nil {
-		panic(err)
+		util.GLog.Panicf(ctx, "Fail to load all app configs, because %s", err.Error())
 	}
 	for _, config := range appConfigs {
 		c.AddAppConfig(config)
 	}
 	pusherConfigs, err := dao.LoadAllPusherConfig(ctx)
 	if err != nil {
-		panic(err)
+		util.GLog.Panicf(ctx, "Fail to load all pusher configs, because %s", err.Error())
 	}
 	for _, config := range pusherConfigs {
 		c.AddPusherConfig(config)

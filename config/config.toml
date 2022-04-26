@@ -59,9 +59,21 @@ topic = "push_log_event"
 dispatch = 3
 length = 10000
 
+[engine_pool]
+min_len = 10
+max_len = 20
+
 [misc]
 qos = "atLeastOnce"
 auth_key_length = 16
 auth_secret_length = 32
 log_expire_time = 86400    # 24 * 3600 seconds
 token_expire_time = 604800 # 7 * 24 * 3600 seconds
+
+[frequency_control]
+[frequency_control.app_level]
+interval = 3600 # 3600 seconds
+limit = 1
+[frequency_control.target_level]
+interval = 3600 # 3600 seconds
+limit = 3

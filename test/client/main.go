@@ -144,11 +144,11 @@ func (c *Client) subscribe(topic string, fn MessageHandler) {
 }
 
 func DirectTopic(deviceId int) string {
-	return fmt.Sprintf("DPush/12345/%d/+", deviceId)
+	return fmt.Sprintf("DPush/12345/%d", deviceId)
 }
 
 func BroadcastTopic() string {
-	return "BPush/12345/#"
+	return "BPush/12345"
 }
 
 func main() {
