@@ -32,6 +32,7 @@ func MustRegisterRouters(ctx context.Context) *ghttp.Server {
 			controller.Push,
 			controller.Log,
 			controller.App,
+			controller.Biz,
 		)
 	})
 	// Register Open API docs

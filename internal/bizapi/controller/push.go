@@ -7,9 +7,9 @@ import (
 	"time"
 
 	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
+	"github.com/L-LYR/pns/internal/bizcore"
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
-	"github.com/L-LYR/pns/internal/outbound"
 	log "github.com/L-LYR/pns/internal/service/push_log"
 	"github.com/L-LYR/pns/internal/service/target"
 	"github.com/L-LYR/pns/internal/util"
@@ -26,12 +26,9 @@ func (api *_PushAPI) DirectPush(ctx context.Context, req *v1.DirectPushReq) (*v1
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to build push task")
 	}
 
-	err = log.PutTaskLog(ctx, task.GetLogMeta(), "direct push task creation", "success")
-	if err != nil {
-		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
-	}
+	log.PutTaskLogEvent(ctx, task.GetLogMeta(), "direct push task creation", "success")
 
-	if err := outbound.PutPushTaskEvent(ctx, task); err != nil {
+	if err := bizcore.PutTaskValidationEvent(ctx, task); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")
 	}
 
@@ -72,12 +69,9 @@ func (api *_PushAPI) BroadcastPush(ctx context.Context, req *v1.BroadcastPushReq
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to build push task")
 	}
 
-	err = log.PutTaskLog(ctx, task.GetLogMeta(), "broadcast push task creation", "success")
-	if err != nil {
-		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
-	}
+	log.PutTaskLogEvent(ctx, task.GetLogMeta(), "broadcast push task creation", "success")
 
-	if err := outbound.PutPushTaskEvent(ctx, task); err != nil {
+	if err := bizcore.PutTaskValidationEvent(ctx, task); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")
 	}
 

@@ -98,18 +98,14 @@ func (p *_PusherManager) _ReputTask(ctx context.Context, task model.PushTask, pu
 	meta := task.GetLogMeta()
 	task.GetMeta().SetRetry()
 	if task.CanRetry() {
-		if err := log.PutTaskLog(ctx, meta, "retry", "failure"); err != nil {
-			util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
-		}
+		log.PutTaskLogEvent(ctx, meta, "retry", "failure")
 		return errors.New("fail to retry")
 	}
 	if err := PutPushTaskEvent(ctx, task); err != nil {
 		util.GLog.Warningf(ctx, "Task %d fail to reput task in event queue, retry", task.GetID())
 		return p._ReputTask(ctx, task, pusherType)
 	}
-	if err := log.PutTaskLog(ctx, meta, "retry", "success"); err != nil {
-		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
-	}
+	log.PutTaskLogEvent(ctx, meta, "retry", "success")
 	return nil
 }
 

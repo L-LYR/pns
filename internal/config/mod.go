@@ -35,6 +35,10 @@ func CommonTaskQos() model.Qos {
 	return model.ParseQos(_Config.Misc.Qos)
 }
 
+func TaskValidationEventConsumerConfig() *EventQueueConfig {
+	return _Config.EventQueue.TaskValidationEventQueue
+}
+
 func DirectPushTaskEventConsumerConfig() *EventQueueConfig {
 	return _Config.EventQueue.DirectPushTaskEventQueue
 }
@@ -55,6 +59,10 @@ func BizapiServerConfig() *ghttp.ServerConfig {
 }
 func AdminServerConfig() *ghttp.ServerConfig {
 	return _Config.Servers.Admin.Convert()
+}
+
+func TaskValidationEventTopic() string {
+	return _Config.EventQueue.TaskValidationEventQueue.Topic
 }
 
 func DirectPushTaskEventTopic() string {

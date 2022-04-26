@@ -10,10 +10,19 @@ type PushTaskEvent struct {
 func (e *PushTaskEvent) GetCtx() context.Context { return e.Ctx }
 func (e *PushTaskEvent) GetTask() PushTask       { return e.Task }
 
-type PushLogEvent struct {
+type LogEventType int8
+
+const (
+	PushLog LogEventType = 1
+	TaskLog LogEventType = 2
+)
+
+type LogEvent struct {
 	Ctx   context.Context
+	Type  LogEventType
 	Entry *LogEntry
 }
 
-func (e *PushLogEvent) GetCtx() context.Context { return e.Ctx }
-func (e *PushLogEvent) GetEntry() *LogEntry     { return e.Entry }
+func (e *LogEvent) GetCtx() context.Context { return e.Ctx }
+func (e *LogEvent) GetEntry() *LogEntry     { return e.Entry }
+func (e *LogEvent) GetType() LogEventType   { return e.Type }

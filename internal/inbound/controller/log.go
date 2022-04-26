@@ -26,17 +26,13 @@ func (api *_LogAPI) Log(ctx context.Context, req *v1.LogReq) (*v1.LogRes, error)
 		return nil, util.FinalError(gcode.CodeValidationFailed, err, "Fail to parse timestamp")
 	}
 
-	log.PutPushLogEvent(
-		ctx, req.Hint, &model.LogBase{
-			Meta: &model.LogMeta{
-				TaskId:   taskId,
-				AppId:    req.AppId,
-				DeviceId: req.DeviceId,
-			},
-			T:     ts,
-			Where: req.Where,
-		},
-	)
+	meta := &model.LogMeta{
+		TaskId:   taskId,
+		AppId:    req.AppId,
+		DeviceId: req.DeviceId,
+	}
+
+	log.PutPushLogEvent(ctx, meta, req.Where, ts, req.Hint)
 
 	return &v1.LogRes{}, nil
 }

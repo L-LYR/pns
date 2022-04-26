@@ -104,7 +104,6 @@ func (c *Client) newEventLog(topic string, where string, message *message.Messag
 	case "BPush":
 		eventLog["appId"] = ss[1]
 		eventLog["deviceId"] = strconv.FormatInt(int64(c.id), 10)
-		eventLog["taskId"] = ss[2]
 	default:
 		panic("unreachable")
 	}

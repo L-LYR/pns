@@ -3,7 +3,6 @@ package log
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao"
@@ -13,28 +12,18 @@ func PutTaskEntry(ctx context.Context, meta *model.LogMeta) error {
 	return dao.LogRedisDao.AppendTaskEntry(ctx, meta)
 }
 
-func PutTaskLog(
-	ctx context.Context,
-	meta *model.LogMeta,
-	where string,
-	hint string,
-) error {
-	return dao.LogRedisDao.AppendTaskLog(ctx, &model.LogEntry{
-		LogBase: &model.LogBase{
-			Meta:  meta,
-			T:     time.Now().UnixMilli(),
-			Where: where,
-		},
-		Hint: hint,
-	})
+func PutTaskLog(ctx context.Context, l *model.LogEntry) error {
+	return dao.LogRedisDao.AppendTaskLog(ctx, l)
 }
 
-// async
 func PutPushLog(ctx context.Context, l *model.LogEntry) error {
 	if err := dao.LogRedisDao.CheckAndAppendTaskEntry(ctx, l.Meta); err != nil {
 		return err
 	}
-	return dao.LogRedisDao.AppendPushLog(ctx, l)
+	if err := dao.LogRedisDao.AppendPushLog(ctx, l); err != nil {
+		return err
+	}
+	return dao.LogRedisDao.IncrTaskCounter(ctx, l.Meta.TaskId, l.Where)
 }
 
 func GetTaskLogByID(ctx context.Context, id int64) ([]*model.LogEntry, error) {
@@ -61,8 +50,4 @@ func GetTaskStatisticsByID(ctx context.Context, id int64) (string, error) {
 	} else {
 		return fmt.Sprintf("%d received, %d showed", nRecv, nShow), nil
 	}
-}
-
-func IncrTaskCounter(ctx context.Context, l *model.LogEntry) error {
-	return dao.LogRedisDao.IncrTaskCounter(ctx, l.Meta.TaskId, l.Where)
 }

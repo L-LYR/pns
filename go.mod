@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	fyne.io/fyne/v2 v2.1.4
+	github.com/bilibili/gengine v1.5.7
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/godruoyi/go-snowflake v0.0.1
@@ -19,6 +20,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v0.4.1 // indirect
+	github.com/antlr/antlr4 v0.0.0-20210105192202-5c2b686f95e1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/clbanning/mxj/v2 v2.5.5 // indirect
@@ -33,8 +35,10 @@ require (
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/godbus/dbus/v5 v5.0.4 // indirect
 	github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff // indirect
+	github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
+	github.com/google/martian v2.1.0+incompatible // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/grokify/html-strip-tags-go v0.0.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect

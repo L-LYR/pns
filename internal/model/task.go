@@ -48,6 +48,7 @@ func (t PushTaskType) Name() string {
 type PushTaskStatusType int8
 
 const (
+	Pending  PushTaskStatusType = 0
 	OnHandle PushTaskStatusType = 1
 	Retry    PushTaskStatusType = 2
 	Success  PushTaskStatusType = 3
@@ -115,10 +116,11 @@ func (c *RetryCounter) CanRetry() bool {
 
 type PushTaskMeta struct {
 	*RetryCounter
-	Status       PushTaskStatusType `json:"status"`
-	CreationTime time.Time          `json:"creationTime"`
-	HandleTime   time.Time          `json:"handleTime"`
-	EndTime      time.Time          `json:"endTime"`
+	Status         PushTaskStatusType `json:"status"`
+	CreationTime   time.Time          `json:"creationTime"`
+	ValidationTime time.Time          `json:"validationTime"`
+	HandleTime     time.Time          `json:"handleTime"`
+	EndTime        time.Time          `json:"endTime"`
 }
 
 func NewTaskMeta() *PushTaskMeta { return &PushTaskMeta{} }
@@ -133,6 +135,7 @@ func (m *PushTaskMeta) SetRetry() {
 func (m *PushTaskMeta) SetSuccess()  { m.Status = Success }
 func (m *PushTaskMeta) SetFailure()  { m.Status = Failure }
 func (m *PushTaskMeta) SetOnHandle() { m.Status = OnHandle }
+func (m *PushTaskMeta) SetPending()  { m.Status = Pending }
 
 func (m *PushTaskMeta) IsRetry() bool                 { return m.Status == Retry }
 func (m *PushTaskMeta) OnHandle() bool                { return m.Status == OnHandle }
@@ -141,16 +144,14 @@ func (m *PushTaskMeta) Success() bool                 { return m.Status == Succe
 func (m *PushTaskMeta) Failure() bool                 { return m.Status == Failure }
 func (m *PushTaskMeta) GetStatus() PushTaskStatusType { return m.Status }
 
-func (m *PushTaskMeta) SetCreationTime(t time.Time) { m.CreationTime = t }
-func (m *PushTaskMeta) GetCreationTime() time.Time  { return m.CreationTime }
-func (m *PushTaskMeta) SetHandleTime(t time.Time)   { m.HandleTime = t }
-func (m *PushTaskMeta) GetHandleTime() time.Time    { return m.HandleTime }
-func (m *PushTaskMeta) SetEndTime(t time.Time)      { m.EndTime = t }
-func (m *PushTaskMeta) GetEndTime() time.Time       { return m.EndTime }
-
-func (m *PushTaskMeta) TotalDuration() time.Duration      { return m.EndTime.Sub(m.CreationTime) }
-func (m *PushTaskMeta) ValidationDuration() time.Duration { return m.HandleTime.Sub(m.CreationTime) }
-func (m *PushTaskMeta) HandleDuration() time.Duration     { return m.EndTime.Sub(m.HandleTime) }
+func (m *PushTaskMeta) SetCreationTime(t time.Time)   { m.CreationTime = t }
+func (m *PushTaskMeta) GetCreationTime() time.Time    { return m.CreationTime }
+func (m *PushTaskMeta) SetValidationTime(t time.Time) { m.ValidationTime = t }
+func (m *PushTaskMeta) GetValidationTime() time.Time  { return m.ValidationTime }
+func (m *PushTaskMeta) SetHandleTime(t time.Time)     { m.HandleTime = t }
+func (m *PushTaskMeta) GetHandleTime() time.Time      { return m.HandleTime }
+func (m *PushTaskMeta) SetEndTime(t time.Time)        { m.EndTime = t }
+func (m *PushTaskMeta) GetEndTime() time.Time         { return m.EndTime }
 
 // check type before use this
 func AsDirectPush(t PushTask) *DirectPushTask {
@@ -158,7 +159,7 @@ func AsDirectPush(t PushTask) *DirectPushTask {
 }
 
 type DirectPushTask struct {
-	ID     int64        `json:"id"`
+	ID     int64      `json:"id"`
 	Pusher PusherType `json:"pusher"`
 	Qos    Qos        `json:"qos"`
 	*PushTaskMeta
@@ -166,7 +167,7 @@ type DirectPushTask struct {
 	*Message
 }
 
-func (t *DirectPushTask) GetID() int64             { return t.ID }
+func (t *DirectPushTask) GetID() int64           { return t.ID }
 func (t *DirectPushTask) GetType() PushTaskType  { return DirectPush }
 func (t *DirectPushTask) GetAppId() int          { return t.App.ID }
 func (t *DirectPushTask) GetPusher() PusherType  { return t.Pusher }
@@ -188,7 +189,7 @@ func AsBroadcastTask(t PushTask) *BroadcastTask {
 }
 
 type BroadcastTask struct {
-	ID     int64        `json:"id"`
+	ID     int64      `json:"id"`
 	AppId  int        `json:"appId"`
 	Pusher PusherType `json:"pusher"`
 	Qos    Qos        `json:"qos"`
@@ -197,7 +198,7 @@ type BroadcastTask struct {
 	// FilterParams
 }
 
-func (t *BroadcastTask) GetID() int64             { return t.ID }
+func (t *BroadcastTask) GetID() int64           { return t.ID }
 func (t *BroadcastTask) GetType() PushTaskType  { return BroadcastPush }
 func (t *BroadcastTask) GetAppId() int          { return t.AppId }
 func (t *BroadcastTask) GetPusher() PusherType  { return t.Pusher }

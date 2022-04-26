@@ -42,10 +42,14 @@ port = "1883"
 timeout = 1
 
 [event_quque]
+[event_queue.task_validation_event_queue]
+topic = "task_validation_event"
+dispatch = 5
+length = 100000
 [event_queue.direct_push_task_event_queue]
 topic = "direct_push_task_event"
-dispatch = 3
-length = 10000
+dispatch = 5
+length = 100000
 [event_queue.broadcast_push_task_event_queue]
 topic = "broadcast_push_task_event"
 dispatch = 1
@@ -54,7 +58,6 @@ length = 10
 topic = "push_log_event"
 dispatch = 3
 length = 10000
-
 [misc]
 qos = "atLeastOnce"
 auth_key_length = 16

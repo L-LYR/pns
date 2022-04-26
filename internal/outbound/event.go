@@ -16,17 +16,20 @@ import (
 func PushTaskEventConsumer(e event_queue.Event) error {
 	pe, ok := e.(*model.PushTaskEvent)
 	if !ok {
-		return errors.New("not PushEvent")
+		return errors.New("not PushTaskEvent")
 	}
-
 	ctx, task := pe.GetCtx(), pe.GetTask()
-	logMeta := task.GetLogMeta()
+	logMeta, taskMeta, taskTypeName :=
+		task.GetLogMeta(), task.GetMeta(), task.GetType().Name()
 
-	if err := log.PutTaskLog(ctx, logMeta, "task handle", "success"); err != nil {
-		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
-	}
+	monitor.PushTaskDuration.
+		WithLabelValues(taskTypeName, "task pending since validation", "-").Observe(
+		time.Since(taskMeta.GetValidationTime()).Seconds(),
+	)
 
-	task.GetMeta().SetOnHandle()
+	log.PutTaskLogEvent(ctx, logMeta, "task handle", "success")
+
+	taskMeta.SetOnHandle()
 
 	var err error
 	taskHint := "success"
@@ -37,33 +40,28 @@ func PushTaskEventConsumer(e event_queue.Event) error {
 		panic("unreachable")
 	}
 
-	if !task.GetMeta().IsDone() {
+	if !taskMeta.IsDone() {
 		return nil
 	}
-	task.GetMeta().SetEndTime(time.Now())
+	taskMeta.SetEndTime(time.Now())
 
 	if err != nil {
 		taskHint = "failure"
 	}
 
-	if err := log.PutTaskLog(ctx, logMeta, "task done", taskHint); err != nil {
-		util.GLog.Warningf(ctx, "Fail to set task log, err = %+v", err)
-	}
+	log.PutTaskLogEvent(ctx, logMeta, "task done", taskHint)
 
-	taskTypeName := task.GetType().Name()
 	monitor.PushTaskCounter.
-		WithLabelValues(taskTypeName, "done", taskHint).Inc()
-	monitor.PushTaskDuration.
-		WithLabelValues(taskTypeName, "total", taskHint).Observe(
-		task.GetMeta().TotalDuration().Seconds(),
-	)
-	monitor.PushTaskDuration.
-		WithLabelValues(taskTypeName, "validation", taskHint).Observe(
-		task.GetMeta().ValidationDuration().Seconds(),
-	)
+		WithLabelValues(taskTypeName, "outbound", taskHint).Inc()
+
 	monitor.PushTaskDuration.
 		WithLabelValues(taskTypeName, "handle", taskHint).Observe(
-		task.GetMeta().HandleDuration().Seconds(),
+		taskMeta.GetEndTime().Sub(taskMeta.GetHandleTime()).Seconds(),
+	)
+
+	monitor.PushTaskDuration.
+		WithLabelValues(taskTypeName, "total", taskHint).Observe(
+		taskMeta.GetEndTime().Sub(taskMeta.GetCreationTime()).Seconds(),
 	)
 
 	util.GLog.Infof(ctx, "Task %d %s", task.GetID(), taskHint)
