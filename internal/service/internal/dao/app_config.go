@@ -27,11 +27,11 @@ var (
 
 // Fill with you ideas below.
 
-func CreateApp(ctx context.Context, appName string, appId int) error {
+func CreateApp(ctx context.Context, cfg *model.AppConfig) error {
 	_, err := AppConfig.Ctx(ctx).Insert(
 		do.AppConfig{
-			Id:   appId,
-			Name: appName,
+			Id:   cfg.ID,
+			Name: cfg.Name,
 		},
 	)
 	return err

@@ -35,13 +35,14 @@ func Authorization(ctx context.Context, key string, secret string, clientId stri
 }
 
 func Create(ctx context.Context, appName string, appId int) error {
-	if err := dao.CreateApp(ctx, appName, appId); err != nil {
-		return err
-	}
-	cache.Config.AddAppConfig(&model.AppConfig{
+	cfg := &model.AppConfig{
 		ID:   appId,
 		Name: appName,
-	})
+	}
+	if err := dao.CreateApp(ctx, cfg); err != nil {
+		return err
+	}
+	cache.Config.AddAppConfig(cfg)
 	return nil
 }
 

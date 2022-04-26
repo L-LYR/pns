@@ -22,6 +22,7 @@ type Config struct {
 	}
 	Broker     *BrokerConfig
 	EventQueue struct {
+		TaskValidationEventQueue    *EventQueueConfig
 		DirectPushTaskEventQueue    *EventQueueConfig
 		BroadcastPushTaskEventQueue *EventQueueConfig
 		PushLogEventqueue           *EventQueueConfig

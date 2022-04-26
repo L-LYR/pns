@@ -22,6 +22,13 @@ create table if not exists `app_config`(
     `id` int unique not null comment 'app id',
     `name` varchar(256) unique not null comment 'app name'
 ) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
+create table if not exists `biz_rule`(
+    `name` varchar(256) unique not null comment 'rule name',
+    `description` varchar(1024) comment 'rule description',
+    `salience` int not null comment 'rule salience',
+    `content` varchar(4096) not null comment 'rule content',
+    `status` tinyint not null comment 'rule status, 0 for disable, 1 for enable'
+) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
 -- Test Data
 insert into `app_pusher_config`
 values(

@@ -5,6 +5,7 @@ import (
 
 	"github.com/L-LYR/pns/internal/admin"
 	"github.com/L-LYR/pns/internal/bizapi"
+	"github.com/L-LYR/pns/internal/bizcore"
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/inbound"
@@ -25,21 +26,11 @@ func main() {
 	/* individual modules */
 	validator.MustRegisterRules(ctx)
 	monitor.MustRegisterMetrics(ctx)
+	bizcore.MustInitialize(ctx)
 	service.MustInitialize(ctx)
 	outbound.MustInitialize(ctx)
 	/* event queue */
-	event_queue.EventQueueManager.MustRegister(
-		config.DirectPushTaskEventConsumerConfig(),
-		outbound.PushTaskEventConsumer,
-	)
-	event_queue.EventQueueManager.MustRegister(
-		config.BroadcastPushTaskEventConsumerConfig(),
-		outbound.PushTaskEventConsumer,
-	)
-	event_queue.EventQueueManager.MustRegister(
-		config.PushLogEventConsumerConfig(),
-		log.PushLogEventConsumer,
-	)
+	EventQueueRegister()
 	event_queue.EventQueueManager.MustStart(ctx)
 	/* servers */
 	inbound.MustRegisterRouters(ctx).Start()
@@ -62,4 +53,24 @@ func StartPProf() {
 	if util.DebugOn() {
 		go ghttp.StartPProfServer(10085)
 	}
+}
+
+func EventQueueRegister() {
+	// temporarily, add a queue between bizapi and bizcore
+	event_queue.EventQueueManager.MustRegister(
+		config.TaskValidationEventConsumerConfig(),
+		bizcore.TaskValidationEventConsumer,
+	)
+	event_queue.EventQueueManager.MustRegister(
+		config.DirectPushTaskEventConsumerConfig(),
+		outbound.PushTaskEventConsumer,
+	)
+	event_queue.EventQueueManager.MustRegister(
+		config.BroadcastPushTaskEventConsumerConfig(),
+		outbound.PushTaskEventConsumer,
+	)
+	event_queue.EventQueueManager.MustRegister(
+		config.PushLogEventConsumerConfig(),
+		log.PushLogEventConsumer,
+	)
 }

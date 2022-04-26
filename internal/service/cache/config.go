@@ -10,7 +10,7 @@ import (
 )
 
 /*
-	cache features:
+	config cache features:
 
 	1. very low-frequent insert operation
 	2. no update or delete operations

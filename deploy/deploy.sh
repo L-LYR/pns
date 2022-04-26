@@ -110,23 +110,13 @@ update() {
 
     goto_deploy_directory
     printf "Updating...\n"
-    if [ -z "$(docker container ls --format "{{.Status}} {{.Names}}" |
-        awk '{if ($NF == "pns" && $1 == "Up") {print "pns is working\n"}}')" ]; then
-        printf "pns is not working\n"
-        printf "Try to remove container and image, and then rebuild and restart...\n"
-        docker stop pns
-        docker rm pns
-        docker rmi ${pns_image_name}
-        docker-compose build || exit
-        docker-compose up -d || exit
-        exit
-    fi
-    for dir in "${source_dir[@]}"; do
-        docker cp "$root_path"/"$dir" pns:/pns/
-    done
-    docker exec -it pns /bin/sh -c make all
-    docker exec -it pns mv -f /pns/build/pns -t /pns
-    docker restart pns
+
+    docker stop pns
+    docker rm pns
+    docker rmi ${pns_image_name}
+    docker-compose build || exit
+    docker-compose up -d || exit
+
 }
 
 $1
