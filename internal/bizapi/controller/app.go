@@ -12,7 +12,7 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-var App = _AppAPI{}
+var App = &_AppAPI{}
 
 type _AppAPI struct{}
 

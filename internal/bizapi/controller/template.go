@@ -10,7 +10,7 @@ import (
 	"github.com/gogf/gf/v2/errors/gcode"
 )
 
-var Template = _TemplateAPI{}
+var Template = &_TemplateAPI{}
 
 type _TemplateAPI struct{}
 

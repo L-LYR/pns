@@ -11,11 +11,11 @@ import (
 )
 
 type _MsgTplCache struct {
-	*gcache.Cache
+	cache *gcache.Cache
 }
 
 func (c *_MsgTplCache) GetTplByID(ctx context.Context, id int64) (*model.MsgTpl, error) {
-	if v, err := c.Get(ctx, id); err != nil {
+	if v, err := c.cache.Get(ctx, id); err != nil {
 		return nil, err
 	} else if v != nil { // cache miss
 		msgTpl := &model.MsgTpl{}
@@ -28,7 +28,7 @@ func (c *_MsgTplCache) GetTplByID(ctx context.Context, id int64) (*model.MsgTpl,
 		if err != nil {
 			return nil, err
 		}
-		err = c.Set(ctx, id, msgTpl, 0)
+		err = c.cache.Set(ctx, id, msgTpl, 0)
 		if err != nil {
 			util.GLog.Warningf(ctx, "Fail to set cache for template %d, because %s", id, err.Error())
 		}
@@ -37,7 +37,7 @@ func (c *_MsgTplCache) GetTplByID(ctx context.Context, id int64) (*model.MsgTpl,
 }
 
 func (c *_MsgTplCache) MustInitialize(ctx context.Context) {
-	c.Cache = gcache.New(config.GetMsgTplCacheSize())
+	c.cache = gcache.New(config.GetMsgTplCacheSize())
 }
 
 var (

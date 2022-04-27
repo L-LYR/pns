@@ -11,7 +11,7 @@ import (
 	"github.com/gogf/gf/v2/errors/gcode"
 )
 
-var Biz = _BizAPI{}
+var Biz = &_BizAPI{}
 
 type _BizAPI struct{}
 
