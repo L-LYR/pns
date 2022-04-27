@@ -14,9 +14,10 @@ use pns;
 --     unique key `uniq_device_id_app_id` (`device_id`, `app_id`)
 -- ) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
 create table if not exists `app_pusher_config`(
-    `appId` int unique not null comment 'app id',
+    `appId` int not null comment 'app id',
     `pusherId` tinyint not null comment 'pusher id',
-    `config` JSON not null comment 'app pusher config'
+    `config` JSON not null comment 'app pusher config',
+    unique key `uniq_app_id_pusher_id` (`appId`, `pusherId`)
 ) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
 create table if not exists `app_config`(
     `id` int unique not null comment 'app id',
@@ -28,6 +29,11 @@ create table if not exists `biz_rule`(
     `salience` int not null comment 'rule salience',
     `content` varchar(4096) not null comment 'rule content',
     `status` tinyint not null comment 'rule status, 0 for disable, 1 for enable'
+) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
+create table if not exists `message_template`(
+    `appId` int not null comment 'app id',
+    `templateId` bigint unique not null comment 'template id',
+    `template` JSON not null comment 'message template'
 ) engine = InnoDB charset = utf8mb4 collate utf8mb4_unicode_ci;
 -- Test Data
 insert into `app_pusher_config`

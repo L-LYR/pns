@@ -1,6 +1,6 @@
 FROM golang:1.17-alpine3.15 AS builder
 WORKDIR /pns
-RUN apk add make
+RUN apk add --update alpine-sdk
 ENV GOPROXY=https://proxy.golang.com.cn,direct
 COPY . .
 RUN go mod tidy
