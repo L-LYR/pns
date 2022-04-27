@@ -41,7 +41,7 @@ Task ID -> Server Log List
 
 App ID : Device ID : Task ID -> Client Log List
 
-3. Task Entry List
+3. Task Entry List -> this will be used in frequency control.
 
 1) App ID : Device ID -> Task ID 1 / Task ID 2 / Task ID 3 ......
 
