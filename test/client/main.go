@@ -140,7 +140,7 @@ func (c *Client) subscribe(topic string, fn MessageHandler) {
 		log.Printf("Error: %s", err.Error())
 		return
 	}
-	log.Printf("Success to subscribe %s", topic)
+	log.Printf("Subscribe %s successfully", topic)
 }
 
 func DirectTopic(deviceId int) string {

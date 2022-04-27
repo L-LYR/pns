@@ -24,7 +24,7 @@ func MustLoad(ctx context.Context) {
 	} else if err := v.Struct(_Config); err != nil {
 		util.GLog.Warningf(ctx, "Fail to load config, use default")
 	} else {
-		util.GLog.Infof(ctx, "Success to load config:\n%s", util.Readable(_Config))
+		util.GLog.Infof(ctx, "Load config successfully:\n%s", util.Readable(_Config))
 		return
 	}
 

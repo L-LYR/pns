@@ -216,5 +216,5 @@ func (c *Client) subscribe(topic string, fn paho.MessageHandler) {
 		c.options.logHandler("Error: %s", err.Error())
 		return
 	}
-	c.options.logHandler("Success to subscribe %s", topic)
+	c.options.logHandler("Subscribe %s successfully", topic)
 }

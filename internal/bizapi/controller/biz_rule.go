@@ -4,6 +4,7 @@ import (
 	"context"
 
 	v1 "github.com/L-LYR/pns/internal/bizapi/api/v1"
+	"github.com/L-LYR/pns/internal/bizcore"
 	"github.com/L-LYR/pns/internal/model"
 	bizrule "github.com/L-LYR/pns/internal/service/biz_rule"
 	"github.com/L-LYR/pns/internal/util"
@@ -28,7 +29,12 @@ func (api *_BizAPI) EnableRule(
 	ctx context.Context,
 	req *v1.EnableRuleReq,
 ) (*v1.EnableRuleRes, error) {
-	if err := bizrule.ChangeRuleStatus(ctx, req.Name, model.BizRuleEnable); err != nil {
+	if err := bizrule.ChangeRuleStatus(
+		ctx, req.Name, model.BizRuleEnable,
+		func(ctx context.Context, rule *model.BizRule) error {
+			return bizcore.AddNewRule(ctx, rule)
+		},
+	); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to enable rule")
 	}
 	return &v1.EnableRuleRes{}, nil
@@ -38,7 +44,12 @@ func (api *_BizAPI) DisableRule(
 	ctx context.Context,
 	req *v1.DisableRuleReq,
 ) (*v1.DisableRuleRes, error) {
-	if err := bizrule.ChangeRuleStatus(ctx, req.Name, model.BizRuleDisable); err != nil {
+	if err := bizrule.ChangeRuleStatus(
+		ctx, req.Name, model.BizRuleDisable,
+		func(ctx context.Context, rule *model.BizRule) error {
+			return bizcore.RemoveRule(ctx, rule.Name)
+		},
+	); err != nil {
 		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to disable rule")
 	}
 	return &v1.DisableRuleRes{}, nil

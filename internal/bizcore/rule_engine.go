@@ -6,6 +6,7 @@ import (
 	"github.com/L-LYR/pns/internal/bizcore/internal"
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
+	bizrule "github.com/L-LYR/pns/internal/service/biz_rule"
 	"github.com/L-LYR/pns/internal/util"
 	"github.com/bilibili/gengine/engine"
 )
@@ -26,7 +27,6 @@ const (
 
 func MustInitialize(ctx context.Context) {
 	var err error
-	// TODO: configurable
 	_EnginePool, err = engine.NewGenginePool(
 		config.GetEnginePoolMinLen(),
 		config.GetEnginePoolMaxLen(),
@@ -37,6 +37,22 @@ func MustInitialize(ctx context.Context) {
 	if err != nil {
 		util.GLog.Panicf(ctx, "Fail to initialize engine pool, because %s", err.Error())
 	}
+
+	// Load Rules From Database
+
+	rules, err := bizrule.LoadAllRules(ctx)
+	if err != nil {
+		util.GLog.Panicf(ctx, "Fail to load rules from database, because %s", err.Error())
+	}
+	for _, rule := range rules {
+		if rule.Status == model.BizRuleDisable {
+			continue
+		}
+		if err := AddNewRule(ctx, rule); err != nil {
+			util.GLog.Panicf(ctx, "Fail to add rule %s, because %s", rule.Name, err.Error())
+		}
+	}
+	util.GLog.Infof(ctx, "Load %d rules successfully", _EnginePool.GetRulesNumber())
 }
 
 func AddNewRule(ctx context.Context, rule *model.BizRule) error {

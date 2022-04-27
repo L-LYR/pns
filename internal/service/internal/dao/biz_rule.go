@@ -55,7 +55,7 @@ func QueryBizRule(ctx context.Context, name string) (*model.BizRule, error) {
 	return rule, nil
 }
 
-func LoadAllRule(ctx context.Context) ([]*model.BizRule, error) {
+func LoadAllRules(ctx context.Context) ([]*model.BizRule, error) {
 	records, err := BizRule.Ctx(ctx).All()
 	if err != nil {
 		return nil, err
