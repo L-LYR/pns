@@ -124,3 +124,7 @@ func GetAppLevelFreqCtrlConfig() *FreqCtrlConfig {
 func GetTargetLevelFreqCtrlConfig() *FreqCtrlConfig {
 	return _Config.FrequencyControl.TargetLevel
 }
+
+func GetMsgTplCacheSize() int {
+	return _Config.Misc.MessageTemplateCacheSize
+}
