@@ -11,6 +11,7 @@ func MustInitialize(ctx context.Context) {
 	dao.MustInitializeTargetMongoDao(ctx)
 	dao.MustInitLogRedisDao(ctx)
 	cache.Config.MustLoad(ctx)
+	cache.MsgTpl.MustInitialize(ctx)
 }
 
 func MustShutdown(ctx context.Context) {

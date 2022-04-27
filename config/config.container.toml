@@ -69,6 +69,7 @@ auth_key_length = 16
 auth_secret_length = 32
 log_expire_time = 86400    # 24 * 3600 seconds
 token_expire_time = 604800 # 7 * 24 * 3600 seconds
+message_template_cache_size = 100
 
 [frequency_control]
 [frequency_control.app_level]

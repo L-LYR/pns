@@ -11,7 +11,7 @@ import (
 	"github.com/gogf/gf/v2/errors/gcode"
 )
 
-var Log = _LogAPI{}
+var Log = &_LogAPI{}
 
 type _LogAPI struct{}
 

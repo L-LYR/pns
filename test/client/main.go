@@ -140,7 +140,7 @@ func (c *Client) subscribe(topic string, fn MessageHandler) {
 		log.Printf("Error: %s", err.Error())
 		return
 	}
-	log.Printf("Success to subscribe %s", topic)
+	log.Printf("Subscribe %s successfully", topic)
 }
 
 func DirectTopic(deviceId int) string {
@@ -160,7 +160,7 @@ func main() {
 
 	clients := make([]*Client, 0, MaxDeviceId)
 	initialize(ctx)
-	for id := 0; id < 100; id++ {
+	for id := 0; id < 2; id++ {
 		c := MustNewMQTTClient(id)
 		fn := func(m *message.Message) error {
 			log.Printf("receive: %s:%s", m.Title, m.Content)

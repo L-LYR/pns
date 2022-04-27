@@ -29,11 +29,12 @@ type Config struct {
 	}
 	EnginePool *EnginePoolConfig
 	Misc       struct {
-		Qos              string
-		AuthKeyLength    int
-		AuthSecretLength int
-		LogExpireTime    int
-		TokenExpireTime  int
+		Qos                      string
+		AuthKeyLength            int
+		AuthSecretLength         int
+		LogExpireTime            int
+		TokenExpireTime          int
+		MessageTemplateCacheSize int
 	}
 	FrequencyControl struct {
 		AppLevel    *FreqCtrlConfig

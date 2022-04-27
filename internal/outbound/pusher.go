@@ -54,7 +54,7 @@ func (p *_PusherManager) MustRegisterPushers(ctx context.Context, pusherType mod
 		pusherType,
 		func(appId int, config model.PusherConfig) error {
 			p.pushers[appId] = _MustNewPusher(ctx, appId, p.pusherType, config)
-			util.GLog.Infof(ctx, "Success to initialize %s pusher for app %d", pusherType.Name(), appId)
+			util.GLog.Infof(ctx, "Initialize %s pusher for app %d successfully", pusherType.Name(), appId)
 			return nil
 		},
 	)
@@ -70,7 +70,7 @@ func (p *_PusherManager) _GetPusher(ctx context.Context, appId int) (Pusher, boo
 	}
 	p.pusherMutex.RUnlock()
 	if pusher, ok := p._TryAddPusher(ctx, appId); ok {
-		util.GLog.Infof(ctx, "Success to initialize %s pusher for app %d", p.pusherType.Name(), appId)
+		util.GLog.Infof(ctx, "Initialize %s pusher for app %d successfully", p.pusherType.Name(), appId)
 		return pusher, true
 	}
 	util.GLog.Infof(ctx, "Fail to initialize %s pusher for app %d", p.pusherType.Name(), appId)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/L-LYR/pns/internal/bizcore"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/internal/dao"
 	"github.com/L-LYR/pns/internal/service/internal/do"
@@ -31,10 +30,15 @@ func InsertBizRule(
 	return nil
 }
 
+func LoadAllRules(ctx context.Context) ([]*model.BizRule, error) {
+	return dao.LoadAllRules(ctx)
+}
+
 func ChangeRuleStatus(
 	ctx context.Context,
 	name string,
 	status model.BizRuleStatus,
+	fn func(context.Context, *model.BizRule) error,
 ) error {
 	return dao.BizRule.Transaction(ctx,
 		func(ctx context.Context, tx *gdb.TX) error {
@@ -57,17 +61,8 @@ func ChangeRuleStatus(
 			} else if n, err := res.RowsAffected(); err != nil || n == 0 {
 				return errors.New("unchanged")
 			}
-			// update engine pool
-			switch status {
-			case model.BizRuleEnable:
-				err = bizcore.AddNewRule(ctx, rule)
-			case model.BizRuleDisable:
-				err = bizcore.RemoveRule(ctx, name)
-			}
-			if err != nil {
-				return err
-			}
-			return nil
+			// do something else in txn
+			return fn(ctx, rule)
 		},
 	)
 }
