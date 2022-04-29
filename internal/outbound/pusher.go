@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/L-LYR/pns/internal/config"
+	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/outbound/mqtt"
 	"github.com/L-LYR/pns/internal/service/cache"
@@ -16,6 +17,7 @@ import (
 
 type Pusher interface {
 	Handle(context.Context, model.PushTask) error
+	Close(context.Context)
 }
 
 var _ Pusher = (*mqtt.Client)(nil)
@@ -61,6 +63,12 @@ func (p *_PusherManager) MustRegisterPushers(ctx context.Context, pusherType mod
 	util.GLog.Infof(ctx, "%d %s pushers are running", len(p.pushers), pusherType.Name())
 }
 
+func (p *_PusherManager) MustShutdown(ctx context.Context) {
+	for _, pusher := range p.pushers {
+		pusher.Close(ctx)
+	}
+}
+
 // This function will try to new a pusher.
 func (p *_PusherManager) _GetPusher(ctx context.Context, appId int) (Pusher, bool) {
 	p.pusherMutex.RLock()
@@ -98,14 +106,17 @@ func (p *_PusherManager) _ReputTask(ctx context.Context, task model.PushTask, pu
 	meta := task.GetLogMeta()
 	task.GetMeta().SetRetry()
 	if task.CanRetry() {
-		log.PutTaskLogEvent(ctx, meta, "retry", "failure")
+		log.PutTaskLogEvent(ctx, meta, model.TaskRetry, "failure")
 		return errors.New("fail to retry")
 	}
 	if err := PutPushTaskEvent(ctx, task); err != nil {
-		util.GLog.Warningf(ctx, "Task %d fail to reput task in event queue, retry", task.GetID())
+		util.GLog.Warningf(ctx, "Task %d fail to reput task in event queue, because %s, retry", task.GetID(), err.Error())
+		if errors.Is(err, event_queue.ErrClose) {
+			return err
+		}
 		return p._ReputTask(ctx, task, pusherType)
 	}
-	log.PutTaskLogEvent(ctx, meta, "retry", "success")
+	log.PutTaskLogEvent(ctx, meta, model.TaskRetry, "success")
 	return nil
 }
 

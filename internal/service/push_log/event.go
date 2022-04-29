@@ -30,15 +30,19 @@ func PushLogEventConsumer(e event_queue.Event) error {
 func PutTaskLogEvent(
 	ctx context.Context,
 	meta *model.LogMeta,
-	where string, hint string,
+	where model.PushTaskStage,
+	hint string,
 ) {
+	if meta.Type == model.RangePush && where != model.TaskCreation {
+		return
+	}
 	PutLogEvent(ctx, meta, where, time.Now().UnixMilli(), hint, model.TaskLog)
 }
 
 func PutPushLogEvent(
 	ctx context.Context,
 	meta *model.LogMeta,
-	where string,
+	where model.PushTaskStage,
 	when int64,
 	hint string,
 ) {
@@ -48,7 +52,7 @@ func PutPushLogEvent(
 func PutLogEvent(
 	ctx context.Context,
 	meta *model.LogMeta,
-	where string,
+	where model.PushTaskStage,
 	when int64,
 	hint string,
 	logEventType model.LogEventType,

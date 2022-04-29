@@ -16,3 +16,7 @@ var (
 func MustInitialize(ctx context.Context) {
 	MQTTPusherManager.MustRegisterPushers(ctx, model.MQTTPusher)
 }
+
+func MustShutdown(ctx context.Context) {
+	MQTTPusherManager.MustShutdown(ctx)
+}

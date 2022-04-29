@@ -10,16 +10,21 @@ import (
 	"github.com/L-LYR/pns/internal/task"
 	"github.com/L-LYR/pns/internal/util"
 	"github.com/gogf/gf/v2/errors/gcode"
+	"golang.org/x/time/rate"
 )
 
-var Push = &_PushAPI{}
+var Push = &_PushAPI{
+	limiter: rate.NewLimiter(1500, 3000),
+}
 
-type _PushAPI struct{}
+type _PushAPI struct {
+	limiter *rate.Limiter
+}
 
 func (api *_PushAPI) DirectPush(
 	ctx context.Context, req *v1.DirectPushReq,
 ) (*v1.DirectPushRes, error) {
-	res, err := _CreateTask(
+	res, err := api.createTask(
 		ctx,
 		task.NewTaskBuilder(ctx, model.DirectPush).
 			SetTaskMeta(req.Retry).
@@ -32,7 +37,7 @@ func (api *_PushAPI) DirectPush(
 func (api *_PushAPI) TemplateDirectPush(
 	ctx context.Context, req *v1.TemplateDirectPushReq,
 ) (*v1.TemplateDirectPushRes, error) {
-	res, err := _CreateTask(
+	res, err := api.createTask(
 		ctx,
 		task.NewTaskBuilder(ctx, model.DirectPush).
 			SetTaskMeta(req.Retry).
@@ -45,7 +50,7 @@ func (api *_PushAPI) TemplateDirectPush(
 func (api *_PushAPI) BroadcastPush(
 	ctx context.Context, req *v1.BroadcastPushReq,
 ) (*v1.BroadcastPushRes, error) {
-	res, err := _CreateTask(
+	res, err := api.createTask(
 		ctx,
 		task.NewTaskBuilder(ctx, model.BroadcastPush).
 			SetTaskMeta(-1).
@@ -59,7 +64,7 @@ func (api *_PushAPI) BroadcastPush(
 func (api *_PushAPI) TemplateBroadcastPush(
 	ctx context.Context, req *v1.TemplateBroadcastPushReq,
 ) (*v1.TemplateBroadcastPushRes, error) {
-	res, err := _CreateTask(
+	res, err := api.createTask(
 		ctx,
 		task.NewTaskBuilder(ctx, model.BroadcastPush).
 			SetTaskMeta(-1).
@@ -69,21 +74,54 @@ func (api *_PushAPI) TemplateBroadcastPush(
 	return &v1.TemplateBroadcastPushRes{PushResBase: res}, err
 }
 
-func _CreateTask(ctx context.Context, taskBuilder task.TaskBuilder) (*v1.PushResBase, error) {
-	task, err := taskBuilder.Build()
+func (api *_PushAPI) RangePush(
+	ctx context.Context, req *v1.RangePushReq,
+) (*v1.RangePushRes, error) {
+	res, err := api.createTask(
+		ctx,
+		task.NewTaskBuilder(ctx, model.RangePush).
+			SetTaskMeta(-1).
+			SetMessage(req.Message).
+			SetBroadcastPushBase(req.BroadcastPushBase).
+			SetFilterParams(req.FilterParams),
+	)
+
+	return &v1.RangePushRes{PushResBase: res}, err
+}
+
+func (api *_PushAPI) TemplateRangePush(
+	ctx context.Context, req *v1.TemplateRangePushReq,
+) (*v1.TemplateRangePushRes, error) {
+	res, err := api.createTask(
+		ctx,
+		task.NewTaskBuilder(ctx, model.RangePush).
+			SetTaskMeta(-1).
+			SetTemplateMessage(req.Message).
+			SetBroadcastPushBase(req.BroadcastPushBase).
+			SetFilterParams(req.FilterParams),
+	)
+	return &v1.TemplateRangePushRes{PushResBase: res}, err
+}
+
+func (api *_PushAPI) createTask(ctx context.Context, taskBuilder task.TaskBuilder) (*v1.PushResBase, error) {
+	t, err := taskBuilder.Build()
 	if err != nil {
-		log.PutTaskLogEvent(ctx, task.GetLogMeta(), "task creation", "failure")
+		log.PutTaskLogEvent(ctx, t.GetLogMeta(), model.TaskCreation, "failure")
 		return nil, err
 	}
 
-	log.PutTaskLogEvent(ctx, task.GetLogMeta(), "task creation", "success")
-	
-	if err := bizcore.PutTaskValidationEvent(ctx, task); err != nil {
-		return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")
+	log.PutTaskLogEvent(ctx, t.GetLogMeta(), model.TaskCreation, "success")
+	if t.GetType() == model.RangePush {
+		// range task runner
+		go task.NewRangePushTaskRunner(ctx, model.AsRangePushTask(t), api.limiter).Run()
+	} else {
+		api.limiter.Wait(ctx)
+		if err := bizcore.PutTaskValidationEvent(ctx, t); err != nil {
+			return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")
+		}
 	}
 
-
 	return &v1.PushResBase{
-		PushTaskId: task.GetID(),
+		PushTaskId: t.GetID(),
 	}, nil
 }

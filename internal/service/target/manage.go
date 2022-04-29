@@ -8,6 +8,7 @@ import (
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/service/cache"
 	"github.com/L-LYR/pns/internal/service/internal/dao"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -76,6 +77,10 @@ func UpdateToken(
 	)
 }
 
-func Cursor(ctx context.Context, appName string) (*mongo.Cursor, error) {
-	return dao.TargetMongoDao.NaiveCursor(ctx, appName)
+func Cursor(ctx context.Context, appName string, filters ...*bson.E) (*mongo.Cursor, error) {
+	filter := bson.M{}
+	for _, f := range filters {
+		filter[f.Key] = f.Value
+	}
+	return dao.TargetMongoDao.NaiveCursor(ctx, appName, filter)
 }

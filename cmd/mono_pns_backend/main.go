@@ -41,8 +41,9 @@ func main() {
 	/* block */
 	g.Wait()
 	/* clean up */
-	event_queue.EventQueueManager.MustShutdown(ctx)
 	service.MustShutdown(ctx)
+	outbound.MustShutdown(ctx)
+	event_queue.EventQueueManager.MustShutdown(ctx)
 }
 
 func GetStartContext() context.Context {
@@ -63,6 +64,10 @@ func EventQueueRegister() {
 	)
 	event_queue.EventQueueManager.MustRegister(
 		config.DirectPushTaskEventConsumerConfig(),
+		outbound.PushTaskEventConsumer,
+	)
+	event_queue.EventQueueManager.MustRegister(
+		config.RangePushTaskEventConsumerConfig(),
 		outbound.PushTaskEventConsumer,
 	)
 	event_queue.EventQueueManager.MustRegister(

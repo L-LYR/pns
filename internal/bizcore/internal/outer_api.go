@@ -27,6 +27,7 @@ var (
 		"FrequencyControl": _FreqCtrl,
 		"AsDirectPush":     model.AsDirectPushTask,
 		"AsBroadcastPush":  model.AsBroadcastTask,
+		"AsRangePush":      model.AsRangePushTask,
 	}
 
 	// sorted by salience

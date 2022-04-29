@@ -10,6 +10,7 @@ import (
 
 // To make the length of raw log shorter, we make each tag shorter
 type LogMeta struct {
+	Type     PushTaskType
 	TaskId   int64
 	AppId    int
 	DeviceId string
@@ -31,12 +32,12 @@ func (b *LogMeta) TaskStatusKey() string {
 }
 
 type LogBase struct {
-	Meta  *LogMeta `json:"-"`
-	T     int64    `json:"ts"`
-	Where string   `json:"w"`
+	Meta  *LogMeta      `json:"-"`
+	T     int64         `json:"ts"`
+	Where PushTaskStage `json:"w"`
 }
 
-func NewLogBase(meta *LogMeta, where string) *LogBase {
+func NewLogBase(meta *LogMeta, where PushTaskStage) *LogBase {
 	return &LogBase{
 		Meta:  meta,
 		T:     time.Now().UnixMilli(),

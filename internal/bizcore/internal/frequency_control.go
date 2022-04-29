@@ -16,7 +16,7 @@ func _FreqCtrl(ctx context.Context, task model.PushTask) bool {
 	switch task.GetType() {
 	case model.BroadcastPush:
 		return _FreqCtrlByConfig(ctx, task, config.GetAppLevelFreqCtrlConfig())
-	case model.DirectPush:
+	case model.DirectPush, model.RangePush:
 		return _FreqCtrlByConfig(ctx, task, config.GetTargetLevelFreqCtrlConfig())
 	default:
 		return false

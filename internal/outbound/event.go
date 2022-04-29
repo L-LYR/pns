@@ -27,7 +27,7 @@ func PushTaskEventConsumer(e event_queue.Event) error {
 		time.Since(taskMeta.GetValidationTime()).Seconds(),
 	)
 
-	log.PutTaskLogEvent(ctx, logMeta, "task handle", "success")
+	log.PutTaskLogEvent(ctx, logMeta, model.TaskHandle, "success")
 
 	taskMeta.SetOnHandle()
 
@@ -43,13 +43,16 @@ func PushTaskEventConsumer(e event_queue.Event) error {
 	if !taskMeta.IsDone() {
 		return nil
 	}
-	taskMeta.SetEndTime(time.Now())
+
+	now := time.Now()
+	taskMeta.SetEndTime(now)
 
 	if err != nil {
 		taskHint = "failure"
 	}
 
-	log.PutTaskLogEvent(ctx, logMeta, "task done", taskHint)
+	log.PutPushLogEvent(ctx, logMeta, "send", now.UnixMilli(), taskHint)
+	log.PutTaskLogEvent(ctx, logMeta, model.TaskDone, taskHint)
 
 	monitor.PushTaskCounter.
 		WithLabelValues(taskTypeName, "outbound", taskHint).Inc()
@@ -79,6 +82,8 @@ func PutPushTaskEvent(ctx context.Context, task model.PushTask) error {
 		return event_queue.EventQueueManager.Put(config.BroadcastPushTaskEventTopic(), e)
 	case model.DirectPush:
 		return event_queue.EventQueueManager.Put(config.DirectPushTaskEventTopic(), e)
+	case model.RangePush:
+		return event_queue.EventQueueManager.Put(config.RangePushTaskEventTopic(), e)
 	default:
 		return errors.New("unknown task type")
 	}

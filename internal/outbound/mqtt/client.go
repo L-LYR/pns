@@ -3,7 +3,6 @@ package mqtt
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
@@ -83,7 +82,7 @@ func (p *Client) Handle(ctx context.Context, task model.PushTask) error {
 	if err := p.TryConnect(); err != nil {
 		return err
 	}
-	topic := _TopicOf(task)
+	topic := task.GetTopic()
 	util.GLog.Infof(ctx, "topic: %s", topic)
 
 	message := &message.Message{
@@ -103,24 +102,8 @@ func (p *Client) Handle(ctx context.Context, task model.PushTask) error {
 	return token.Error()
 }
 
-func _TopicOf(task model.PushTask) string {
-	switch task.GetType() {
-	case model.DirectPush:
-		return fmt.Sprintf(
-			"%s/%d/%s",
-			task.GetType().TopicNamePrefix(),
-			task.GetAppId(),
-			model.AsDirectPushTask(task).Device.ID,
-		)
-	case model.BroadcastPush:
-		return fmt.Sprintf(
-			"%s/%d",
-			task.GetType().TopicNamePrefix(),
-			task.GetAppId(),
-		)
-	default:
-		panic("unreachable")
-	}
+func (p *Client) Close(context.Context) {
+	p.Client.Disconnect(100)
 }
 
 func _OnConnect(ctx context.Context, name string) paho.OnConnectHandler {

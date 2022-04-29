@@ -11,6 +11,7 @@ import (
 	"github.com/L-LYR/pns/internal/service/cache"
 	"github.com/L-LYR/pns/internal/service/target"
 	"github.com/L-LYR/pns/internal/util"
+	"github.com/jinzhu/copier"
 )
 
 /*
@@ -40,6 +41,7 @@ type TaskBuilder interface {
 	SetTemplateMessage(*v1.TemplateMessage) TaskBuilder
 	SetDirectPushBase(*v1.DirectPushBase) TaskBuilder
 	SetBroadcastPushBase(*v1.BroadcastPushBase) TaskBuilder
+	SetFilterParams(*v1.FilterParams) TaskBuilder
 
 	Build() (model.PushTask, error)
 }
@@ -50,13 +52,16 @@ func NewTaskBuilder(ctx context.Context, t model.PushTaskType) TaskBuilder {
 		return &DirectPushTaskBuilder{
 			ctx:  ctx,
 			task: &model.DirectPushTask{},
-			err:  nil,
 		}
 	case model.BroadcastPush:
-		return &BroadcastPushTaskBuilder{
+		return &BroadcastTaskBuilder{
 			ctx:  ctx,
 			task: &model.BroadcastTask{},
-			err:  nil,
+		}
+	case model.RangePush:
+		return &RangePushTaskBuilder{
+			ctx:  ctx,
+			task: &model.RangePushTask{},
 		}
 	default:
 		panic("unreachable")
@@ -65,7 +70,7 @@ func NewTaskBuilder(ctx context.Context, t model.PushTaskType) TaskBuilder {
 
 var (
 	_ (TaskBuilder) = (*DirectPushTaskBuilder)(nil)
-	_ (TaskBuilder) = (*BroadcastPushTaskBuilder)(nil)
+	_ (TaskBuilder) = (*BroadcastTaskBuilder)(nil)
 )
 
 type DirectPushTaskBuilder struct {
@@ -107,41 +112,88 @@ func (b *DirectPushTaskBuilder) SetBroadcastPushBase(*v1.BroadcastPushBase) Task
 	return b
 }
 
+func (b *DirectPushTaskBuilder) SetFilterParams(*v1.FilterParams) TaskBuilder {
+	return b
+}
+
 func (b *DirectPushTaskBuilder) Build() (model.PushTask, error) {
 	return b.task, b.err
 }
 
-type BroadcastPushTaskBuilder struct {
+type BroadcastTaskBuilder struct {
 	ctx  context.Context
 	task *model.BroadcastTask
 	err  error
 }
 
-func (b *BroadcastPushTaskBuilder) SetTaskMeta(retry int) TaskBuilder {
+func (b *BroadcastTaskBuilder) SetTaskMeta(retry int) TaskBuilder {
 	b.task.PushTaskMeta = _NewTaskMeta(retry)
 	return b
 }
 
-func (b *BroadcastPushTaskBuilder) SetMessage(m *v1.BasicMessage) TaskBuilder {
+func (b *BroadcastTaskBuilder) SetMessage(m *v1.BasicMessage) TaskBuilder {
 	b.task.Message = _NewMessage(m)
 	return b
 }
 
-func (b *BroadcastPushTaskBuilder) SetTemplateMessage(m *v1.TemplateMessage) TaskBuilder {
+func (b *BroadcastTaskBuilder) SetTemplateMessage(m *v1.TemplateMessage) TaskBuilder {
 	b.task.Message, b.err = _NewMessageFromTemplate(b.ctx, m)
 	return b
 }
 
-func (b *BroadcastPushTaskBuilder) SetDirectPushBase(*v1.DirectPushBase) TaskBuilder {
+func (b *BroadcastTaskBuilder) SetDirectPushBase(*v1.DirectPushBase) TaskBuilder {
 	return b
 }
 
-func (b *BroadcastPushTaskBuilder) SetBroadcastPushBase(base *v1.BroadcastPushBase) TaskBuilder {
+func (b *BroadcastTaskBuilder) SetBroadcastPushBase(base *v1.BroadcastPushBase) TaskBuilder {
 	b.task.AppId = base.AppId
 	return b
 }
 
-func (b *BroadcastPushTaskBuilder) Build() (model.PushTask, error) {
+func (b *BroadcastTaskBuilder) SetFilterParams(*v1.FilterParams) TaskBuilder {
+	return b
+}
+
+func (b *BroadcastTaskBuilder) Build() (model.PushTask, error) {
+	return b.task, b.err
+}
+
+type RangePushTaskBuilder struct {
+	ctx  context.Context
+	task *model.RangePushTask
+	err  error
+}
+
+func (b *RangePushTaskBuilder) SetTaskMeta(retry int) TaskBuilder {
+	b.task.PushTaskMeta = _NewTaskMeta(retry)
+	return b
+}
+
+func (b *RangePushTaskBuilder) SetMessage(m *v1.BasicMessage) TaskBuilder {
+	b.task.Message = _NewMessage(m)
+	return b
+}
+
+func (b *RangePushTaskBuilder) SetTemplateMessage(m *v1.TemplateMessage) TaskBuilder {
+	b.task.Message, b.err = _NewMessageFromTemplate(b.ctx, m)
+	return b
+}
+
+func (b *RangePushTaskBuilder) SetDirectPushBase(*v1.DirectPushBase) TaskBuilder {
+	return b
+}
+
+func (b *RangePushTaskBuilder) SetBroadcastPushBase(base *v1.BroadcastPushBase) TaskBuilder {
+	b.task.AppId = base.AppId
+	return b
+}
+
+func (b *RangePushTaskBuilder) SetFilterParams(v *v1.FilterParams) TaskBuilder {
+	b.task.FilterParams, b.err = _NewFilterParams(v)
+	return b
+}
+
+func (b *RangePushTaskBuilder) Build() (model.PushTask, error) {
 	return b.task, b.err
 }
 
@@ -176,4 +228,12 @@ func _NewMessageFromTemplate(ctx context.Context, tplMsg *v1.TemplateMessage) (*
 		replaceStrings[field] = params.PR
 	}
 	return tpl.FillInParams(replaceStrings)
+}
+
+func _NewFilterParams(v *v1.FilterParams) (*model.FilterParams, error) {
+	result := &model.FilterParams{}
+	if err := copier.Copy(result, v); err != nil {
+		return nil, err
+	}
+	return result, nil
 }

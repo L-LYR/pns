@@ -16,10 +16,8 @@ var (
 
 func MustLoad(ctx context.Context) {
 	if !g.Cfg().Available(ctx) {
-		util.GLog.Panicf(ctx, "Global config is not available")
-	}
-
-	if v, err := g.Cfg().Get(ctx, "."); err != nil {
+		util.GLog.Warningf(ctx, "Global config is not available")
+	} else if v, err := g.Cfg().Get(ctx, "."); err != nil {
 		util.GLog.Warningf(ctx, "Fail to load config, use default")
 	} else if err := v.Struct(_Config); err != nil {
 		util.GLog.Warningf(ctx, "Fail to load config, use default")
@@ -41,6 +39,10 @@ func TaskValidationEventConsumerConfig() *EventQueueConfig {
 
 func DirectPushTaskEventConsumerConfig() *EventQueueConfig {
 	return _Config.EventQueue.DirectPushTaskEventQueue
+}
+
+func RangePushTaskEventConsumerConfig() *EventQueueConfig {
+	return _Config.EventQueue.RangePushTaskEventQueue
 }
 
 func BroadcastPushTaskEventConsumerConfig() *EventQueueConfig {
@@ -67,6 +69,10 @@ func TaskValidationEventTopic() string {
 
 func DirectPushTaskEventTopic() string {
 	return _Config.EventQueue.DirectPushTaskEventQueue.Topic
+}
+
+func RangePushTaskEventTopic() string {
+	return _Config.EventQueue.RangePushTaskEventQueue.Topic
 }
 
 func BroadcastPushTaskEventTopic() string {

@@ -18,12 +18,15 @@ func DefaultConfig(ctx context.Context) *Config {
 var _RawDefaultConfig = `{
     "Servers": {
         "Inbound": {
+            "Name": "inbound",
             "Address": ":10086"
         },
         "Bizapi": {
+            "Name": "bizapi",
             "Address": ":10087"
         },
         "Admin": {
+            "Name": "admin",
             "Address": ":10088"
         }
     },
@@ -58,16 +61,52 @@ var _RawDefaultConfig = `{
         "Timeout": 1
     },
     "EventQueue": {
-        "PushTaskEventConsumer": {
-            "Topic": "push_task_event",
-            "Dispatch": 5
+        "TaskValidationEventQueue": {
+            "Topic": "task_validation_event",
+            "Dispatch": 5,
+            "Length": 100000
         },
-        "PushLogEventConsumer": {
+        "DirectPushTaskEventQueue": {
+            "Topic": "direct_push_task_event",
+            "Dispatch": 5,
+            "Length": 100000
+        },
+        "RangePushTaskEventQueue": {
+            "Topic": "range_push_task_event",
+            "Dispatch": 5,
+            "Length": 100000
+        },
+        "BroadcastPushTaskEventQueue": {
+            "Topic": "broadcast_push_task_event",
+            "Dispatch": 1,
+            "Length": 10
+        },
+        "PushLogEventqueue": {
             "Topic": "push_log_event",
-            "Dispatch": 5
+            "Dispatch": 3,
+            "Length": 10000
         }
     },
+    "EnginePool": {
+        "MinLen": 10,
+        "MaxLen": 20
+    },
     "Misc": {
-        "Qos": "atLeastOnce"
+        "Qos": "atLeastOnce",
+        "AuthKeyLength": 16,
+        "AuthSecretLength": 32,
+        "LogExpireTime": 86400,
+        "TokenExpireTime": 604800,
+        "MessageTemplateCacheSize": 100
+    },
+    "FrequencyControl": {
+        "AppLevel": {
+            "Interval": 3600,
+            "Limit": 1
+        },
+        "TargetLevel": {
+            "Interval": 3600,
+            "Limit": 3
+        }
     }
 }`
