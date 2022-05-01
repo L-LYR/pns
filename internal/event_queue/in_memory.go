@@ -9,6 +9,10 @@ import (
 	"github.com/L-LYR/pns/internal/monitor"
 )
 
+var (
+	ErrClose = errors.New("event queue is down")
+)
+
 type _InMemoryEventQueue struct {
 	cancellor context.CancelFunc
 	working   bool
@@ -42,7 +46,7 @@ func (q *_InMemoryEventQueue) Start(ctx context.Context) {
 
 func (q *_InMemoryEventQueue) Put(topic string, e Event) error {
 	if !q.working {
-		return errors.New("event queue is down")
+		return ErrClose
 	}
 	c, ok := q.cs[topic]
 	if !ok {

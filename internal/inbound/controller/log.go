@@ -32,7 +32,7 @@ func (api *_LogAPI) Log(ctx context.Context, req *v1.LogReq) (*v1.LogRes, error)
 		DeviceId: req.DeviceId,
 	}
 
-	log.PutPushLogEvent(ctx, meta, req.Where, ts, req.Hint)
+	log.PutPushLogEvent(ctx, meta, model.PushTaskStage(req.Where), ts, req.Hint)
 
 	return &v1.LogRes{}, nil
 }

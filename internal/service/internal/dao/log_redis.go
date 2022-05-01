@@ -12,6 +12,7 @@ import (
 	"github.com/L-LYR/pns/internal/service/internal/dao/internal"
 	"github.com/L-LYR/pns/internal/util"
 	"github.com/go-redis/redis/v8"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 type _LogRedisDao struct {
@@ -22,7 +23,7 @@ var (
 	LogRedisDao *_LogRedisDao
 )
 
-func MustInitLogRedisDao(ctx context.Context) {
+func MustInitializeLogRedisDao(ctx context.Context) {
 	LogRedisDao = &_LogRedisDao{internal.NewLogRedisDao()}
 }
 
@@ -210,7 +211,7 @@ func (dao *_LogRedisDao) GetTaskEntryListByMeta(
 func (dao *_LogRedisDao) IncrTaskCounter(
 	ctx context.Context,
 	taskId int64,
-	event string, // receive or show
+	event string, // receive or show or send
 ) error {
 	client := dao.LogRedisDao.Client(ctx)
 	key := fmt.Sprintf("%d:%s", taskId, event)
@@ -226,10 +227,21 @@ func (dao *_LogRedisDao) IncrTaskCounter(
 }
 
 func (dao *_LogRedisDao) GetTaskStatistics(
-	ctx context.Context, taskId int64, event string,
-) (int64, error) {
-	key := fmt.Sprintf("%d:%s", taskId, event)
-	return dao.LogRedisDao.Client(ctx).Get(ctx, key).Int64()
+	ctx context.Context, taskId int64, events ...string,
+) ([]int64, error) {
+	keys := make([]string, len(events))
+	for i, e := range events {
+		keys[i] = fmt.Sprintf("%d:%s", taskId, e)
+	}
+	if ns, err := dao.LogRedisDao.Client(ctx).MGet(ctx, keys...).Result(); err != nil {
+		if errors.Is(err, redis.Nil) {
+			return gconv.Int64s(ns), nil
+		} else {
+			return nil, err
+		}
+	} else {
+		return gconv.Int64s(ns), nil
+	}
 }
 
 func (dao *_LogRedisDao) CountLogEntry(

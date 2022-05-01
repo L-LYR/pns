@@ -25,7 +25,7 @@ func PutPushLog(ctx context.Context, l *model.LogEntry) error {
 	if err := dao.LogRedisDao.AppendPushLog(ctx, l); err != nil {
 		return err
 	}
-	return dao.LogRedisDao.IncrTaskCounter(ctx, l.Meta.TaskId, l.Where)
+	return dao.LogRedisDao.IncrTaskCounter(ctx, l.Meta.TaskId, string(l.Where))
 }
 
 func GetTaskLogByID(ctx context.Context, id int64) ([]*model.LogEntry, error) {
@@ -45,13 +45,11 @@ func GetTaskEntryListByMeta(ctx context.Context, meta *model.LogMeta) ([]string,
 }
 
 func GetTaskStatisticsByID(ctx context.Context, id int64) (string, error) {
-	if nRecv, err := dao.LogRedisDao.GetTaskStatistics(ctx, id, "receive"); err != nil {
+	result, err := dao.LogRedisDao.GetTaskStatistics(ctx, id, "send", "receive", "show")
+	if err != nil {
 		return "", err
-	} else if nShow, err := dao.LogRedisDao.GetTaskStatistics(ctx, id, "show"); err != nil {
-		return "", err
-	} else {
-		return fmt.Sprintf("%d received, %d showed", nRecv, nShow), nil
 	}
+	return fmt.Sprintf("%d sent, %d received, %d showed", result[0], result[1], result[2]), nil
 }
 
 func CountLogEntry(ctx context.Context, meta *model.LogMeta, duration time.Duration) (int64, error) {

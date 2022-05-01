@@ -24,6 +24,7 @@ type Config struct {
 	EventQueue struct {
 		TaskValidationEventQueue    *EventQueueConfig
 		DirectPushTaskEventQueue    *EventQueueConfig
+		RangePushTaskEventQueue     *EventQueueConfig
 		BroadcastPushTaskEventQueue *EventQueueConfig
 		PushLogEventqueue           *EventQueueConfig
 	}

@@ -41,14 +41,18 @@ broker = "localhost"
 port = "1883"
 timeout = 1
 
-[event_quque]
+[event_queue]
 [event_queue.task_validation_event_queue]
 topic = "task_validation_event"
-dispatch = 5
+dispatch = 10
 length = 100000
 [event_queue.direct_push_task_event_queue]
 topic = "direct_push_task_event"
-dispatch = 5
+dispatch = 10
+length = 100000
+[event_queue.range_push_task_event_queue]
+topic = "range_push_task_event"
+dispatch = 20
 length = 100000
 [event_queue.broadcast_push_task_event_queue]
 topic = "broadcast_push_task_event"

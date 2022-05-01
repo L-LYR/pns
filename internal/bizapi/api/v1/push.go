@@ -35,8 +35,10 @@ type ParamWrapper struct {
 
 type FilterParams struct {
 	// TODO: add more
-	MinAppVersion *string `json:"minAppVersion" dc:"min app version"`
-	MaxAppVersion *string `json:"maxAppVersion" dc:"max app version"`
+	MinAppVersion *string   `json:"minAppVersion,omitempty"`
+	MaxAppVersion *string   `json:"maxAppVersion,omitempty"`
+	OsLimit       *[]string `json:"osLimit,omitempty"`
+	BrandLimit    *[]string `json:"brandLimit,omitempty"`
 }
 
 type PushResBase struct {
@@ -74,3 +76,21 @@ type TemplateBroadcastPushReq struct {
 }
 
 type TemplateBroadcastPushRes struct{ *PushResBase }
+
+type RangePushReq struct {
+	g.Meta `path:"/push/range" method:"post"`
+	*BroadcastPushBase
+	*FilterParams `json:"filterParams" dc:"push filter parameters"`
+	Message       *BasicMessage `json:"message" dc:"push message" v:"required#message is required"`
+}
+
+type RangePushRes struct{ *PushResBase }
+
+type TemplateRangePushReq struct {
+	g.Meta `path:"/push/template/range" method:"post"`
+	*BroadcastPushBase
+	*FilterParams `json:"filterParams" dc:"push filter parameters"`
+	Message       *TemplateMessage `json:"message" dc:"push message" v:"required#message is required"`
+}
+
+type TemplateRangePushRes struct{ *PushResBase }

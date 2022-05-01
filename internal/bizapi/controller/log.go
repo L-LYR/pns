@@ -36,7 +36,7 @@ func (api *_LogAPI) TaskStatus(ctx context.Context, req *v1.TaskStatusReq) (*v1.
 	if entry == nil {
 		return nil, nil
 	}
-	if entry.Where == "task done" {
+	if entry.Where == model.TaskDone {
 		if status, err := log.GetTaskStatisticsByID(ctx, req.TaskId); err == nil {
 			return &v1.TaskStatusRes{Status: status}, nil
 		}

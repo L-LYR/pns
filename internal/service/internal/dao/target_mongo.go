@@ -93,6 +93,8 @@ func (dao *_TargetMongoDao) CountTarget(ctx context.Context, appName string) (in
 	return dao.TargetMongoDao.Collection(appName).CountDocuments(ctx, bson.D{})
 }
 
-func (dao *_TargetMongoDao) NaiveCursor(ctx context.Context, appName string) (*mongo.Cursor, error) {
-	return dao.TargetMongoDao.Collection(appName).Find(ctx, bson.D{})
+func (dao *_TargetMongoDao) NaiveCursor(
+	ctx context.Context, appName string, filter bson.M,
+) (*mongo.Cursor, error) {
+	return dao.TargetMongoDao.Collection(appName).Find(ctx, filter)
 }

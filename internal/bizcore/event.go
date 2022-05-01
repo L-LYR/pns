@@ -36,7 +36,7 @@ func TaskValidationEventConsumer(e event_queue.Event) error {
 		taskHint = "failure"
 	}
 
-	log.PutTaskLogEvent(ctx, logMeta, "validation", taskHint)
+	log.PutTaskLogEvent(ctx, logMeta, model.TaskValidation, taskHint)
 
 	monitor.PushTaskCounter.
 		WithLabelValues(task.GetType().Name(), "validation", taskHint).Inc()

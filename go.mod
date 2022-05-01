@@ -15,6 +15,7 @@ require (
 	github.com/maxence-charriere/go-app/v9 v9.3.3
 	github.com/prometheus/client_golang v1.12.1
 	go.mongodb.org/mongo-driver v1.8.4
+	golang.org/x/time v0.0.0-20220411224347-583f2d630306
 	google.golang.org/protobuf v1.26.0
 )
 

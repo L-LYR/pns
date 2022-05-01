@@ -41,13 +41,17 @@ broker = "mosquitto"
 port = "1883"
 timeout = 1
 
-[event_quque]
+[event_queue]
 [event_queue.task_validation_event_queue]
 topic = "task_validation_event"
 dispatch = 5
 length = 100000
 [event_queue.direct_push_task_event_queue]
 topic = "direct_push_task_event"
+dispatch = 5
+length = 100000
+[event_queue.range_push_task_event_queue]
+topic = "range_push_task_event"
 dispatch = 5
 length = 100000
 [event_queue.broadcast_push_task_event_queue]
@@ -67,8 +71,8 @@ max_len = 20
 qos = "atLeastOnce"
 auth_key_length = 16
 auth_secret_length = 32
-log_expire_time = 86400    # 24 * 3600 seconds
-token_expire_time = 604800 # 7 * 24 * 3600 seconds
+log_expire_time = 86400           # 24 * 3600 seconds
+token_expire_time = 604800        # 7 * 24 * 3600 seconds
 message_template_cache_size = 100
 
 [frequency_control]

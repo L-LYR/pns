@@ -9,7 +9,7 @@ import (
 
 func MustInitialize(ctx context.Context) {
 	dao.MustInitializeTargetMongoDao(ctx)
-	dao.MustInitLogRedisDao(ctx)
+	dao.MustInitializeLogRedisDao(ctx)
 	cache.Config.MustLoad(ctx)
 	cache.MsgTpl.MustInitialize(ctx)
 }
