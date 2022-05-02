@@ -36,7 +36,7 @@ Broadcast Push:
 */
 
 type TaskBuilder interface {
-	SetTaskMeta(int) TaskBuilder
+	SetTaskMeta(int, bool) TaskBuilder
 	SetMessage(*v1.BasicMessage) TaskBuilder
 	SetTemplateMessage(*v1.TemplateMessage) TaskBuilder
 	SetDirectPushBase(*v1.DirectPushBase) TaskBuilder
@@ -79,8 +79,8 @@ type DirectPushTaskBuilder struct {
 	err  error
 }
 
-func (b *DirectPushTaskBuilder) SetTaskMeta(retry int) TaskBuilder {
-	b.task.PushTaskMeta = _NewTaskMeta(retry)
+func (b *DirectPushTaskBuilder) SetTaskMeta(retry int, ignoreFreqCtrl bool) TaskBuilder {
+	b.task.PushTaskMeta = _NewTaskMeta(retry, ignoreFreqCtrl)
 	return b
 }
 
@@ -126,8 +126,8 @@ type BroadcastTaskBuilder struct {
 	err  error
 }
 
-func (b *BroadcastTaskBuilder) SetTaskMeta(retry int) TaskBuilder {
-	b.task.PushTaskMeta = _NewTaskMeta(retry)
+func (b *BroadcastTaskBuilder) SetTaskMeta(retry int, ignoreFreqCtrl bool) TaskBuilder {
+	b.task.PushTaskMeta = _NewTaskMeta(retry, ignoreFreqCtrl)
 	return b
 }
 
@@ -164,8 +164,8 @@ type RangePushTaskBuilder struct {
 	err  error
 }
 
-func (b *RangePushTaskBuilder) SetTaskMeta(retry int) TaskBuilder {
-	b.task.PushTaskMeta = _NewTaskMeta(retry)
+func (b *RangePushTaskBuilder) SetTaskMeta(retry int, ignoreFreqCtrl bool) TaskBuilder {
+	b.task.PushTaskMeta = _NewTaskMeta(retry, ignoreFreqCtrl)
 	return b
 }
 
@@ -197,7 +197,7 @@ func (b *RangePushTaskBuilder) Build() (model.PushTask, error) {
 	return b.task, b.err
 }
 
-func _NewTaskMeta(retry int) *model.PushTaskMeta {
+func _NewTaskMeta(retry int, ignoreFreqCtrl bool) *model.PushTaskMeta {
 	return &model.PushTaskMeta{
 		RetryCounter: &model.RetryCounter{
 			Counter: model.RetryTimes(retry),
@@ -207,7 +207,7 @@ func _NewTaskMeta(retry int) *model.PushTaskMeta {
 		Qos:            config.CommonTaskQos(),
 		Status:         model.Pending,
 		CreationTime:   time.Now(),
-		IgnoreFreqCtrl: false,
+		IgnoreFreqCtrl: ignoreFreqCtrl,
 	}
 }
 
