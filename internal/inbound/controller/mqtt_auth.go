@@ -32,8 +32,9 @@ func (api *_MQTTAuthAPI) Check(
 	ctx context.Context,
 	req *v1.ACLCheckReq,
 ) (*v1.ACLCheckRes, error) {
-	// currently we do not limit this
-	res := &v1.ACLCheckRes{CommonAuthRes: v1.CommonAuthRes{Ok: true}}
+	ok, reason := app.ACLCheck(ctx, req.Username, req.ClientId)
+	res := &v1.ACLCheckRes{CommonAuthRes: v1.CommonAuthRes{Ok: ok, Error: reason}}
+	// ignore general middleware
 	if err := g.RequestFromCtx(ctx).Response.WriteJson(res); err != nil {
 		return nil, err
 	}

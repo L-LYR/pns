@@ -14,7 +14,7 @@ import (
 )
 
 var Push = &_PushAPI{
-	limiter: rate.NewLimiter(1500, 3000),
+	limiter: rate.NewLimiter(1500, 2000),
 }
 
 type _PushAPI struct {
@@ -27,7 +27,7 @@ func (api *_PushAPI) DirectPush(
 	res, err := api.createTask(
 		ctx,
 		task.NewTaskBuilder(ctx, model.DirectPush).
-			SetTaskMeta(req.Retry, req.IgnoreFreqCtrl).
+			SetTaskMeta(req.Retry, req.IgnoreFreqCtrl, req.IgnoreOnlineCheck).
 			SetMessage(req.Message).
 			SetDirectPushBase(req.DirectPushBase),
 	)
@@ -40,7 +40,7 @@ func (api *_PushAPI) TemplateDirectPush(
 	res, err := api.createTask(
 		ctx,
 		task.NewTaskBuilder(ctx, model.DirectPush).
-			SetTaskMeta(req.Retry, req.IgnoreFreqCtrl).
+			SetTaskMeta(req.Retry, req.IgnoreFreqCtrl, req.IgnoreOnlineCheck).
 			SetTemplateMessage(req.Message).
 			SetDirectPushBase(req.DirectPushBase),
 	)
@@ -53,7 +53,7 @@ func (api *_PushAPI) BroadcastPush(
 	res, err := api.createTask(
 		ctx,
 		task.NewTaskBuilder(ctx, model.BroadcastPush).
-			SetTaskMeta(-1, req.IgnoreFreqCtrl).
+			SetTaskMeta(-1, req.IgnoreFreqCtrl, false).
 			SetMessage(req.Message).
 			SetBroadcastPushBase(req.BroadcastPushBase),
 	)
@@ -67,7 +67,7 @@ func (api *_PushAPI) TemplateBroadcastPush(
 	res, err := api.createTask(
 		ctx,
 		task.NewTaskBuilder(ctx, model.BroadcastPush).
-			SetTaskMeta(-1, req.IgnoreFreqCtrl).
+			SetTaskMeta(-1, req.IgnoreFreqCtrl, false).
 			SetTemplateMessage(req.Message).
 			SetBroadcastPushBase(req.BroadcastPushBase),
 	)
@@ -80,7 +80,7 @@ func (api *_PushAPI) RangePush(
 	res, err := api.createTask(
 		ctx,
 		task.NewTaskBuilder(ctx, model.RangePush).
-			SetTaskMeta(-1, req.IgnoreFreqCtrl).
+			SetTaskMeta(-1, req.IgnoreFreqCtrl, false).
 			SetMessage(req.Message).
 			SetBroadcastPushBase(req.BroadcastPushBase).
 			SetFilterParams(req.FilterParams),
@@ -95,7 +95,7 @@ func (api *_PushAPI) TemplateRangePush(
 	res, err := api.createTask(
 		ctx,
 		task.NewTaskBuilder(ctx, model.RangePush).
-			SetTaskMeta(-1, req.IgnoreFreqCtrl).
+			SetTaskMeta(-1, req.IgnoreFreqCtrl, false).
 			SetTemplateMessage(req.Message).
 			SetBroadcastPushBase(req.BroadcastPushBase).
 			SetFilterParams(req.FilterParams),

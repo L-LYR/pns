@@ -60,8 +60,6 @@ func NewEmptyPusherConfig(appId int, t PusherType) PusherConfig {
 
 type MQTTConfig struct {
 	ID             int    `json:"-"`
-	PusherKey      string `json:"pusherKey" copier:"must,nopanic"`
-	PusherSecret   string `json:"pusherSecret" copier:"must,nopanic"`
 	ReceiverKey    string `json:"receiverKey" copier:"must,nopanic"`
 	ReceiverSecret string `json:"receiverSecret" copier:"must,nopanic"`
 }

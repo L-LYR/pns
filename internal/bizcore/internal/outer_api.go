@@ -22,12 +22,14 @@ func PredefinedRules() string {
 
 var (
 	_ApiOuter = map[string]interface{}{
-		"BeginObserve":     _BeginObserve,
-		"EndObserve":       _EndObserve,
-		"FrequencyControl": _FreqCtrl,
-		"AsDirectPush":     model.AsDirectPushTask,
-		"AsBroadcastPush":  model.AsBroadcastTask,
-		"AsRangePush":      model.AsRangePushTask,
+		"BeginObserve":      _BeginObserve,
+		"EndObserve":        _EndObserve,
+		"FrequencyControl":  _FreqCtrl,
+		"AsDirectPush":      model.AsDirectPushTask,
+		"AsBroadcastPush":   model.AsBroadcastTask,
+		"AsRangePush":       model.AsRangePushTask,
+		"RandomDelay":       _RandomDelay,
+		"CheckTargetOnline": _CheckTargetOnline,
 	}
 
 	// sorted by salience
@@ -35,5 +37,7 @@ var (
 		_BeginRule,
 		_EndRule,
 		_FreqCtrlRule,
+		_OnlineCheckRule,
+		_RandomDelayRule,
 	}
 )

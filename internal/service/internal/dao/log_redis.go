@@ -249,3 +249,12 @@ func (dao *_LogRedisDao) CountLogEntry(
 ) (int64, error) {
 	return dao.LogRedisDao.Client(ctx).ZCount(ctx, key, begin, end).Result()
 }
+
+func (dao *_LogRedisDao) SetStatusBitmap(ctx context.Context, key string, offset int64, value int) error {
+	_, err := dao.LogRedisDao.Client(ctx).SetBit(ctx, key, offset, value).Result()
+	return err
+}
+
+func (dao *_LogRedisDao) GetStatusBitmap(ctx context.Context, key string, offset int64) (int64, error) {
+	return dao.LogRedisDao.Client(ctx).GetBit(ctx, key, offset).Result()
+}

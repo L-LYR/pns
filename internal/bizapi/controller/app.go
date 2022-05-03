@@ -81,8 +81,6 @@ func (api *_AppAPI) QueryConfig(ctx context.Context, req *v1.QueryAppConfigReq) 
 func _GenerateRandMQTTConfig(appId int) *model.MQTTConfig {
 	return &model.MQTTConfig{
 		ID:             appId,
-		PusherKey:      util.RandString(config.AuthKeyLength()),
-		PusherSecret:   util.RandString(config.AuthSecretLength()),
 		ReceiverKey:    util.RandString(config.AuthKeyLength()),
 		ReceiverSecret: util.RandString(config.AuthSecretLength()),
 	}
