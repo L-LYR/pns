@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/event_queue"
 	"github.com/L-LYR/pns/internal/model"
 	"github.com/L-LYR/pns/internal/outbound/mqtt"
@@ -30,11 +29,7 @@ func _MustNewPusher(
 ) Pusher {
 	switch t {
 	case model.MQTTPusher:
-		return mqtt.MustNewPusher(
-			ctx,
-			appId,
-			config.MQTTBrokerConfig(),
-		)
+		return mqtt.MustNewPusher(ctx, appId)
 	default:
 		panic("unreachable")
 	}
