@@ -3,9 +3,12 @@ package mqtt
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
+	"github.com/L-LYR/pns/internal/service/target_status"
 	"github.com/L-LYR/pns/internal/util"
 	"github.com/L-LYR/pns/proto/pkg/message"
 	paho "github.com/eclipse/paho.mqtt.golang"
@@ -25,6 +28,7 @@ type Client struct {
 
 func _MustNewClient(
 	ctx context.Context,
+	appId int,
 	name string,
 	key string,
 	secret string,
@@ -42,11 +46,19 @@ func _MustNewClient(
 	options.SetUsername(p.Key)
 	options.SetPassword(p.Secret)
 	options.SetConnectTimeout(p.BrokerConfig.WaitTimeout())
-	options.SetOnConnectHandler(_OnConnect(ctx, p.Name))
+	options.SetOnConnectHandler(_OnConnect(ctx, p.Name, appId))
 	options.SetConnectionLostHandler(_OnConnectLost(ctx, p.Name))
 	options.SetReconnectingHandler(_OnReconnecting(ctx))
 	p.Options = options
 	p.Client = paho.NewClient(options)
+	onlineTopic := fmt.Sprintf("PNS/online/%d/+", appId)
+	offlineTopic := fmt.Sprintf("PNS/offline/%d/+", appId)
+	if err := p.Subscribe(ctx, onlineTopic); err != nil {
+		util.GLog.Warningf(ctx, "Client %s fail to subscribe %s, because %s", p.Name, onlineTopic, err.Error())
+	}
+	if err := p.Subscribe(ctx, offlineTopic); err != nil {
+		util.GLog.Warningf(ctx, "Client %s fail to subscribe %s, because %s", p.Name, offlineTopic, err.Error())
+	}
 	return p
 }
 
@@ -58,6 +70,7 @@ func MustNewPusher(
 ) *Client {
 	return _MustNewClient(
 		ctx,
+		appId,
 		util.GeneratePusherClientID(appId),
 		pusherConfig.PusherKey,
 		pusherConfig.PusherSecret,
@@ -67,12 +80,10 @@ func MustNewPusher(
 
 func (p *Client) TryConnect() error {
 	if !p.Client.IsConnected() {
-		if token := p.Client.Connect(); token.WaitTimeout(p.Options.ConnectTimeout) {
-			return nil
+		if token := p.Client.Connect(); !token.WaitTimeout(p.Options.ConnectTimeout) {
+			return errors.New("connection timeout")
 		} else if err := token.Error(); err != nil {
 			return err
-		} else {
-			return errors.New("connection timeout")
 		}
 	}
 	return nil
@@ -106,7 +117,47 @@ func (p *Client) Close(context.Context) {
 	p.Client.Disconnect(100)
 }
 
-func _OnConnect(ctx context.Context, name string) paho.OnConnectHandler {
+func (p *Client) Subscribe(ctx context.Context, topic string) error {
+	if err := p.TryConnect(); err != nil {
+		return err
+	}
+
+	token := p.Client.Subscribe(topic, model.AtMostOnce,
+		func(c paho.Client, m paho.Message) {
+			p.targetStatusTrace(ctx, m.Topic())
+		},
+	)
+	if ok := token.WaitTimeout(p.Options.ConnectTimeout); !ok {
+		return errors.New("subscribe timeout")
+	} else if err := token.Error(); err != nil {
+		return err
+	}
+	util.GLog.Printf(ctx, "Subscribe %s successfully", topic)
+	return nil
+}
+
+func (p *Client) targetStatusTrace(ctx context.Context, topic string) {
+	ss := strings.Split(topic, "/")
+	if len(ss) != 4 {
+		util.GLog.Warningf(ctx, "Cannot parse %s as status trace", topic)
+		return
+	}
+	var err error
+	switch ss[1] {
+	case "online":
+		err = target_status.SetTargetOnline(ctx, ss[2], ss[3])
+	case "offline":
+		err = target_status.SetTargetOffline(ctx, ss[2], ss[3])
+	default:
+		util.GLog.Warningf(ctx, "Unknown status: %s", ss[1])
+	}
+	if err != nil {
+		util.GLog.Errorf(ctx, "Fail to set status for %s, because %s", topic, err)
+	}
+}
+
+func _OnConnect(ctx context.Context, name string, appId int) paho.OnConnectHandler {
+
 	return func(client paho.Client) {
 		util.GLog.Noticef(ctx, "Client %s connect with broker", name)
 	}

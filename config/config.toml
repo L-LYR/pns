@@ -60,12 +60,12 @@ dispatch = 1
 length = 10
 [event_queue.push_log_event_queue]
 topic = "push_log_event"
-dispatch = 3
+dispatch = 10
 length = 10000
 
 [engine_pool]
-min_len = 10
-max_len = 20
+min_len = 5
+max_len = 10
 
 [misc]
 qos = "atLeastOnce"

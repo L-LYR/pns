@@ -28,13 +28,16 @@ func main() {
 	monitor.MustRegisterMetrics(ctx)
 	bizcore.MustInitialize(ctx)
 	service.MustInitialize(ctx)
-	outbound.MustInitialize(ctx)
 	/* event queue */
 	EventQueueRegister()
 	event_queue.EventQueueManager.MustStart(ctx)
-	/* servers */
+	/* inbound server must be initialized first */
 	inbound.MustRegisterRouters(ctx).Start()
+	/* outbound module, require inbound */
+	outbound.MustInitialize(ctx)
+	/* bizapi server need outbound */
 	bizapi.MustRegisterRouters(ctx).Start()
+	/* admin at last */
 	admin.MustRegisterRouters(ctx).Start()
 	/* debug pprof server */
 	StartPProf()

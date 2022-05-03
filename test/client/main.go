@@ -32,7 +32,7 @@ var (
 )
 
 func initialize(ctx context.Context) {
-	GlobalClient = http.MustNewHTTPClient("http://192.168.1.2:10086")
+	GlobalClient = http.MustNewHTTPClient("http://127.0.0.1:10086")
 }
 
 func ReportLog(payload http.Payload) {
@@ -45,22 +45,45 @@ func ReportLog(payload http.Payload) {
 type MessageHandler func(*message.Message) error
 
 type Client struct {
-	id int
-	c  paho.Client
+	appId    int
+	deviceId int
+	c        paho.Client
 }
 
-func DefaultOptions(deviceId int) *paho.ClientOptions {
+func DefaultOptions(appId, deviceId int) *paho.ClientOptions {
+	offlineTopic := fmt.Sprintf("PNS/offline/%d/%d", appId, deviceId)
+	onlineTopic := fmt.Sprintf("PNS/online/%d/%d", appId, deviceId)
 	o := paho.NewClientOptions()
-	o.AddBroker("tcp://192.168.1.2:1883")
-	o.SetClientID(fmt.Sprintf("pns-target:%d:12345", deviceId))
-	o.SetUsername("test_app_name")
-	o.SetPassword("test_app_name")
+	o.AddBroker("tcp://127.0.0.1:1883")
+	o.SetClientID(fmt.Sprintf("pns-target:%d:%d", deviceId, appId))
+	o.SetUsername("zRF7KRY1vbFrhQnb")
+	o.SetPassword("XwTVn5Pz9RLEYedFqeiZOyUMF2Y8DYsb")
 	o.SetConnectTimeout(ConnectTimeout)
+	o.SetWill(offlineTopic, "", model.ExactlyOnce, false)
+	o.SetCleanSession(false)
+	o.SetOnConnectHandler(
+		func(c paho.Client) {
+			log.Print("Info: connected")
+			// publish online message
+			token := c.Publish(onlineTopic, model.ExactlyOnce, false, "")
+			if ok := token.WaitTimeout(ConnectTimeout); !ok {
+				log.Print("Error: message publish timeout")
+			} else if err := token.Error(); err != nil {
+				log.Printf("Error: %s", err.Error())
+			}
+		},
+	)
 	return o
 }
 
-func MustNewMQTTClient(deviceId int) *Client {
-	p := &Client{id: deviceId, c: paho.NewClient(DefaultOptions(deviceId))}
+func MustNewMQTTClient(appId, deviceId int) *Client {
+	p := &Client{
+		appId:    appId,
+		deviceId: deviceId,
+		c: paho.NewClient(
+			DefaultOptions(appId, deviceId),
+		),
+	}
 	if err := p.TryConnect(); err != nil {
 		log.Printf("Error: %s", err.Error())
 	}
@@ -103,7 +126,7 @@ func (c *Client) newEventLog(topic string, where string, message *message.Messag
 		eventLog["deviceId"] = ss[2]
 	case "BPush":
 		eventLog["appId"] = ss[1]
-		eventLog["deviceId"] = strconv.FormatInt(int64(c.id), 10)
+		eventLog["deviceId"] = strconv.FormatInt(int64(c.deviceId), 10)
 	default:
 		panic("unreachable")
 	}
@@ -143,12 +166,12 @@ func (c *Client) subscribe(topic string, fn MessageHandler) {
 	log.Printf("Subscribe %s successfully", topic)
 }
 
-func DirectTopic(deviceId int) string {
-	return fmt.Sprintf("DPush/12345/%d", deviceId)
+func DirectTopic(appId, deviceId int) string {
+	return fmt.Sprintf("DPush/%d/%d", appId, deviceId)
 }
 
-func BroadcastTopic() string {
-	return "BPush/12345"
+func BroadcastTopic(appId int) string {
+	return fmt.Sprintf("BPush/%d", appId)
 }
 
 func main() {
@@ -160,14 +183,15 @@ func main() {
 
 	clients := make([]*Client, 0, MaxDeviceId)
 	initialize(ctx)
+	appId := 1234
 	for id := 0; id < 2; id++ {
-		c := MustNewMQTTClient(id)
+		c := MustNewMQTTClient(appId, id)
 		fn := func(m *message.Message) error {
 			log.Printf("receive: %s:%s", m.Title, m.Content)
 			return nil
 		}
-		c.subscribe(DirectTopic(id), fn)
-		c.subscribe(BroadcastTopic(), fn)
+		c.subscribe(DirectTopic(c.appId, c.deviceId), fn)
+		c.subscribe(BroadcastTopic(c.appId), fn)
 		clients = append(clients, c)
 	}
 

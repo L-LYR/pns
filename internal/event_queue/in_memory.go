@@ -66,6 +66,7 @@ func (q *_InMemoryEventQueue) Subscribe(topic string) (<-chan Event, error) {
 
 func (q *_InMemoryEventQueue) Shutdown(ctx context.Context) {
 	q.working = false
+	q.cancellor()
 }
 
 func (q *_InMemoryEventQueue) Monitor(ctx context.Context) {

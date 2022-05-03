@@ -89,12 +89,22 @@ func NewOptions() *Options {
 	}
 }
 
+func _OfflineTopic(appId int, deviceId string) string {
+	return fmt.Sprintf("PNS/offline/%d/%s", appId, deviceId)
+}
+
+func _OnlineTopic(appId int, deviceId string) string {
+	return fmt.Sprintf("PNS/online/%d/%s", appId, deviceId)
+}
+
 func (o *Options) SetWithCfg(cfg *storage.Config) {
 	o.AddBroker(cfg.GetAddress())
 	o.SetClientID(cfg.ClientId)
 	o.SetUsername(cfg.App.Key)
 	o.SetPassword(cfg.App.Secret)
 	o.SetConnectTimeout(cfg.GetConnectTimeout())
+	o.SetWill(_OfflineTopic(cfg.GetAppId(), cfg.GetDeviceId()), "", ExactlyOnce, false)
+	o.SetCleanSession(false)
 }
 
 func (o *Options) SetLogHandler(fn LogHandler) {
@@ -128,6 +138,17 @@ func MustNewMQTTClient(options *Options) *Client {
 			options.logHandler("Info: connected")
 			for topic, handler := range options.topicSet.Handlers {
 				p.subscribe(topic, handler)
+			}
+			// publish online message
+			token := c.Publish(
+				_OnlineTopic(
+					options.topicSet.AppId,
+					options.topicSet.DeviceId,
+				),
+				ExactlyOnce, false, nil,
+			)
+			if ok := token.WaitTimeout(options.ConnectTimeout); !ok {
+				options.logHandler("Error: message publish timeout")
 			}
 		},
 	)

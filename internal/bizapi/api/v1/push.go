@@ -7,7 +7,7 @@ import (
 // TODO: simplify
 
 type DirectPushBase struct {
-	AppId          int    `json:"appId" dc:"registered app id" v:"required|app-exist#app id is required"`
+	AppId          int    `json:"appId" dc:"registered app id" v:"required|app-exist#app id is required|unknown app"`
 	DeviceId       string `json:"deviceId" dc:"available device id, only" v:"required#device id is required"`
 	Retry          int    `json:"retry" dc:"retry times, -1 for always retry" v:"min:-1#retry time is greater than -1"`
 	IgnoreFreqCtrl bool   `json:"ignoreFreqCtrl" dc:"ignore frequency control"`

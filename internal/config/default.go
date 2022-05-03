@@ -63,17 +63,17 @@ var _RawDefaultConfig = `{
     "EventQueue": {
         "TaskValidationEventQueue": {
             "Topic": "task_validation_event",
-            "Dispatch": 5,
+            "Dispatch": 10,
             "Length": 100000
         },
         "DirectPushTaskEventQueue": {
             "Topic": "direct_push_task_event",
-            "Dispatch": 5,
+            "Dispatch": 10,
             "Length": 100000
         },
         "RangePushTaskEventQueue": {
             "Topic": "range_push_task_event",
-            "Dispatch": 5,
+            "Dispatch": 20,
             "Length": 100000
         },
         "BroadcastPushTaskEventQueue": {
@@ -83,13 +83,13 @@ var _RawDefaultConfig = `{
         },
         "PushLogEventqueue": {
             "Topic": "push_log_event",
-            "Dispatch": 3,
+            "Dispatch": 10,
             "Length": 10000
         }
     },
     "EnginePool": {
-        "MinLen": 10,
-        "MaxLen": 20
+        "MinLen": 5,
+        "MaxLen": 10
     },
     "Misc": {
         "Qos": "atLeastOnce",

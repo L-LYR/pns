@@ -14,7 +14,7 @@ import (
 )
 
 var Push = &_PushAPI{
-	limiter: rate.NewLimiter(1500, 3000),
+	limiter: rate.NewLimiter(1500, 2000),
 }
 
 type _PushAPI struct {
