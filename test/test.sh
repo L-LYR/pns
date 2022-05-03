@@ -10,7 +10,7 @@ get_k6() {
 
 test_base() {
     K6_PROMETHEUS_REMOTE_URL=http://localhost:9090/api/v1/write \
-        ./tool/k6 run "./sample/test.js" -o output-prometheus-remote
+        ./tool/k6 run --summary-export="$1_result.json" "./sample/$1.js" -o output-prometheus-remote
 }
 
-$1
+$1 "$2"
