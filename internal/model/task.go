@@ -132,15 +132,16 @@ func (c *RetryCounter) CanRetry() bool {
 }
 
 type PushTaskMeta struct {
-	ID             int64              `json:"id"`
-	Pusher         PusherType         `json:"pusher"`
-	Qos            Qos                `json:"qos"`
-	Status         PushTaskStatusType `json:"status"`
-	CreationTime   time.Time          `json:"creationTime"`
-	ValidationTime time.Time          `json:"validationTime"`
-	HandleTime     time.Time          `json:"handleTime"`
-	EndTime        time.Time          `json:"endTime"`
-	IgnoreFreqCtrl bool               `json:"freqCtrl"`
+	ID                int64              `json:"id"`
+	Pusher            PusherType         `json:"pusher"`
+	Qos               Qos                `json:"qos"`
+	Status            PushTaskStatusType `json:"status"`
+	CreationTime      time.Time          `json:"creationTime"`
+	ValidationTime    time.Time          `json:"validationTime"`
+	HandleTime        time.Time          `json:"handleTime"`
+	EndTime           time.Time          `json:"endTime"`
+	IgnoreFreqCtrl    bool               `json:"freqCtrl"`
+	IgnoreOnlineCheck bool               `json:"onlineCheck"`
 	*RetryCounter
 }
 
@@ -169,6 +170,7 @@ func (m *PushTaskMeta) SetPending()  { m.Status = Pending }
 func (m *PushTaskMeta) SetFiltered() { m.Status = Filtered }
 
 func (m *PushTaskMeta) UnderFreqCtrl() bool           { return !m.IgnoreFreqCtrl }
+func (m *PushTaskMeta) NeedOnlineCheck() bool         { return !m.IgnoreOnlineCheck }
 func (m *PushTaskMeta) IsRetry() bool                 { return m.Status == Retry }
 func (m *PushTaskMeta) OnHandle() bool                { return m.Status == OnHandle }
 func (m *PushTaskMeta) IsDone() bool                  { return m.Success() || m.Failure() }

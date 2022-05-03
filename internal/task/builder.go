@@ -36,7 +36,7 @@ Broadcast Push:
 */
 
 type TaskBuilder interface {
-	SetTaskMeta(int, bool) TaskBuilder
+	SetTaskMeta(int, bool, bool) TaskBuilder
 	SetMessage(*v1.BasicMessage) TaskBuilder
 	SetTemplateMessage(*v1.TemplateMessage) TaskBuilder
 	SetDirectPushBase(*v1.DirectPushBase) TaskBuilder
@@ -79,8 +79,8 @@ type DirectPushTaskBuilder struct {
 	err  error
 }
 
-func (b *DirectPushTaskBuilder) SetTaskMeta(retry int, ignoreFreqCtrl bool) TaskBuilder {
-	b.task.PushTaskMeta = _NewTaskMeta(retry, ignoreFreqCtrl)
+func (b *DirectPushTaskBuilder) SetTaskMeta(retry int, ignoreFreqCtrl bool, ignoreOnlineCheck bool) TaskBuilder {
+	b.task.PushTaskMeta = _NewTaskMeta(retry, ignoreFreqCtrl, ignoreOnlineCheck)
 	return b
 }
 
@@ -126,8 +126,8 @@ type BroadcastTaskBuilder struct {
 	err  error
 }
 
-func (b *BroadcastTaskBuilder) SetTaskMeta(retry int, ignoreFreqCtrl bool) TaskBuilder {
-	b.task.PushTaskMeta = _NewTaskMeta(retry, ignoreFreqCtrl)
+func (b *BroadcastTaskBuilder) SetTaskMeta(retry int, ignoreFreqCtrl bool, ignoreOnlineCheck bool) TaskBuilder {
+	b.task.PushTaskMeta = _NewTaskMeta(retry, ignoreFreqCtrl, ignoreOnlineCheck)
 	return b
 }
 
@@ -164,8 +164,8 @@ type RangePushTaskBuilder struct {
 	err  error
 }
 
-func (b *RangePushTaskBuilder) SetTaskMeta(retry int, ignoreFreqCtrl bool) TaskBuilder {
-	b.task.PushTaskMeta = _NewTaskMeta(retry, ignoreFreqCtrl)
+func (b *RangePushTaskBuilder) SetTaskMeta(retry int, ignoreFreqCtrl bool, ignoreOnlineCheck bool) TaskBuilder {
+	b.task.PushTaskMeta = _NewTaskMeta(retry, ignoreFreqCtrl, ignoreOnlineCheck)
 	return b
 }
 
@@ -197,17 +197,18 @@ func (b *RangePushTaskBuilder) Build() (model.PushTask, error) {
 	return b.task, b.err
 }
 
-func _NewTaskMeta(retry int, ignoreFreqCtrl bool) *model.PushTaskMeta {
+func _NewTaskMeta(retry int, ignoreFreqCtrl bool, ignoreOnlineCheck bool) *model.PushTaskMeta {
 	return &model.PushTaskMeta{
 		RetryCounter: &model.RetryCounter{
 			Counter: model.RetryTimes(retry),
 		},
-		ID:             util.GeneratePushTaskId(),
-		Pusher:         model.MQTTPusher,
-		Qos:            config.CommonTaskQos(),
-		Status:         model.Pending,
-		CreationTime:   time.Now(),
-		IgnoreFreqCtrl: ignoreFreqCtrl,
+		ID:                util.GeneratePushTaskId(),
+		Pusher:            model.MQTTPusher,
+		Qos:               config.CommonTaskQos(),
+		Status:            model.Pending,
+		CreationTime:      time.Now(),
+		IgnoreFreqCtrl:    ignoreFreqCtrl,
+		IgnoreOnlineCheck: ignoreOnlineCheck,
 	}
 }
 

@@ -8,6 +8,9 @@ import (
 )
 
 func _CheckTargetOnline(ctx context.Context, task model.PushTask) bool {
+	if !task.GetMeta().NeedOnlineCheck() {
+		return true
+	}
 	switch task.GetType() {
 	case model.BroadcastPush:
 		return true
