@@ -33,7 +33,6 @@ func _MustNewPusher(
 		return mqtt.MustNewPusher(
 			ctx,
 			appId,
-			pusherConfig.(*model.MQTTConfig),
 			config.MQTTBrokerConfig(),
 		)
 	default:

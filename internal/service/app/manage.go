@@ -9,26 +9,44 @@ import (
 	"github.com/L-LYR/pns/internal/util"
 )
 
-func Authorization(ctx context.Context, key string, secret string, clientId string) (bool, string) {
-	appId, isPusher, err := util.ParseClientID(clientId)
+func ACLCheck(ctx context.Context, key string, clientId string) (bool, string) {
+	if clientId == util.GetRootClientID() &&
+		key == util.GetRootClientUser() {
+		return true, ""
+	}
+
+	appId, err := util.ParseClientID(clientId)
 	if err != nil {
 		util.GLog.Errorf(ctx, "client id: %s, error: %+v", clientId, err)
 		return false, "unknown client"
 	}
-	// if v, err := dao.FindConfigByKey(ctx, appId, model.MQTTPusher); err != nil {
-	// 	util.GLog.Errorf(ctx, "%+v", err)
-	// 	return false, "internal error"
-	// } else if err := v.Struct(config); err != nil {
-	// 	util.GLog.Errorf(ctx, "%+v", err)
-	// 	return false, "internal error"
-	// }
 	config, ok := cache.Config.GetMQTTPusherConfigByAppId(appId)
 	if !ok {
 		return false, "cache miss"
 	}
-	if isPusher && config.PusherKey == key && config.PusherSecret == secret {
+	if config.ReceiverKey == key {
 		return true, ""
-	} else if !isPusher && config.ReceiverKey == key && config.ReceiverSecret == secret {
+	}
+	return false, "unauthorized"
+}
+
+func Authorization(ctx context.Context, key string, secret string, clientId string) (bool, string) {
+	if clientId == util.GetRootClientID() &&
+		key == util.GetRootClientUser() &&
+		secret == util.GetRootClientPass() {
+		return true, ""
+	}
+
+	appId, err := util.ParseClientID(clientId)
+	if err != nil {
+		util.GLog.Errorf(ctx, "client id: %s, error: %+v", clientId, err)
+		return false, "unknown client"
+	}
+	config, ok := cache.Config.GetMQTTPusherConfigByAppId(appId)
+	if !ok {
+		return false, "cache miss"
+	}
+	if config.ReceiverKey == key && config.ReceiverSecret == secret {
 		return true, ""
 	}
 	return false, "unauthorized"
