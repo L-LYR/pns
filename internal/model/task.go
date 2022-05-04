@@ -342,6 +342,6 @@ const (
 	TaskHandle     PushTaskStage = "handle"
 	TaskDone       PushTaskStage = "done"
 	TaskRetry      PushTaskStage = "retry"
-	TaskRecv       PushTaskStage = "recv"
+	TaskRecv       PushTaskStage = "receive"
 	TaskShow       PushTaskStage = "show"
 )
