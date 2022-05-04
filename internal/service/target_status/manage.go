@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/L-LYR/pns/internal/service/internal/dao"
-	"github.com/L-LYR/pns/internal/util"
 	"github.com/spaolacci/murmur3"
 )
 
@@ -18,12 +17,14 @@ type TargetStatusType int64
 const (
 	TargetOnline  TargetStatusType = 1
 	TargetOffline TargetStatusType = 0
+
+	_StatusStoreKey = "Status"
 )
 
 func CheckTargetOnline(ctx context.Context, appId int, deviceId string) bool {
 	if status, err := dao.LogRedisDao.GetStatusBitmap(
 		ctx,
-		fmt.Sprintf("Status-%d", appId),
+		_StatusStoreKey,
 		int64(_StatusOffset(fmt.Sprintf("%d:%s", appId, deviceId))),
 	); err != nil {
 		// by default, we think the target is online
@@ -42,12 +43,10 @@ func SetTargetOffline(ctx context.Context, appId, deviceId string) error {
 }
 
 func _SetTargetStatus(ctx context.Context, appId, deviceId string, status int) error {
-	offset := int64(_StatusOffset(appId + ":" + deviceId))
-	util.GLog.Infof(ctx, "%s %s %d %d", appId, deviceId, offset, status)
 	return dao.LogRedisDao.SetStatusBitmap(
 		ctx,
-		"Status-"+appId,
-		offset,
+		_StatusStoreKey,
+		int64(_StatusOffset(appId+":"+deviceId)),
 		status,
 	)
 }
