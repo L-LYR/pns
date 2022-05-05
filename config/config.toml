@@ -52,7 +52,7 @@ dispatch = 10
 length = 100000
 [event_queue.range_push_task_event_queue]
 topic = "range_push_task_event"
-dispatch = 20
+dispatch = 10
 length = 100000
 [event_queue.broadcast_push_task_event_queue]
 topic = "broadcast_push_task_event"
@@ -60,8 +60,8 @@ dispatch = 1
 length = 10
 [event_queue.push_log_event_queue]
 topic = "push_log_event"
-dispatch = 10
-length = 10000
+dispatch = 20
+length = 100000
 
 [engine_pool]
 min_len = 5

@@ -12,19 +12,13 @@ func _CheckTargetOnline(ctx context.Context, task model.PushTask) bool {
 		return true
 	}
 	switch task.GetType() {
-	case model.BroadcastPush:
+	case model.BroadcastPush, model.RangePush:
 		return true
 	case model.DirectPush:
 		return target_status.CheckTargetOnline(
 			ctx,
 			task.GetAppId(),
 			model.AsDirectPushTask(task).Device.ID,
-		)
-	case model.RangePush:
-		return target_status.CheckTargetOnline(
-			ctx,
-			task.GetAppId(),
-			model.AsRangePushTask(task).Device.ID,
 		)
 	default:
 		return false
