@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/L-LYR/pns/internal/config"
 	"github.com/L-LYR/pns/internal/model"
@@ -19,20 +18,21 @@ import (
 )
 
 var (
-	_Guard       sync.Once
-	_InnerClient paho.Client
+	_BrokerConfig *config.BrokerConfig
+	_Guard        sync.Once
+	_InnerClient  paho.Client
 )
 
 func _MustInitInnerClient(ctx context.Context) {
 	_Guard.Do(
 		func() {
-			cfg := config.MQTTBrokerConfig()
+			_BrokerConfig = config.MQTTBrokerConfig()
 			options := paho.NewClientOptions()
-			options.AddBroker(cfg.BrokerAddress())
+			options.AddBroker(_BrokerConfig.BrokerAddress())
 			options.SetClientID(util.GetRootClientID())
 			options.SetUsername(util.GetRootClientUser())
 			options.SetPassword(util.GetRootClientPass())
-			options.SetConnectTimeout(cfg.WaitTimeout())
+			options.SetConnectTimeout(_BrokerConfig.WaitTimeout())
 			options.SetOnConnectHandler(_OnConnect(ctx))
 			options.SetConnectionLostHandler(_OnConnectLost(ctx))
 			options.SetReconnectingHandler(_OnReconnecting(ctx))
@@ -42,26 +42,14 @@ func _MustInitInnerClient(ctx context.Context) {
 }
 
 type Client struct {
-	AppId        int
-	Key          string
-	Secret       string
-	WaitTimeout  time.Duration
-	BrokerConfig *config.BrokerConfig
-
 	Client paho.Client
 }
 
-func _MustNewClient(
-	ctx context.Context,
-	appId int,
-	brokerConfig *config.BrokerConfig,
-) *Client {
+func _MustNewClient(ctx context.Context, appId int) *Client {
 	_MustInitInnerClient(ctx)
 
 	p := &Client{
-		AppId:        appId,
-		BrokerConfig: brokerConfig,
-		Client:       _InnerClient,
+		Client: _InnerClient,
 	}
 
 	onlineTopic := fmt.Sprintf("PNS/online/%d/+", appId)
@@ -69,12 +57,12 @@ func _MustNewClient(
 	if err := p.Subscribe(ctx, onlineTopic, func(c paho.Client, m paho.Message) {
 		p.targetStatusTrace(ctx, m.Topic())
 	}); err != nil {
-		util.GLog.Warningf(ctx, "Client %s fail to subscribe %d, because %s", p.AppId, onlineTopic, err.Error())
+		util.GLog.Warningf(ctx, "Client %s fail to subscribe %d, because %s", appId, onlineTopic, err.Error())
 	}
 	if err := p.Subscribe(ctx, offlineTopic, func(c paho.Client, m paho.Message) {
 		p.targetStatusTrace(ctx, m.Topic())
 	}); err != nil {
-		util.GLog.Warningf(ctx, "Client %s fail to subscribe %d, because %s", p.AppId, offlineTopic, err.Error())
+		util.GLog.Warningf(ctx, "Client %s fail to subscribe %d, because %s", appId, offlineTopic, err.Error())
 	}
 	return p
 }
@@ -82,18 +70,16 @@ func _MustNewClient(
 func MustNewPusher(
 	ctx context.Context,
 	appId int,
-	brokerConfig *config.BrokerConfig,
 ) *Client {
 	return _MustNewClient(
 		ctx,
 		appId,
-		brokerConfig,
 	)
 }
 
 func (p *Client) TryConnect() error {
 	if !p.Client.IsConnected() {
-		if token := p.Client.Connect(); !token.WaitTimeout(p.BrokerConfig.WaitTimeout()) {
+		if token := p.Client.Connect(); !token.WaitTimeout(_BrokerConfig.WaitTimeout()) {
 			return errors.New("connection timeout")
 		} else if err := token.Error(); err != nil {
 			return err
@@ -120,7 +106,7 @@ func (p *Client) Handle(ctx context.Context, task model.PushTask) error {
 		return err
 	}
 	token := p.Client.Publish(topic, task.GetQos(), false, payload)
-	if ok := token.WaitTimeout(p.BrokerConfig.WaitTimeout()); !ok {
+	if ok := token.WaitTimeout(_BrokerConfig.WaitTimeout()); !ok {
 		return errors.New("message publish timeout")
 	}
 	return token.Error()
@@ -136,7 +122,7 @@ func (p *Client) Subscribe(ctx context.Context, topic string, fn paho.MessageHan
 	}
 
 	token := p.Client.Subscribe(topic, model.AtMostOnce, fn)
-	if ok := token.WaitTimeout(p.BrokerConfig.WaitTimeout()); !ok {
+	if ok := token.WaitTimeout(_BrokerConfig.WaitTimeout()); !ok {
 		return errors.New("subscribe timeout")
 	} else if err := token.Error(); err != nil {
 		return err

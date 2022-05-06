@@ -14,7 +14,7 @@ import (
 )
 
 var Push = &_PushAPI{
-	limiter: rate.NewLimiter(1500, 2000),
+	limiter: rate.NewLimiter(1000, 1000),
 }
 
 type _PushAPI struct {
@@ -115,7 +115,6 @@ func (api *_PushAPI) createTask(ctx context.Context, taskBuilder task.TaskBuilde
 		// range task runner
 		go task.NewRangePushTaskRunner(ctx, model.AsRangePushTask(t), api.limiter).Run()
 	} else {
-		api.limiter.Wait(ctx)
 		if err := bizcore.PutTaskValidationEvent(ctx, t); err != nil {
 			return nil, util.FinalError(gcode.CodeInternalError, err, "Fail to send push task")
 		}
