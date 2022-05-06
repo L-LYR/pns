@@ -1,10 +1,9 @@
-import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 import { sentence } from './lorem-ipsum.js';
 
-function random_push(size, app, max_device) {
+function random_push(size, appId, deviceId) {
     return {
-        deviceId: randomIntBetween(0, max_device),
-        appId: app,
+        deviceId: deviceId,
+        appId: appId,
         ignoreFreqCtrl: true,
         ignoreOnlineCheck: true,
         message: {
@@ -15,4 +14,31 @@ function random_push(size, app, max_device) {
     }
 }
 
-export { random_push }
+function random_template_push(deviceId) {
+    return {
+        appId: 1234,
+        deviceId: deviceId,
+        retry: 3,
+        ignoreFreqCtrl: true,
+        ignoreOnlineCheck: true,
+        message: {
+            id: "1783891026876833792",
+            params: {
+                "title": {
+                    pr: {
+                        "n": "xxx",
+                        "m": "xxx",
+                    },
+                },
+                "content": {
+                    pr: {
+                        "n": "xxx",
+                        "m": "xxx",
+                    }
+                }
+            }
+        }
+    }
+}
+
+export { random_push, random_template_push }

@@ -5,7 +5,7 @@ export const options = {
     target: {
       executor: 'constant-arrival-rate',
       exec: 'update_target_request',
-      duration: '6m',
+      duration: '6m20s',
       timeUnit: '1s',
       rate: 200,
       preAllocatedVUs: 20,
@@ -19,12 +19,10 @@ export const options = {
       preAllocatedVUs: 200,
       maxVUs: 3000,
       stages: [
-        { duration: '30s', target: 700 },
-        { duration: '2m', target: 700 },
-        { duration: '30s', target: 1600 },
-        { duration: '30s', target: 700 },
-        { duration: '2m', target: 700 },
-        { duration: '30s', target: 0 },
+        { duration: '10s', target: 700 },
+        { duration: '3m', target: 700 },
+        { duration: '3m', target: 700 },
+        { duration: '10s', target: 0 },
       ],
       gracefulStop: '3s',
     }
